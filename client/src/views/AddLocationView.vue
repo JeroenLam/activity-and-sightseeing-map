@@ -1,0 +1,22 @@
+<template>
+  <div class="page-container">
+    <LocationForm />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted } from 'vue';
+import { useTypesStore } from '@/stores/types';
+import LocationForm from '@/components/locations/LocationForm.vue';
+
+const typesStore = useTypesStore();
+onMounted(() => typesStore.fetchTypes());
+</script>
+
+<style scoped>
+.page-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+</style>

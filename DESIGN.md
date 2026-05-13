@@ -8,18 +8,18 @@ Een Vue.js + Node.js/Express webapp met Leaflet-kaart voor het bijhouden van bez
 
 ## Technologie Stack
 
-| Component       | Technologie                                              |
-| --------------- | -------------------------------------------------------- |
-| **Frontend**    | Vue 3 (Composition API) + TypeScript + Vite              |
-| **State**       | Pinia                                                    |
-| **Routing**     | Vue Router                                               |
-| **i18n**        | vue-i18n (Nederlands + Engels, schakelbaar in interface)  |
-| **Kaart**       | Leaflet + OpenStreetMap tiles (gratis)                   |
-| **Backend**     | Express + TypeScript                                     |
-| **Auth**        | Passport.js (LocalStrategy + Google + GitHub OAuth), JWT |
-| **Geocoding**   | Nominatim API (gratis, 1 req/sec rate limit)             |
-| **Opslag**      | JSON bestanden op filesystem (per-user directory)        |
-| **Deployment**  | Enkele Docker container, multi-stage build, data volume  |
+| Component      | Technologie                                              |
+| -------------- | -------------------------------------------------------- |
+| **Frontend**   | Vue 3 (Composition API) + TypeScript + Vite              |
+| **State**      | Pinia                                                    |
+| **Routing**    | Vue Router                                               |
+| **i18n**       | vue-i18n (Nederlands + Engels, schakelbaar in interface) |
+| **Kaart**      | Leaflet + OpenStreetMap tiles (gratis)                   |
+| **Backend**    | Express + TypeScript                                     |
+| **Auth**       | Passport.js (LocalStrategy + Google + GitHub OAuth), JWT |
+| **Geocoding**  | Nominatim API (gratis, 1 req/sec rate limit)             |
+| **Opslag**     | JSON bestanden op filesystem (per-user directory)        |
+| **Deployment** | Enkele Docker container, multi-stage build, data volume  |
 
 ---
 
@@ -164,15 +164,15 @@ interface LocationType {
 
 Afgeleid van het CSV bestand, worden geseed bij eerste login van een user:
 
-| Type                  | Kleur     | Omschrijving |
-| --------------------- | --------- | ------------ |
-| Dierentuin            | `#4CAF50` | Groen        |
-| Museum                | `#2196F3` | Blauw        |
-| Museum - Historie     | `#795548` | Bruin        |
-| Museum - Kunst        | `#9C27B0` | Paars        |
-| Museum - Oorlog       | `#F44336` | Rood         |
-| Museum - Wetenschap   | `#FF9800` | Oranje       |
-| Pretpark              | `#E91E63` | Roze         |
+| Type                | Kleur     | Omschrijving |
+| ------------------- | --------- | ------------ |
+| Dierentuin          | `#4CAF50` | Groen        |
+| Museum              | `#2196F3` | Blauw        |
+| Museum - Historie   | `#795548` | Bruin        |
+| Museum - Kunst      | `#9C27B0` | Paars        |
+| Museum - Oorlog     | `#F44336` | Rood         |
+| Museum - Wetenschap | `#FF9800` | Oranje       |
+| Pretpark            | `#E91E63` | Roze         |
 
 ---
 
@@ -180,28 +180,28 @@ Afgeleid van het CSV bestand, worden geseed bij eerste login van een user:
 
 ### Authenticatie
 
-| Methode | Route                  | Omschrijving                          |
-| ------- | ---------------------- | ------------------------------------- |
-| POST    | `/api/auth/register`   | Registreer nieuw lokaal account       |
-| POST    | `/api/auth/login`      | Login met email + wachtwoord          |
-| GET     | `/api/auth/google`     | Start Google OAuth flow               |
-| GET     | `/api/auth/google/cb`  | Google OAuth callback                 |
-| GET     | `/api/auth/github`     | Start GitHub OAuth flow               |
-| GET     | `/api/auth/github/cb`  | GitHub OAuth callback                 |
-| POST    | `/api/auth/logout`     | Logout (clear cookies)                |
-| GET     | `/api/auth/me`         | Huidig ingelogde user ophalen         |
+| Methode | Route                 | Omschrijving                    |
+| ------- | --------------------- | ------------------------------- |
+| POST    | `/api/auth/register`  | Registreer nieuw lokaal account |
+| POST    | `/api/auth/login`     | Login met email + wachtwoord    |
+| GET     | `/api/auth/google`    | Start Google OAuth flow         |
+| GET     | `/api/auth/google/cb` | Google OAuth callback           |
+| GET     | `/api/auth/github`    | Start GitHub OAuth flow         |
+| GET     | `/api/auth/github/cb` | GitHub OAuth callback           |
+| POST    | `/api/auth/logout`    | Logout (clear cookies)          |
+| GET     | `/api/auth/me`        | Huidig ingelogde user ophalen   |
 
 JWT tokens worden opgeslagen in **httpOnly cookies** (access + refresh token).
 
 ### Locaties (authenticated)
 
-| Methode | Route                        | Omschrijving                                   |
-| ------- | ---------------------------- | ---------------------------------------------- |
-| GET     | `/api/locations`             | Alle locaties (met optionele filters)          |
-| POST    | `/api/locations`             | Nieuwe locatie aanmaken                        |
-| PUT     | `/api/locations/:id`         | Locatie bijwerken                               |
-| DELETE  | `/api/locations/:id`         | Locatie verwijderen                             |
-| POST    | `/api/locations/import`      | CSV import (bulk)                              |
+| Methode | Route                   | Omschrijving                          |
+| ------- | ----------------------- | ------------------------------------- |
+| GET     | `/api/locations`        | Alle locaties (met optionele filters) |
+| POST    | `/api/locations`        | Nieuwe locatie aanmaken               |
+| PUT     | `/api/locations/:id`    | Locatie bijwerken                     |
+| DELETE  | `/api/locations/:id`    | Locatie verwijderen                   |
+| POST    | `/api/locations/import` | CSV import (bulk)                     |
 
 **Query parameters voor GET `/api/locations`:**
 - `yearFrom` — filter op bezoekjaar >= waarde
@@ -210,12 +210,12 @@ JWT tokens worden opgeslagen in **httpOnly cookies** (access + refresh token).
 
 ### Locatie-types (authenticated)
 
-| Methode | Route               | Omschrijving                    |
-| ------- | ------------------- | ------------------------------- |
-| GET     | `/api/types`        | Alle types ophalen              |
-| POST    | `/api/types`        | Nieuw type aanmaken             |
-| PUT     | `/api/types/:id`    | Type bijwerken (naam, kleur)    |
-| DELETE  | `/api/types/:id`    | Type verwijderen                |
+| Methode | Route            | Omschrijving                 |
+| ------- | ---------------- | ---------------------------- |
+| GET     | `/api/types`     | Alle types ophalen           |
+| POST    | `/api/types`     | Nieuw type aanmaken          |
+| PUT     | `/api/types/:id` | Type bijwerken (naam, kleur) |
+| DELETE  | `/api/types/:id` | Type verwijderen             |
 
 ---
 
@@ -349,16 +349,16 @@ De `data/` directory wordt als Docker volume gemount zodat gebruikersdata persis
 
 ## Design Beslissingen
 
-| Beslissing | Motivatie |
-| --- | --- |
-| **JSON files ipv database** | Simpel, geen extra dependencies. Voldoende voor ~100-1000 locaties per user. |
-| **Enkele Docker container** | Express serveert zowel de Vue build als de API — eenvoudige deployment. |
-| **Per-user data isolatie** | Elke gebruiker heeft eigen `locations.json` en `types.json` in `data/users/{id}/`. |
-| **Nominatim rate limit server-side** | 1 req/sec afgedwongen bij CSV import om Nominatim fair use policy te respecteren. |
-| **Bezoekjaren als `number[]`** | Simpeler dan volledige datums; meerdere bezoeken per locatie mogelijk (bijv. `[2024, 2025]`). |
-| **`visitedUnknownYear` veld** | Voor locaties waar `"-"` in het CSV staat: bezocht maar jaar onbekend. |
-| **OAuth optioneel** | Werkt alleen als de env vars geconfigureerd zijn; anders worden OAuth knoppen verborgen in de UI. |
-| **Custom SVG circle markers** | Leaflet standaard markers zijn moeilijk te kleuren. SVG circles zijn lichtgewicht en volledig kleur-configureerbaar. |
+| Beslissing                           | Motivatie                                                                                                            |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **JSON files ipv database**          | Simpel, geen extra dependencies. Voldoende voor ~100-1000 locaties per user.                                         |
+| **Enkele Docker container**          | Express serveert zowel de Vue build als de API — eenvoudige deployment.                                              |
+| **Per-user data isolatie**           | Elke gebruiker heeft eigen `locations.json` en `types.json` in `data/users/{id}/`.                                   |
+| **Nominatim rate limit server-side** | 1 req/sec afgedwongen bij CSV import om Nominatim fair use policy te respecteren.                                    |
+| **Bezoekjaren als `number[]`**       | Simpeler dan volledige datums; meerdere bezoeken per locatie mogelijk (bijv. `[2024, 2025]`).                        |
+| **`visitedUnknownYear` veld**        | Voor locaties waar `"-"` in het CSV staat: bezocht maar jaar onbekend.                                               |
+| **OAuth optioneel**                  | Werkt alleen als de env vars geconfigureerd zijn; anders worden OAuth knoppen verborgen in de UI.                    |
+| **Custom SVG circle markers**        | Leaflet standaard markers zijn moeilijk te kleuren. SVG circles zijn lichtgewicht en volledig kleur-configureerbaar. |
 
 ---
 
