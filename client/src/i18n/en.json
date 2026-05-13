@@ -9,8 +9,11 @@
         "types": "Types",
         "import": "Import",
         "manage": "Manage",
+        "profile": "Profile",
         "logout": "Logout",
-        "login": "Login"
+        "login": "Login",
+        "darkMode": "Dark mode",
+        "lightMode": "Light mode"
     },
     "auth": {
         "login": "Login",
@@ -38,11 +41,17 @@
         "allLocations": "All locations",
         "transparencyMode": "Transparency mode",
         "visitedOpacity": "Visited locations opacity",
+        "unvisitedOpacity": "Unvisited locations opacity",
+        "markerSize": "Marker size",
+        "showAdvanced": "More settings",
+        "hideAdvanced": "Less settings",
         "visited": "Visited",
         "notVisited": "Not visited",
         "unknownYear": "Year unknown",
         "openLink": "Open website",
-        "noLocations": "No locations yet. Add locations or import a CSV file."
+        "noLocations": "No locations yet. Add locations or import a CSV file.",
+        "visibleLocations": "Visible locations",
+        "noVisibleLocations": "No locations in view"
     },
     "location": {
         "add": "Add Location",
@@ -117,5 +126,19 @@
     "language": {
         "nl": "Nederlands",
         "en": "English"
+    },
+    "profile": {
+        "title": "Profile",
+        "changePassword": "Change Password",
+        "currentPassword": "Current password",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm password",
+        "savePassword": "Save password",
+        "passwordsMismatch": "Passwords do not match",
+        "passwordChanged": "Password changed successfully",
+        "passwordError": "Failed to change password"
+    },
+    "progress": {
+        "visited": "{pct}% visited"
     }
 }

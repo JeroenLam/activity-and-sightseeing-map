@@ -82,6 +82,10 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+    async function changePassword(currentPassword: string, newPassword: string) {
+        await axios.put('/api/auth/me/password', { currentPassword, newPassword });
+    }
+
     return {
         user,
         oauthConfig,
@@ -94,5 +98,6 @@ export const useAuthStore = defineStore('auth', () => {
         register,
         logout,
         setLanguage,
+        changePassword,
     };
 });

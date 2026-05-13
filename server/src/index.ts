@@ -24,7 +24,7 @@ export async function createApp(dataDir?: string) {
                     defaultSrc: ["'self'"],
                     scriptSrc: ["'self'", "'unsafe-inline'"],
                     styleSrc: ["'self'", "'unsafe-inline'", 'https://unpkg.com'],
-                    imgSrc: ["'self'", 'data:', 'https://*.tile.openstreetmap.org', 'https://*.openstreetmap.org'],
+                    imgSrc: ["'self'", 'data:', 'https://*.tile.openstreetmap.org', 'https://*.openstreetmap.org', 'https://*.basemaps.cartocdn.com'],
                     connectSrc: ["'self'", 'https://nominatim.openstreetmap.org'],
                     fontSrc: ["'self'"],
                 },

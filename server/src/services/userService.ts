@@ -139,3 +139,19 @@ export async function updatePreferredLanguage(
         await saveUsers(dataDir, users);
     }
 }
+
+export async function changePassword(
+    dataDir: string,
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+): Promise<void> {
+    const users = await getAllUsers(dataDir);
+    const user = users.find((u) => u.id === userId);
+    if (!user) throw new Error('User not found');
+    if (!user.passwordHash) throw new Error('No password set');
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) throw new Error('Current password is incorrect');
+    user.passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await saveUsers(dataDir, users);
+}

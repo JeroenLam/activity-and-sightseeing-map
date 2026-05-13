@@ -31,61 +31,77 @@
         />
       </div>
 
-      <div class="locations-list">
-        <div
-          v-for="loc in filteredLocations"
-          :key="loc.id"
-          class="location-row"
-          :class="{ 'geocode-failed': isGeocodeFailed(loc) }"
-        >
-          <span
-            class="type-dot"
-            :style="{ background: getTypeColor(loc.type) }"
-          ></span>
-          <div class="location-info">
-            <strong>{{ loc.name }}</strong>
-            <span class="location-meta">
-              {{ getTypeName(loc.type) }} · {{ loc.city
-              }}{{ loc.country ? ', ' + loc.country : '' }}
-              <template v-if="loc.visitedYears.length">
-                · 📅 {{ loc.visitedYears.join(', ') }}
-              </template>
-              <template v-else-if="loc.visitedUnknownYear">
-                · 📅 ?
-              </template>
-            </span>
-            <span v-if="isGeocodeFailed(loc)" class="geocode-warning">
-              ⚠️ {{ t('manage.noCoordinates') }}
-            </span>
-          </div>
-          <div class="location-actions">
-            <button
-              v-if="isGeocodeFailed(loc)"
-              class="btn-ghost btn-small"
-              :disabled="retrying === loc.id"
-              @click="retryGeocode(loc)"
+      <!-- Table -->
+      <div class="table-wrap">
+        <table class="manage-table">
+          <thead>
+            <tr>
+              <th class="th-sortable" @click="toggleSort('name')">
+                {{ t('location.name') }} {{ sortIcon('name') }}
+              </th>
+              <th class="th-sortable" @click="toggleSort('type')">
+                {{ t('location.type') }} {{ sortIcon('type') }}
+              </th>
+              <th class="th-sortable" @click="toggleSort('city')">
+                {{ t('location.city') }} {{ sortIcon('city') }}
+              </th>
+              <th class="th-sortable" @click="toggleSort('country')">
+                {{ t('location.country') }} {{ sortIcon('country') }}
+              </th>
+              <th class="th-sortable" @click="toggleSort('years')">
+                📅 {{ sortIcon('years') }}
+              </th>
+              <th class="th-sortable th-status" @click="toggleSort('status')">
+                📍 {{ sortIcon('status') }}
+              </th>
+              <th class="th-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="loc in sortedLocations"
+              :key="loc.id"
+              :class="{ 'row-failed': isGeocodeFailed(loc) }"
             >
-              🔄 {{ retrying === loc.id ? '...' : t('manage.retry') }}
-            </button>
-            <button
-              class="btn-ghost btn-small"
-              @click="openEdit(loc)"
-            >
-              ✏️ {{ t('manage.edit') }}
-            </button>
-            <button
-              class="btn-ghost btn-danger btn-small"
-              :disabled="deleting === loc.id"
-              @click="confirmDelete(loc)"
-            >
-              🗑️ {{ t('manage.delete') }}
-            </button>
-          </div>
-        </div>
+              <td class="td-name">
+                <span class="type-dot" :style="{ background: getTypeColor(loc.type) }"></span>
+                {{ loc.name }}
+              </td>
+              <td>{{ getTypeName(loc.type) }}</td>
+              <td>{{ loc.city }}</td>
+              <td>{{ loc.country }}</td>
+              <td class="td-years">
+                <template v-if="loc.visitedYears.length">{{ loc.visitedYears.join(', ') }}</template>
+                <template v-else-if="loc.visitedUnknownYear">?</template>
+                <template v-else>—</template>
+              </td>
+              <td class="td-status">
+                <span v-if="isGeocodeFailed(loc)" class="status-warn" :title="t('manage.noCoordinates')">⚠️</span>
+                <span v-else class="status-ok">✓</span>
+              </td>
+              <td class="td-actions">
+                <button
+                  v-if="isGeocodeFailed(loc)"
+                  class="btn-icon"
+                  :disabled="retrying === loc.id"
+                  :title="t('manage.retry')"
+                  @click="retryGeocode(loc)"
+                >🔄</button>
+                <button class="btn-icon" :title="t('manage.edit')" @click="openEdit(loc)">✏️</button>
+                <button
+                  class="btn-icon btn-icon-danger"
+                  :disabled="deleting === loc.id"
+                  :title="t('manage.delete')"
+                  @click="confirmDelete(loc)"
+                >🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <p class="count">
-        {{ t('manage.showing', { shown: filteredLocations.length, total: locationsStore.locations.length }) }}
+        {{ t('manage.showing', { shown: sortedLocations.length, total: locationsStore.locations.length }) }}
       </p>
     </template>
 
@@ -181,6 +197,25 @@ const toDelete = ref<Location | null>(null);
 const retrying = ref<string | null>(null);
 const retryingAll = ref(false);
 
+// Sort state
+type SortKey = 'name' | 'type' | 'city' | 'country' | 'years' | 'status';
+const sortKey = ref<SortKey>('status');
+const sortAsc = ref(true);
+
+function toggleSort(key: SortKey) {
+  if (sortKey.value === key) {
+    sortAsc.value = !sortAsc.value;
+  } else {
+    sortKey.value = key;
+    sortAsc.value = true;
+  }
+}
+
+function sortIcon(key: SortKey): string {
+  if (sortKey.value !== key) return '';
+  return sortAsc.value ? '▲' : '▼';
+}
+
 // Edit state
 const editing = ref<Location | null>(null);
 const saving = ref(false);
@@ -212,15 +247,52 @@ const failedLocations = computed(() =>
 
 const filteredLocations = computed(() => {
   const q = search.value.toLowerCase();
-  const list = locationsStore.locations;
-  if (!q) return list;
-  return list.filter(
-    (l) =>
-      l.name.toLowerCase().includes(q) ||
-      l.city.toLowerCase().includes(q) ||
-      l.country.toLowerCase().includes(q) ||
-      getTypeName(l.type).toLowerCase().includes(q)
-  );
+  let list = locationsStore.locations;
+  if (q) {
+    list = list.filter(
+      (l) =>
+        l.name.toLowerCase().includes(q) ||
+        l.city.toLowerCase().includes(q) ||
+        l.country.toLowerCase().includes(q) ||
+        getTypeName(l.type).toLowerCase().includes(q) ||
+        l.visitedYears.some((y) => String(y).includes(q))
+    );
+  }
+  return list;
+});
+
+const sortedLocations = computed(() => {
+  const dir = sortAsc.value ? 1 : -1;
+  return [...filteredLocations.value].sort((a, b) => {
+    let cmp = 0;
+    switch (sortKey.value) {
+      case 'name':
+        cmp = a.name.localeCompare(b.name);
+        break;
+      case 'type':
+        cmp = getTypeName(a.type).localeCompare(getTypeName(b.type));
+        break;
+      case 'city':
+        cmp = a.city.localeCompare(b.city);
+        break;
+      case 'country':
+        cmp = a.country.localeCompare(b.country);
+        break;
+      case 'years': {
+        const aY = a.visitedYears.length ? Math.min(...a.visitedYears) : a.visitedUnknownYear ? 0 : Infinity;
+        const bY = b.visitedYears.length ? Math.min(...b.visitedYears) : b.visitedUnknownYear ? 0 : Infinity;
+        cmp = aY - bY;
+        break;
+      }
+      case 'status': {
+        const aF = isGeocodeFailed(a) ? 0 : 1;
+        const bF = isGeocodeFailed(b) ? 0 : 1;
+        cmp = aF - bF;
+        break;
+      }
+    }
+    return cmp * dir;
+  });
 });
 
 function getTypeName(typeId: string): string {
@@ -321,7 +393,7 @@ async function retryAllGeocode() {
 
 <style scoped>
 .page-container {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 1.5rem;
 }
@@ -355,80 +427,127 @@ async function retryAllGeocode() {
 }
 
 .search-field {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
-.locations-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.location-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 0.85rem;
-  background: var(--color-surface);
+/* Table */
+.table-wrap {
+  overflow-x: auto;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  transition: box-shadow 0.15s;
 }
 
-.location-row:hover {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+.manage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
 }
 
-.location-row.geocode-failed {
-  border-color: #f59e0b;
+.manage-table th,
+.manage-table td {
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.manage-table thead th {
+  background: var(--color-bg);
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  position: sticky;
+  top: 0;
+}
+
+.th-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.th-sortable:hover {
+  color: var(--color-primary);
+}
+
+.th-status {
+  text-align: center;
+  width: 2rem;
+}
+
+.th-actions {
+  width: 5rem;
+}
+
+.manage-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.manage-table tbody tr.row-failed {
   background: #fffbeb;
 }
 
-.type-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.location-info {
-  flex: 1;
-  min-width: 0;
+.td-name {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.location-info strong {
-  font-size: 0.9rem;
-  white-space: nowrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+  max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.location-meta {
-  font-size: 0.78rem;
+.type-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.td-years {
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
 
-.geocode-warning {
+.td-status {
+  text-align: center;
+}
+
+.status-ok {
+  color: var(--color-success, #22c55e);
   font-size: 0.75rem;
-  color: #b45309;
 }
 
-.location-actions {
-  flex-shrink: 0;
+.status-warn {
+  font-size: 0.85rem;
+}
+
+.td-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.15rem;
 }
 
-.btn-small {
-  font-size: 0.78rem;
-  padding: 0.2rem 0.5rem;
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  transition: background 0.1s;
 }
 
-.btn-danger:hover {
-  color: var(--color-error) !important;
+.btn-icon:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.btn-icon-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.btn-icon:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .count {

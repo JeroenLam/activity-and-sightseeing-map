@@ -99,6 +99,42 @@ export function createAuthRouter(dataDir: string): Router {
         }
     );
 
+    // Change password
+    router.put(
+        '/me/password',
+        authMiddleware,
+        async (req: Request, res: Response) => {
+            const { currentPassword, newPassword } = req.body;
+            if (!currentPassword || !newPassword) {
+                res.status(400).json({ error: 'currentPassword and newPassword are required' });
+                return;
+            }
+            if (newPassword.length < 8) {
+                res.status(400).json({ error: 'Password must be at least 8 characters' });
+                return;
+            }
+            try {
+                await userService.changePassword(
+                    dataDir,
+                    (req as any).userId,
+                    currentPassword,
+                    newPassword
+                );
+                res.json({ ok: true });
+            } catch (err: any) {
+                if (err.message === 'Current password is incorrect') {
+                    res.status(403).json({ error: err.message });
+                    return;
+                }
+                if (err.message === 'No password set') {
+                    res.status(400).json({ error: err.message });
+                    return;
+                }
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        }
+    );
+
     // OAuth config (tells frontend which providers are available)
     router.get('/oauth-config', (_req: Request, res: Response) => {
         res.json({
