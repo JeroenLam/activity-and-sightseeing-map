@@ -8,7 +8,6 @@ import {
     detectColumnMap,
 } from '../utils/csvParser';
 import https from 'https';
-import http from 'http';
 
 export function createLocationsRouter(dataDir: string): Router {
     const router = Router();
@@ -270,10 +269,50 @@ function sleep(ms: number): Promise<void> {
 }
 
 function geocode(query: string): Promise<{ lat: number; lng: number }> {
+    return geocodeNominatim(query).catch(() => geocodePhoton(query));
+}
+
+function geocodeNominatim(query: string): Promise<{ lat: number; lng: number }> {
     const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
     return new Promise((resolve, reject) => {
-        const client = url.startsWith('https') ? https : http;
-        client
+        https
+            .get(
+                url,
+                {
+                    headers: {
+                        'User-Agent': 'ActiviteitenMap/1.0',
+                        Accept: 'application/json',
+                    },
+                },
+                (resp) => {
+                    if (resp.statusCode && resp.statusCode === 429) {
+                        return reject(new Error('Rate limited'));
+                    }
+                    let data = '';
+                    resp.on('data', (chunk) => (data += chunk));
+                    resp.on('end', () => {
+                        try {
+                            const results = JSON.parse(data);
+                            if (results.length === 0)
+                                return reject(new Error('No results found'));
+                            resolve({
+                                lat: parseFloat(results[0].lat),
+                                lng: parseFloat(results[0].lon),
+                            });
+                        } catch (err) {
+                            reject(err);
+                        }
+                    });
+                }
+            )
+            .on('error', reject);
+    });
+}
+
+function geocodePhoton(query: string): Promise<{ lat: number; lng: number }> {
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`;
+    return new Promise((resolve, reject) => {
+        https
             .get(
                 url,
                 {
@@ -287,13 +326,12 @@ function geocode(query: string): Promise<{ lat: number; lng: number }> {
                     resp.on('data', (chunk) => (data += chunk));
                     resp.on('end', () => {
                         try {
-                            const results = JSON.parse(data);
-                            if (results.length === 0)
+                            const result = JSON.parse(data);
+                            const features = result?.features;
+                            if (!features || features.length === 0)
                                 return reject(new Error('No results found'));
-                            resolve({
-                                lat: parseFloat(results[0].lat),
-                                lng: parseFloat(results[0].lon),
-                            });
+                            const [lng, lat] = features[0].geometry.coordinates;
+                            resolve({ lat, lng });
                         } catch (err) {
                             reject(err);
                         }
