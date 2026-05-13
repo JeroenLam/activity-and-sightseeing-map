@@ -20,16 +20,16 @@ A full-stack web application for tracking visited and unvisited activities, muse
 
 ## Tech Stack
 
-| Layer       | Technology                                       |
-| ----------- | ------------------------------------------------ |
-| Frontend    | Vue 3 (Composition API), TypeScript, Vite, Pinia |
-| Map         | Leaflet + OpenStreetMap / CartoDB tiles           |
-| Backend     | Express 4, TypeScript, Passport.js, JWT           |
-| Geocoding   | Nominatim (primary) + Photon/Komoot (fallback)    |
-| Storage     | JSON files (per-user directories)                 |
-| i18n        | vue-i18n 10                                       |
-| Testing     | Jest + supertest (server), Vitest (client)        |
-| Deployment  | Docker (Node 20 Alpine, multi-stage build)        |
+| Layer      | Technology                                       |
+| ---------- | ------------------------------------------------ |
+| Frontend   | Vue 3 (Composition API), TypeScript, Vite, Pinia |
+| Map        | Leaflet + OpenStreetMap / CartoDB tiles          |
+| Backend    | Express 4, TypeScript, Passport.js, JWT          |
+| Geocoding  | Nominatim (primary) + Photon/Komoot (fallback)   |
+| Storage    | JSON files (per-user directories)                |
+| i18n       | vue-i18n 10                                      |
+| Testing    | Jest + supertest (server), Vitest (client)       |
+| Deployment | Docker (Node 20 Alpine, multi-stage build)       |
 
 ## Quick Start
 
@@ -64,17 +64,17 @@ The app is then available at `http://localhost:3000`.
 
 ### Environment Variables
 
-| Variable               | Default                        | Description                          |
-| ---------------------- | ------------------------------ | ------------------------------------ |
-| `PORT`                 | `3000`                         | Server port                          |
-| `DATA_DIR`             | `./data`                       | Directory for JSON data files        |
-| `JWT_SECRET`           | (required)                     | Secret for signing JWT tokens        |
-| `JWT_EXPIRY`           | `7d`                           | JWT token expiry duration            |
-| `GOOGLE_CLIENT_ID`     | _(empty = disabled)_           | Google OAuth client ID               |
-| `GOOGLE_CLIENT_SECRET` | _(empty = disabled)_           | Google OAuth client secret           |
-| `GITHUB_CLIENT_ID`     | _(empty = disabled)_           | GitHub OAuth client ID               |
-| `GITHUB_CLIENT_SECRET` | _(empty = disabled)_           | GitHub OAuth client secret           |
-| `OAUTH_CALLBACK_URL`   | `http://localhost:3000`        | Base URL for OAuth callbacks         |
+| Variable               | Default                 | Description                   |
+| ---------------------- | ----------------------- | ----------------------------- |
+| `PORT`                 | `3000`                  | Server port                   |
+| `DATA_DIR`             | `./data`                | Directory for JSON data files |
+| `JWT_SECRET`           | (required)              | Secret for signing JWT tokens |
+| `JWT_EXPIRY`           | `7d`                    | JWT token expiry duration     |
+| `GOOGLE_CLIENT_ID`     | _(empty = disabled)_    | Google OAuth client ID        |
+| `GOOGLE_CLIENT_SECRET` | _(empty = disabled)_    | Google OAuth client secret    |
+| `GITHUB_CLIENT_ID`     | _(empty = disabled)_    | GitHub OAuth client ID        |
+| `GITHUB_CLIENT_SECRET` | _(empty = disabled)_    | GitHub OAuth client secret    |
+| `OAUTH_CALLBACK_URL`   | `http://localhost:3000` | Base URL for OAuth callbacks  |
 
 ## Testing
 
