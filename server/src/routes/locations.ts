@@ -179,23 +179,25 @@ export function createLocationsRouter(dataDir: string): Router {
                         typeMap.set(parsed.type.toLowerCase(), typeId);
                     }
 
-                    // Geocode
-                    let lat = 0,
-                        lng = 0;
+                    // Geocode only if lat/lng not provided in CSV
+                    let lat = parsed.latitude ?? 0;
+                    let lng = parsed.longitude ?? 0;
                     let rowStatus = 'ok';
-                    try {
-                        const coords = await geocode(
-                            `${parsed.name}, ${parsed.city}, ${parsed.country}`
-                        );
-                        lat = coords.lat;
-                        lng = coords.lng;
-                        // Rate limit: 1 request per second
-                        await sleep(1100);
-                    } catch {
-                        results.errors.push(
-                            `Row ${i + 1} (${parsed.name}): geocoding failed`
-                        );
-                        rowStatus = 'error';
+                    if (!lat || !lng) {
+                        try {
+                            const coords = await geocode(
+                                `${parsed.name}, ${parsed.city}, ${parsed.country}`
+                            );
+                            lat = coords.lat;
+                            lng = coords.lng;
+                            // Rate limit: 1 request per second
+                            await sleep(1100);
+                        } catch {
+                            results.errors.push(
+                                `Row ${i + 1} (${parsed.name}): geocoding failed`
+                            );
+                            rowStatus = 'error';
+                        }
                     }
 
                     locationsToCreate.push({

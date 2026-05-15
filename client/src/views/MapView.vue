@@ -55,14 +55,76 @@
         :markerSize="markerSize"
         :darkMode="themeStore.dark"
         @addYear="onAddYear"
+        @editLocation="onEditLocation"
         @visibleLocationsChanged="onVisibleLocationsChanged"
       />
+    </div>
+
+    <!-- Edit location dialog -->
+    <div v-if="editing" class="overlay" @click.self="editing = null">
+      <div class="edit-dialog">
+        <h3>{{ t('manage.editTitle') }}</h3>
+        <div class="edit-form">
+          <label>{{ t('location.name') }}</label>
+          <input v-model="editForm.name" type="text" />
+
+          <label>{{ t('location.type') }}</label>
+          <select v-model="editForm.type">
+            <option v-for="lt in typesStore.types" :key="lt.id" :value="lt.id">{{ lt.name }}</option>
+          </select>
+
+          <label>{{ t('location.city') }}</label>
+          <input v-model="editForm.city" type="text" />
+
+          <label>{{ t('location.country') }}</label>
+          <input v-model="editForm.country" type="text" />
+
+          <label>{{ t('location.link') }}</label>
+          <input v-model="editForm.link" type="url" />
+
+          <label>{{ t('location.latitude') }}</label>
+          <input v-model.number="editForm.latitude" type="number" step="any" />
+
+          <label>{{ t('location.longitude') }}</label>
+          <input v-model.number="editForm.longitude" type="number" step="any" />
+
+          <label>{{ t('location.visitedYears') }}</label>
+          <div class="years-edit">
+            <div v-for="(year, i) in editForm.visitedYears" :key="i" class="year-chip">
+              <span>{{ year }}</span>
+              <button class="chip-remove" @click="editForm.visitedYears.splice(i, 1)">×</button>
+            </div>
+            <div class="year-add-row">
+              <input
+                v-model.number="editNewYear"
+                type="number"
+                min="1900"
+                :max="currentYear"
+                class="year-input"
+              />
+              <button class="btn-ghost btn-small" @click="addEditYear">+</button>
+            </div>
+          </div>
+
+          <label class="checkbox-label">
+            <input v-model="editForm.visitedUnknownYear" type="checkbox" />
+            {{ t('location.visitedUnknownYear') }}
+          </label>
+        </div>
+
+        <div class="dialog-actions">
+          <button class="btn-ghost" @click="editing = null">{{ t('manage.cancel') }}</button>
+          <button class="btn-primary" :disabled="saving" @click="saveEdit">
+            {{ saving ? '...' : t('location.save') }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useLocationsStore } from '@/stores/locations';
 import { useTypesStore } from '@/stores/types';
@@ -85,7 +147,7 @@ const yearMax = ref(absoluteMax);
 const viewMode = ref<'all' | 'visited' | 'unvisited'>('all');
 const visitedOpacity = ref(100);
 const unvisitedOpacity = ref(100);
-const markerSize = ref(8);
+const markerSize = ref(10);
 const disabledTypes = ref(new Set<string>());
 const visibleLocations = ref<Location[]>([]);
 
@@ -114,6 +176,64 @@ async function onAddYear(locationId: string, year: number) {
 
 function onVisibleLocationsChanged(locs: Location[]) {
   visibleLocations.value = locs;
+}
+
+// --- Edit location ---
+const editing = ref<Location | null>(null);
+const saving = ref(false);
+const editNewYear = ref(currentYear);
+const editForm = reactive({
+  name: '',
+  type: '',
+  city: '',
+  country: '',
+  link: '' as string | null,
+  latitude: 0,
+  longitude: 0,
+  visitedYears: [] as number[],
+  visitedUnknownYear: false,
+});
+
+function onEditLocation(loc: Location) {
+  editing.value = loc;
+  editForm.name = loc.name;
+  editForm.type = loc.type;
+  editForm.city = loc.city;
+  editForm.country = loc.country;
+  editForm.link = loc.link || '';
+  editForm.latitude = loc.latitude;
+  editForm.longitude = loc.longitude;
+  editForm.visitedYears = [...loc.visitedYears];
+  editForm.visitedUnknownYear = loc.visitedUnknownYear;
+  editNewYear.value = currentYear;
+}
+
+function addEditYear() {
+  if (editNewYear.value && !editForm.visitedYears.includes(editNewYear.value)) {
+    editForm.visitedYears.push(editNewYear.value);
+    editForm.visitedYears.sort((a, b) => a - b);
+  }
+}
+
+async function saveEdit() {
+  if (!editing.value) return;
+  saving.value = true;
+  try {
+    await locationsStore.updateLocation(editing.value.id, {
+      name: editForm.name,
+      type: editForm.type,
+      city: editForm.city,
+      country: editForm.country,
+      link: editForm.link || null,
+      latitude: editForm.latitude,
+      longitude: editForm.longitude,
+      visitedYears: editForm.visitedYears,
+      visitedUnknownYear: editForm.visitedUnknownYear,
+    });
+    editing.value = null;
+  } finally {
+    saving.value = false;
+  }
 }
 
 function getTypeColor(typeId: string): string {
@@ -301,5 +421,142 @@ const filteredLocations = computed(() => {
 .visible-item-meta {
   font-size: 0.7rem;
   color: var(--color-text-secondary);
+}
+
+/* Edit dialog styles */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.edit-dialog {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 95%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.edit-dialog h3 {
+  margin: 0 0 1rem;
+}
+
+.edit-form {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.edit-form label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.edit-form input[type="text"],
+.edit-form input[type="url"],
+.edit-form input[type="number"],
+.edit-form select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.years-edit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.year-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  background: var(--color-primary-light, #e0e7ff);
+  border-radius: 12px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.chip-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  color: var(--color-text-secondary);
+}
+
+.chip-remove:hover {
+  color: var(--color-error);
+}
+
+.year-add-row {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.year-input {
+  width: 70px;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+.checkbox-label {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  padding: 0.5rem 1rem;
+  background: var(--color-primary, #4f46e5);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
 }
 </style>

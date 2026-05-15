@@ -12,7 +12,7 @@
     <!-- Types list -->
     <div class="types-list">
       <div
-        v-for="lt in typesStore.types"
+        v-for="lt in sortedTypes"
         :key="lt.id"
         class="type-row"
       >
@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTypesStore } from '@/stores/types';
 import { useLocationsStore } from '@/stores/locations';
@@ -46,6 +46,10 @@ import type { LocationType } from '@/types';
 const { t } = useI18n();
 const typesStore = useTypesStore();
 const locationsStore = useLocationsStore();
+
+const sortedTypes = computed(() =>
+  [...typesStore.types].sort((a, b) => a.name.localeCompare(b.name))
+);
 
 const newName = ref('');
 const newColor = ref('#9E9E9E');

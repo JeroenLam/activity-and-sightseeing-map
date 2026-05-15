@@ -20,6 +20,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   markerClick: [location: Location];
   addYear: [locationId: string, year: number];
+  editLocation: [location: Location];
   visibleLocationsChanged: [locations: Location[]];
 }>();
 
@@ -164,15 +165,27 @@ function renderMarkers() {
         ? '?'
         : '-';
 
-    const linkHtml = loc.link
-      ? `<a href="${escapeHtml(loc.link)}" target="_blank" rel="noopener noreferrer">🔗 Website</a>`
-      : '';
+    let linkHtml = '';
+    if (loc.link) {
+      const url = /^https?:\/\//i.test(loc.link)
+        ? loc.link
+        : /^[^\s]+\.[^\s]+$/.test(loc.link)
+          ? `https://${loc.link}`
+          : null;
+      linkHtml = url
+        ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">🔗 Website</a>`
+        : `<span>🔗 ${escapeHtml(loc.link)}</span>`;
+    }
 
+    const editBtnId = `edit-loc-${loc.id}`;
     const addYearId = `add-year-${loc.id}`;
     const addYearInputId = `year-input-${loc.id}`;
 
     const popupContent = `<div class="marker-popup">
-        <strong>${escapeHtml(loc.name)}</strong><br/>
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <strong>${escapeHtml(loc.name)}</strong>
+          <button id="${editBtnId}" title="Edit" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:0 0 0 8px;line-height:1">⚙️</button>
+        </div>
         <span style="color:${color}">●</span> ${escapeHtml(typeName)}<br/>
         📍 ${escapeHtml(loc.city)}${loc.country ? ', ' + escapeHtml(loc.country) : ''}<br/>
         📅 ${yearsStr}<br/>
@@ -191,6 +204,13 @@ function renderMarkers() {
     marker.bindPopup(popup);
 
     marker.on('popupopen', () => {
+      const editBtn = document.getElementById(editBtnId);
+      if (editBtn) {
+        editBtn.addEventListener('click', () => {
+          emit('editLocation', loc);
+          marker.closePopup();
+        });
+      }
       const btn = document.getElementById(addYearId);
       const input = document.getElementById(addYearInputId) as HTMLInputElement | null;
       if (btn && input) {

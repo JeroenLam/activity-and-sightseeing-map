@@ -113,6 +113,8 @@ const columnMap = reactive<Record<string, string>>({
   country: '',
   link: '',
   visited: '',
+  latitude: '',
+  longitude: '',
 });
 
 const mappingFields = computed(() => [
@@ -122,6 +124,8 @@ const mappingFields = computed(() => [
   { key: 'country', label: t('location.country') },
   { key: 'link', label: t('location.link') },
   { key: 'visited', label: t('location.visitedYears') },
+  { key: 'latitude', label: t('location.latitude') },
+  { key: 'longitude', label: t('location.longitude') },
 ]);
 
 async function processFile(file: File) {

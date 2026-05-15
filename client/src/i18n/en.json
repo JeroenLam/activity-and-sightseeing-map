@@ -121,7 +121,8 @@
         "noCoordinates": "No coordinates — not visible on map",
         "retry": "Retry",
         "retryAll": "Retry all",
-        "retrying": "Retrying..."
+        "retrying": "Retrying...",
+        "export": "Export CSV"
     },
     "language": {
         "nl": "Nederlands",

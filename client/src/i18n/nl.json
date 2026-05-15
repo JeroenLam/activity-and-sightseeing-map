@@ -121,7 +121,8 @@
         "noCoordinates": "Geen coördinaten — niet zichtbaar op de kaart",
         "retry": "Opnieuw",
         "retryAll": "Alles opnieuw proberen",
-        "retrying": "Bezig..."
+        "retrying": "Bezig...",
+        "export": "Exporteer CSV"
     },
     "language": {
         "nl": "Nederlands",

@@ -12,6 +12,8 @@ export interface ParsedCsvLocation {
     link: string;
     visitedYears: number[];
     visitedUnknownYear: boolean;
+    latitude: number | null;
+    longitude: number | null;
 }
 
 export function parseCsvBuffer(buffer: Buffer | string): CsvRow[] {
@@ -50,6 +52,8 @@ export function mapCsvRow(
         link: raw('link'),
         visitedYears,
         visitedUnknownYear,
+        latitude: raw('latitude') ? parseFloat(raw('latitude')) || null : null,
+        longitude: raw('longitude') ? parseFloat(raw('longitude')) || null : null,
     };
 }
 
@@ -64,6 +68,8 @@ export function detectColumnMap(headers: string[]): Record<string, string> {
         ['country', /^(land|country)$/],
         ['link', /^(link|url|website)$/],
         ['visited', /^(geweest|visited|bezocht|jaar|year)$/],
+        ['latitude', /^(latitude|lat|breedtegraad)$/],
+        ['longitude', /^(longitude|lng|lon|lengtegraad)$/],
     ];
 
     for (const [field, regex] of patterns) {

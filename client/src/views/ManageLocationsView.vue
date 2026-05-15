@@ -1,6 +1,11 @@
 <template>
   <div class="page-container">
-    <h2>{{ t('manage.title') }}</h2>
+    <div class="page-header">
+      <h2>{{ t('manage.title') }}</h2>
+      <button v-if="locationsStore.locations.length > 0" class="btn-primary btn-small" @click="exportCsv">
+        📥 {{ t('manage.export') }}
+      </button>
+    </div>
 
     <div v-if="locationsStore.loading" class="loading">{{ t('app.loading') }}</div>
 
@@ -199,7 +204,7 @@ const retryingAll = ref(false);
 
 // Sort state
 type SortKey = 'name' | 'type' | 'city' | 'country' | 'years' | 'status';
-const sortKey = ref<SortKey>('status');
+const sortKey = ref<SortKey>('name');
 const sortAsc = ref(true);
 
 function toggleSort(key: SortKey) {
@@ -303,6 +308,35 @@ function getTypeColor(typeId: string): string {
   return typesStore.getTypeById(typeId)?.color ?? '#9E9E9E';
 }
 
+// --- Export ---
+function exportCsv() {
+  const header = ['name', 'type', 'city', 'country', 'link', 'visited', 'latitude', 'longitude'];
+  const rows = locationsStore.locations.map((loc) => {
+    const typeName = getTypeName(loc.type);
+    const visited = loc.visitedUnknownYear
+      ? '-'
+      : loc.visitedYears.join(', ');
+    return [
+      loc.name,
+      typeName,
+      loc.city,
+      loc.country,
+      loc.link ?? '',
+      visited,
+      String(loc.latitude),
+      String(loc.longitude),
+    ].map((v) => `"${v.replace(/"/g, '""')}"`).join(',');
+  });
+  const csv = [header.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'locations.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // --- Edit ---
 function openEdit(loc: Location) {
   editing.value = loc;
@@ -396,6 +430,17 @@ async function retryAllGeocode() {
   max-width: 1000px;
   margin: 0 auto;
   padding: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.page-header h2 {
+  margin: 0;
 }
 
 .page-container h2 {
