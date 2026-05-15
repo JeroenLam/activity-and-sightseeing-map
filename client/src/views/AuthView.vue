@@ -26,6 +26,7 @@ onMounted(() => auth.fetchOAuthConfig());
   justify-content: center;
   min-height: calc(100vh - 56px);
   background: var(--color-bg);
+  padding: 1rem;
 }
 
 .auth-card {
@@ -35,5 +36,16 @@ onMounted(() => auth.fetchOAuthConfig());
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 400px;
+}
+
+@media (max-width: 768px) {
+  .auth-page {
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+
+  .auth-card {
+    padding: 1.5rem;
+  }
 }
 </style>

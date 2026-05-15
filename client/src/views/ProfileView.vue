@@ -171,4 +171,19 @@ async function onSubmit() {
   font-size: 0.85rem;
   margin: 0;
 }
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 1rem;
+  }
+
+  .profile-field {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .profile-field label {
+    min-width: unset;
+  }
+}
 </style>

@@ -730,4 +730,55 @@ async function retryAllGeocode() {
 .btn-danger-fill:hover {
   background: #dc2626 !important;
 }
+
+/* === Mobile Responsive === */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 1rem;
+  }
+
+  .page-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .page-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .manage-table th,
+  .manage-table td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .td-name {
+    max-width: 140px;
+  }
+
+  .th-actions {
+    width: 3.5rem;
+  }
+
+  .edit-dialog {
+    max-width: 100%;
+    width: 100%;
+    max-height: 90vh;
+    border-radius: 12px 12px 0 0;
+    margin-top: auto;
+  }
+
+  .edit-form {
+    grid-template-columns: 1fr;
+  }
+
+  .overlay {
+    align-items: flex-end;
+  }
+
+  .geocode-banner {
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+  }
+}
 </style>

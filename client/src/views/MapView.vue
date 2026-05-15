@@ -1,6 +1,9 @@
 <template>
   <div class="map-view">
-    <div class="map-sidebar">
+    <button class="mobile-sidebar-toggle" @click="sidebarOpen = !sidebarOpen">
+      {{ sidebarOpen ? '✕' : '☰' }} {{ t('map.filters') }}
+    </button>
+    <div class="map-sidebar" :class="{ open: sidebarOpen }">
       <FilterPanel
         v-model:yearMin="yearMin"
         v-model:yearMax="yearMax"
@@ -41,6 +44,13 @@
           </div>
         </div>
       </div>
+      <!-- Progress (desktop: bottom of sidebar) -->
+      <div v-if="locationsStore.locations.length > 0" class="progress-section">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" :style="{ width: visitedPct + '%' }"></div>
+        </div>
+        <span class="progress-label">{{ t('progress.visited', { pct: visitedPct }) }}</span>
+      </div>
     </div>
     <div class="map-main">
       <p v-if="filteredLocations.length === 0 && !locationsStore.loading" class="no-locations">
@@ -58,6 +68,13 @@
         @editLocation="onEditLocation"
         @visibleLocationsChanged="onVisibleLocationsChanged"
       />
+      <!-- Progress (mobile: bottom of map) -->
+      <div v-if="locationsStore.locations.length > 0" class="progress-section-mobile">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" :style="{ width: visitedPct + '%' }"></div>
+        </div>
+        <span class="progress-label">{{ t('progress.visited', { pct: visitedPct }) }}</span>
+      </div>
     </div>
 
     <!-- Edit location dialog -->
@@ -150,6 +167,16 @@ const unvisitedOpacity = ref(100);
 const markerSize = ref(10);
 const disabledTypes = ref(new Set<string>());
 const visibleLocations = ref<Location[]>([]);
+const sidebarOpen = ref(false);
+
+const visitedPct = computed(() => {
+  const total = locationsStore.locations.length;
+  if (total === 0) return 0;
+  const visited = locationsStore.locations.filter(
+    (l) => l.visitedYears.length > 0 || l.visitedUnknownYear
+  ).length;
+  return Math.round((visited / total) * 100);
+});
 
 function toggleType(typeId: string) {
   const s = new Set(disabledTypes.value);
@@ -558,5 +585,133 @@ const filteredLocations = computed(() => {
 .btn-small {
   padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
+}
+
+.mobile-sidebar-toggle {
+  display: none;
+}
+
+/* Progress section */
+.progress-section {
+  margin-top: auto;
+  padding: 0.75rem;
+  background: var(--color-surface);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progress-section-mobile {
+  display: none;
+}
+
+.progress-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* === Mobile Responsive === */
+@media (max-width: 768px) {
+  .map-view {
+    flex-direction: column;
+    position: relative;
+  }
+
+  .mobile-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 1100;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .map-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60vh;
+    z-index: 1050;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+    padding-top: 3.5rem;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .map-sidebar.open {
+    transform: translateY(0);
+  }
+
+  .map-main {
+    height: calc(100vh - 56px);
+    flex: none;
+  }
+
+  .progress-section {
+    display: none;
+  }
+
+  .progress-section-mobile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    background: var(--color-surface);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    z-index: 600;
+  }
+
+  .edit-dialog {
+    max-width: 100%;
+    width: 100%;
+    max-height: 90vh;
+    border-radius: 12px 12px 0 0;
+    margin-top: auto;
+  }
+
+  .edit-form {
+    grid-template-columns: 1fr;
+  }
+
+  .overlay {
+    align-items: flex-end;
+  }
 }
 </style>
