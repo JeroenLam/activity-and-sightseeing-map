@@ -114,6 +114,22 @@ cd client && npm test
 └── README.md
 ```
 
-## License
+## CSV Import Format
 
-Private project.
+The import accepts CSV files with the following columns. Only `name` is required; all other columns are optional.
+
+| Column      | Description                                                        | Example                 |
+| ----------- | ------------------------------------------------------------------ | ----------------------- |
+| `name`      | Name of the location (required)                                    | `Artis Zoo`             |
+| `type`      | Category/type name (created automatically if new)                  | `Zoo`                   |
+| `city`      | City name                                                          | `Amsterdam`             |
+| `country`   | Country name                                                       | `Netherlands`           |
+| `link`      | URL or website description                                         | `https://www.artis.nl/` |
+| `visited`   | Comma-separated years visited, `-` for unknown year, empty if none | `2019, 2022`            |
+| `latitude`  | Latitude (skips geocoding if provided together with longitude)     | `52.3660`               |
+| `longitude` | Longitude (skips geocoding if provided together with latitude)     | `4.9163`                |
+
+**Notes:**
+- Column headers are matched case-insensitively. Dutch names are also recognized (e.g. `naam`, `plaats`, `land`, `geweest`, `breedtegraad`, `lengtegraad`).
+- If `latitude` and `longitude` are not provided, coordinates are automatically geocoded using Nominatim/Photon.
+- Import is **additive** — existing locations are not modified or replaced.
