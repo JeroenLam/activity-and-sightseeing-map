@@ -169,4 +169,25 @@ async function onDelete(lt: LocationType) {
 .btn-danger:hover {
   color: var(--color-error) !important;
 }
+
+@media (max-width: 768px) {
+  .type-add-form {
+    flex-wrap: wrap;
+  }
+
+  .type-add-form input[type='text'] {
+    max-width: 100%;
+    flex-basis: 100%;
+  }
+
+  .type-row {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .type-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
 </style>

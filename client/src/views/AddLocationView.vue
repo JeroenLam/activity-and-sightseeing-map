@@ -19,4 +19,10 @@ onMounted(() => typesStore.fetchTypes());
   margin: 0 auto;
   padding: 1.5rem;
 }
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 1rem;
+  }
+}
 </style>

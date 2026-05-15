@@ -227,4 +227,125 @@ describe('API Routes', () => {
             expect(res.status).toBe(401);
         });
     });
+
+    describe('Auth - password change', () => {
+        beforeEach(async () => {
+            await registerAndLogin();
+        });
+
+        it('PUT /api/auth/me/password - changes password', async () => {
+            const res = await agent.put('/api/auth/me/password').send({
+                currentPassword: 'password123',
+                newPassword: 'newpassword456',
+            });
+            expect(res.status).toBe(200);
+
+            // Verify can login with new password
+            await agent.post('/api/auth/logout');
+            const loginRes = await agent.post('/api/auth/login').send({
+                email: 'test@test.com',
+                password: 'newpassword456',
+            });
+            expect(loginRes.status).toBe(200);
+        });
+
+        it('PUT /api/auth/me/password - rejects wrong current password', async () => {
+            const res = await agent.put('/api/auth/me/password').send({
+                currentPassword: 'wrongpassword',
+                newPassword: 'newpassword456',
+            });
+            expect(res.status).toBe(403);
+        });
+
+        it('PUT /api/auth/me/password - requires authentication', async () => {
+            const res = await request(app).put('/api/auth/me/password').send({
+                currentPassword: 'password123',
+                newPassword: 'newpassword456',
+            });
+            expect(res.status).toBe(401);
+        });
+    });
+
+    describe('Auth - language preference', () => {
+        beforeEach(async () => {
+            await registerAndLogin();
+        });
+
+        it('PUT /api/auth/me/language - updates language', async () => {
+            const res = await agent.put('/api/auth/me/language').send({
+                language: 'en',
+            });
+            expect(res.status).toBe(200);
+
+            // Verify it persisted
+            const meRes = await agent.get('/api/auth/me');
+            expect(meRes.body.preferredLanguage).toBe('en');
+        });
+
+        it('PUT /api/auth/me/language - rejects invalid language', async () => {
+            const res = await agent.put('/api/auth/me/language').send({
+                language: 'fr',
+            });
+            expect(res.status).toBe(400);
+        });
+    });
+
+    describe('Locations - geocode', () => {
+        beforeEach(async () => {
+            await registerAndLogin();
+        });
+
+        it('POST /api/locations/:id/geocode - returns 404 for non-existent', async () => {
+            const res = await agent.post('/api/locations/nonexistent/geocode');
+            expect(res.status).toBe(404);
+        });
+    });
+
+    describe('Locations - update visited years', () => {
+        beforeEach(async () => {
+            await registerAndLogin();
+        });
+
+        it('PUT /api/locations/:id - updates visitedYears', async () => {
+            const created = await agent.post('/api/locations').send({
+                name: 'Artis',
+                type: 'zoo',
+                latitude: 52.366,
+                longitude: 4.916,
+                visitedYears: [2024],
+            });
+            const res = await agent
+                .put(`/api/locations/${created.body.id}`)
+                .send({ visitedYears: [2024, 2025] });
+            expect(res.status).toBe(200);
+            expect(res.body.visitedYears).toEqual([2024, 2025]);
+        });
+
+        it('PUT /api/locations/:id - updates visitedUnknownYear', async () => {
+            const created = await agent.post('/api/locations').send({
+                name: 'Mystery',
+                type: 'museum',
+                latitude: 52.0,
+                longitude: 4.0,
+                visitedUnknownYear: false,
+            });
+            const res = await agent
+                .put(`/api/locations/${created.body.id}`)
+                .send({ visitedUnknownYear: true });
+            expect(res.status).toBe(200);
+            expect(res.body.visitedUnknownYear).toBe(true);
+        });
+
+        it('PUT /api/locations/:id - returns 404 for non-existent', async () => {
+            const res = await agent
+                .put('/api/locations/nonexistent-id')
+                .send({ name: 'X' });
+            expect(res.status).toBe(404);
+        });
+
+        it('DELETE /api/locations/:id - returns 404 for non-existent', async () => {
+            const res = await agent.delete('/api/locations/nonexistent-id');
+            expect(res.status).toBe(404);
+        });
+    });
 });

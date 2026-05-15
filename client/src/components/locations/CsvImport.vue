@@ -324,4 +324,24 @@ function reset() {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+@media (max-width: 768px) {
+  .upload-area {
+    padding: 2rem 1rem;
+  }
+
+  .mapping-grid {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .mapping-grid label {
+    margin-top: 0.35rem;
+  }
+
+  .results-summary {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
 </style>

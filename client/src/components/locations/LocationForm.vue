@@ -290,4 +290,14 @@ async function onSubmit() {
   font-weight: 500;
   margin-top: 0.75rem;
 }
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .location-form {
+    max-width: 100%;
+  }
+}
 </style>

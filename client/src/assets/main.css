@@ -250,3 +250,31 @@ html.dark .leaflet-popup-tip {
 .marker-popup a {
     color: var(--color-primary);
 }
+
+/* === Mobile Utilities === */
+@media (max-width: 768px) {
+    html {
+        font-size: 15px;
+    }
+
+    input[type='text'],
+    input[type='email'],
+    input[type='password'],
+    input[type='number'],
+    input[type='url'],
+    select,
+    textarea {
+        font-size: 16px;
+        /* Prevents iOS zoom on focus */
+    }
+
+    .btn-primary {
+        padding: 0.65rem 1.25rem;
+        min-height: 44px;
+    }
+
+    .btn-ghost {
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+    }
+}

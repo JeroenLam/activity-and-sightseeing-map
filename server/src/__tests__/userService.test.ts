@@ -134,4 +134,68 @@ describe('userService', () => {
             expect(pub.oauthProviders[0]).not.toHaveProperty('providerId');
         });
     });
+
+    describe('updatePreferredLanguage', () => {
+        it('should update user language preference', async () => {
+            const user = await userService.createLocalUser(
+                dataDir, 'lang@test.com', 'pass1234', 'Lang User'
+            );
+            expect(user.preferredLanguage).toBe('nl');
+
+            await userService.updatePreferredLanguage(dataDir, user.id, 'en');
+
+            const found = await userService.findById(dataDir, user.id);
+            expect(found!.preferredLanguage).toBe('en');
+        });
+
+        it('should do nothing for non-existent user', async () => {
+            // Should not throw
+            await userService.updatePreferredLanguage(dataDir, 'nonexistent', 'en');
+        });
+    });
+
+    describe('changePassword', () => {
+        it('should change password with correct current password', async () => {
+            const user = await userService.createLocalUser(
+                dataDir, 'chpw@test.com', 'oldpass123', 'ChPw'
+            );
+
+            await userService.changePassword(dataDir, user.id, 'oldpass123', 'newpass456');
+
+            // Verify new password works
+            const updated = await userService.findById(dataDir, user.id);
+            const valid = await userService.verifyPassword(updated!, 'newpass456');
+            expect(valid).toBe(true);
+
+            // Verify old password no longer works
+            const invalid = await userService.verifyPassword(updated!, 'oldpass123');
+            expect(invalid).toBe(false);
+        });
+
+        it('should reject incorrect current password', async () => {
+            const user = await userService.createLocalUser(
+                dataDir, 'chpw2@test.com', 'correct123', 'ChPw2'
+            );
+
+            await expect(
+                userService.changePassword(dataDir, user.id, 'wrong', 'newpass456')
+            ).rejects.toThrow('Current password is incorrect');
+        });
+
+        it('should reject for non-existent user', async () => {
+            await expect(
+                userService.changePassword(dataDir, 'nobody', 'a', 'b')
+            ).rejects.toThrow('User not found');
+        });
+
+        it('should reject for OAuth-only user (no password set)', async () => {
+            const user = await userService.createOAuthUser(
+                dataDir, 'google', 'g-pw', 'oauth-pw@test.com', 'OAuth PW'
+            );
+
+            await expect(
+                userService.changePassword(dataDir, user.id, 'anything', 'new')
+            ).rejects.toThrow('No password set');
+        });
+    });
 });
