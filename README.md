@@ -1,4 +1,4 @@
-# Activiteiten & Bezienswaardigheden Map
+# Activity & Sightseeing Map
 
 A full-stack web application for tracking visited and unvisited activities, museums, and sightseeing locations on an interactive map.
 
