@@ -74,7 +74,15 @@
         "deleteConfirm": "Weet je zeker dat je deze locatie wilt verwijderen?",
         "saved": "Locatie opgeslagen!",
         "addYear": "Jaar toevoegen",
-        "removeYear": "Verwijderen"
+        "removeYear": "Verwijderen",
+        "rating": "Beoordeling",
+        "ratingHint": "Beoordeel van 1 tot 5 sterren",
+        "note": "Notitie",
+        "notePlaceholder": "Voeg een notitie toe over deze locatie...",
+        "useDeviceLocation": "Gebruik mijn locatie",
+        "pinOnMap": "Plaats een pin op de kaart om coördinaten in te stellen",
+        "locating": "Lokaliseren...",
+        "locationError": "Kon je locatie niet ophalen"
     },
     "types": {
         "title": "Locatie-types beheren",

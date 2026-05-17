@@ -84,6 +84,8 @@ describe('Stores', () => {
                     longitude: 4.916,
                     visitedYears: [2024],
                     visitedUnknownYear: false,
+                    rating: null,
+                    note: null,
                     createdAt: '2024-01-01',
                     updatedAt: '2024-01-01',
                 },
@@ -109,6 +111,8 @@ describe('Stores', () => {
                 longitude: 4.912,
                 visitedYears: [],
                 visitedUnknownYear: false,
+                rating: null,
+                note: null,
                 createdAt: '2024-01-01',
                 updatedAt: '2024-01-01',
             };
@@ -126,6 +130,8 @@ describe('Stores', () => {
                 longitude: 4.912,
                 visitedYears: [],
                 visitedUnknownYear: false,
+                rating: null,
+                note: null,
             });
 
             expect(result.name).toBe('Nemo');
@@ -145,6 +151,8 @@ describe('Stores', () => {
                     longitude: 4.916,
                     visitedYears: [],
                     visitedUnknownYear: false,
+                    rating: null,
+                    note: null,
                     createdAt: '2024-01-01',
                     updatedAt: '2024-01-01',
                 },

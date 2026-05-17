@@ -60,9 +60,49 @@
       </div>
     </div>
 
+    <!-- Map pin placement -->
+    <div class="field">
+      <div class="pin-map-container">
+        <div ref="pinMapEl" class="pin-map"></div>
+        <p class="hint">{{ t('location.pinOnMap') }}</p>
+        <button type="button" class="btn-device-location" @click="useDeviceLocation" :disabled="locating">
+          📍 {{ locating ? t('location.locating') : t('location.useDeviceLocation') }}
+        </button>
+        <p v-if="locationError" class="error-msg">{{ locationError }}</p>
+      </div>
+    </div>
+
     <div class="field">
       <label>{{ t('location.link') }}</label>
       <input v-model="form.link" type="url" placeholder="https://..." />
+    </div>
+
+    <!-- Rating -->
+    <div class="field">
+      <label>{{ t('location.rating') }}</label>
+      <div class="star-rating">
+        <button
+          v-for="star in 5"
+          :key="star"
+          type="button"
+          class="star-btn"
+          :class="{ active: form.rating !== null && star <= form.rating }"
+          @click="setRating(star)"
+          :title="String(star)"
+        >★</button>
+        <button v-if="form.rating !== null" type="button" class="clear-rating" @click="form.rating = null">×</button>
+      </div>
+      <p class="hint">{{ t('location.ratingHint') }}</p>
+    </div>
+
+    <!-- Note -->
+    <div class="field">
+      <label>{{ t('location.note') }}</label>
+      <textarea
+        v-model="form.note"
+        rows="3"
+        :placeholder="t('location.notePlaceholder')"
+      ></textarea>
     </div>
 
     <!-- Visited years -->
@@ -95,11 +135,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTypesStore } from '@/stores/types';
 import { useLocationsStore } from '@/stores/locations';
 import { useGeocoding } from '@/composables/useGeocoding';
+import L from 'leaflet';
 
 const { t } = useI18n();
 const typesStore = useTypesStore();
@@ -110,6 +151,11 @@ const searchQuery = ref('');
 const newYear = ref<number | undefined>(undefined);
 const saving = ref(false);
 const successMsg = ref('');
+const locating = ref(false);
+const locationError = ref('');
+const pinMapEl = ref<HTMLDivElement>();
+let pinMap: L.Map | null = null;
+let pinMarker: L.Marker | null = null;
 
 const form = reactive({
   name: '',
@@ -121,7 +167,74 @@ const form = reactive({
   longitude: 0,
   visitedYears: [] as number[],
   visitedUnknownYear: false,
+  rating: null as number | null,
+  note: '',
 });
+
+function setRating(star: number) {
+  form.rating = star;
+}
+
+onMounted(() => {
+  if (!pinMapEl.value) return;
+  pinMap = L.map(pinMapEl.value).setView([52.1, 5.3], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 19,
+  }).addTo(pinMap);
+
+  pinMap.on('click', (e: L.LeafletMouseEvent) => {
+    form.latitude = e.latlng.lat;
+    form.longitude = e.latlng.lng;
+    updatePinMarker(e.latlng.lat, e.latlng.lng);
+  });
+});
+
+onUnmounted(() => {
+  pinMap?.remove();
+  pinMap = null;
+});
+
+function updatePinMarker(lat: number, lng: number) {
+  if (!pinMap) return;
+  if (pinMarker) {
+    pinMarker.setLatLng([lat, lng]);
+  } else {
+    pinMarker = L.marker([lat, lng]).addTo(pinMap);
+  }
+  pinMap.setView([lat, lng], Math.max(pinMap.getZoom(), 13));
+}
+
+watch(
+  () => [form.latitude, form.longitude],
+  ([lat, lng]) => {
+    if (lat && lng && pinMap) {
+      updatePinMarker(lat as number, lng as number);
+    }
+  }
+);
+
+function useDeviceLocation() {
+  if (!navigator.geolocation) {
+    locationError.value = t('location.locationError');
+    return;
+  }
+  locating.value = true;
+  locationError.value = '';
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      form.latitude = position.coords.latitude;
+      form.longitude = position.coords.longitude;
+      updatePinMarker(position.coords.latitude, position.coords.longitude);
+      locating.value = false;
+    },
+    () => {
+      locationError.value = t('location.locationError');
+      locating.value = false;
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
 
 function selectResult(result: any) {
   form.latitude = parseFloat(result.lat);
@@ -155,6 +268,8 @@ async function onSubmit() {
       longitude: form.longitude,
       visitedYears: form.visitedYears,
       visitedUnknownYear: form.visitedUnknownYear,
+      rating: form.rating,
+      note: form.note || null,
     });
     successMsg.value = t('location.saved');
     // Reset form
@@ -167,7 +282,13 @@ async function onSubmit() {
     form.longitude = 0;
     form.visitedYears = [];
     form.visitedUnknownYear = false;
+    form.rating = null;
+    form.note = '';
     searchQuery.value = '';
+    if (pinMarker && pinMap) {
+      pinMap.removeLayer(pinMarker);
+      pinMarker = null;
+    }
   } finally {
     saving.value = false;
   }
@@ -299,5 +420,85 @@ async function onSubmit() {
   .location-form {
     max-width: 100%;
   }
+}
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.star-btn.active {
+  color: #f5a623;
+}
+
+.star-btn:hover {
+  color: #f5a623;
+}
+
+.clear-rating {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  margin-left: 0.5rem;
+}
+
+textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.pin-map-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pin-map {
+  height: 250px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  z-index: 0;
+}
+
+.btn-device-location {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-device-location:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-msg {
+  color: var(--color-error, #e53e3e);
+  font-size: 0.8rem;
+  margin: 0;
 }
 </style>

@@ -56,6 +56,12 @@
               <th class="th-sortable" @click="toggleSort('years')">
                 📅 {{ sortIcon('years') }}
               </th>
+              <th class="th-sortable th-rating" @click="toggleSort('rating')">
+                {{ t('location.rating') }} {{ sortIcon('rating') }}
+              </th>
+              <th class="th-note">
+                {{ t('location.note') }}
+              </th>
               <th class="th-sortable th-status" @click="toggleSort('status')">
                 📍 {{ sortIcon('status') }}
               </th>
@@ -79,6 +85,14 @@
                 <template v-if="loc.visitedYears.length">{{ loc.visitedYears.join(', ') }}</template>
                 <template v-else-if="loc.visitedUnknownYear">?</template>
                 <template v-else>—</template>
+              </td>
+              <td class="td-rating">
+                <span v-if="loc.rating" class="rating-stars">{{ '★'.repeat(loc.rating) }}{{ '☆'.repeat(5 - loc.rating) }}</span>
+                <span v-else class="rating-none">—</span>
+              </td>
+              <td class="td-note">
+                <span v-if="loc.note" class="note-text" :title="loc.note">{{ loc.note }}</span>
+                <span v-else>—</span>
               </td>
               <td class="td-status">
                 <span v-if="isGeocodeFailed(loc)" class="status-warn" :title="t('manage.noCoordinates')">⚠️</span>
@@ -160,6 +174,22 @@
             <input v-model="editForm.visitedUnknownYear" type="checkbox" />
             {{ t('location.visitedUnknownYear') }}
           </label>
+
+          <label>{{ t('location.rating') }}</label>
+          <div class="star-rating">
+            <button
+              v-for="star in 5"
+              :key="star"
+              type="button"
+              class="star-btn"
+              :class="{ active: editForm.rating !== null && star <= editForm.rating }"
+              @click="editForm.rating = star"
+            >★</button>
+            <button v-if="editForm.rating !== null" type="button" class="clear-rating" @click="editForm.rating = null">×</button>
+          </div>
+
+          <label>{{ t('location.note') }}</label>
+          <textarea v-model="editForm.note" rows="3" :placeholder="t('location.notePlaceholder')"></textarea>
         </div>
 
         <div class="dialog-actions">
@@ -203,7 +233,7 @@ const retrying = ref<string | null>(null);
 const retryingAll = ref(false);
 
 // Sort state
-type SortKey = 'name' | 'type' | 'city' | 'country' | 'years' | 'status';
+type SortKey = 'name' | 'type' | 'city' | 'country' | 'years' | 'rating' | 'status';
 const sortKey = ref<SortKey>('name');
 const sortAsc = ref(true);
 
@@ -235,6 +265,8 @@ const editForm = reactive({
   longitude: 0,
   visitedYears: [] as number[],
   visitedUnknownYear: false,
+  rating: null as number | null,
+  note: '' as string | null,
 });
 
 onMounted(() => {
@@ -295,6 +327,12 @@ const sortedLocations = computed(() => {
         cmp = aF - bF;
         break;
       }
+      case 'rating': {
+        const aR = a.rating ?? 0;
+        const bR = b.rating ?? 0;
+        cmp = aR - bR;
+        break;
+      }
     }
     return cmp * dir;
   });
@@ -310,7 +348,7 @@ function getTypeColor(typeId: string): string {
 
 // --- Export ---
 function exportCsv() {
-  const header = ['name', 'type', 'city', 'country', 'link', 'visited', 'latitude', 'longitude'];
+  const header = ['name', 'type', 'city', 'country', 'link', 'visited', 'latitude', 'longitude', 'rating', 'note'];
   const rows = locationsStore.locations.map((loc) => {
     const typeName = getTypeName(loc.type);
     const visited = loc.visitedUnknownYear
@@ -325,6 +363,8 @@ function exportCsv() {
       visited,
       String(loc.latitude),
       String(loc.longitude),
+      loc.rating != null ? String(loc.rating) : '',
+      loc.note ?? '',
     ].map((v) => `"${v.replace(/"/g, '""')}"`).join(',');
   });
   const csv = [header.join(','), ...rows].join('\n');
@@ -349,6 +389,8 @@ function openEdit(loc: Location) {
   editForm.longitude = loc.longitude;
   editForm.visitedYears = [...loc.visitedYears];
   editForm.visitedUnknownYear = loc.visitedUnknownYear;
+  editForm.rating = loc.rating;
+  editForm.note = loc.note || '';
   newYear.value = currentYear;
 }
 
@@ -373,6 +415,8 @@ async function saveEdit() {
       longitude: editForm.longitude,
       visitedYears: editForm.visitedYears,
       visitedUnknownYear: editForm.visitedUnknownYear,
+      rating: editForm.rating,
+      note: editForm.note || null,
     });
     editing.value = null;
   } finally {
@@ -550,6 +594,40 @@ async function retryAllGeocode() {
 }
 
 .td-years {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.th-rating {
+  width: 6rem;
+}
+
+.td-rating {
+  white-space: nowrap;
+}
+
+.rating-stars {
+  color: #f5a623;
+  font-size: 0.85rem;
+}
+
+.rating-none {
+  color: var(--color-text-secondary);
+}
+
+.th-note {
+  min-width: 100px;
+}
+
+.td-note {
+  max-width: 150px;
+}
+
+.note-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
@@ -780,5 +858,49 @@ async function retryAllGeocode() {
     flex-wrap: wrap;
     font-size: 0.8rem;
   }
+}
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  grid-column: 1 / -1;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.star-btn.active {
+  color: #f5a623;
+}
+
+.star-btn:hover {
+  color: #f5a623;
+}
+
+.clear-rating {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  margin-left: 0.4rem;
+}
+
+.edit-form textarea {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
 }
 </style>

@@ -127,6 +127,22 @@
             <input v-model="editForm.visitedUnknownYear" type="checkbox" />
             {{ t('location.visitedUnknownYear') }}
           </label>
+
+          <label>{{ t('location.rating') }}</label>
+          <div class="star-rating">
+            <button
+              v-for="star in 5"
+              :key="star"
+              type="button"
+              class="star-btn"
+              :class="{ active: editForm.rating !== null && star <= editForm.rating }"
+              @click="editForm.rating = star"
+            >★</button>
+            <button v-if="editForm.rating !== null" type="button" class="clear-rating" @click="editForm.rating = null">×</button>
+          </div>
+
+          <label>{{ t('location.note') }}</label>
+          <textarea v-model="editForm.note" rows="3" :placeholder="t('location.notePlaceholder')"></textarea>
         </div>
 
         <div class="dialog-actions">
@@ -219,6 +235,8 @@ const editForm = reactive({
   longitude: 0,
   visitedYears: [] as number[],
   visitedUnknownYear: false,
+  rating: null as number | null,
+  note: '' as string | null,
 });
 
 function onEditLocation(loc: Location) {
@@ -232,6 +250,8 @@ function onEditLocation(loc: Location) {
   editForm.longitude = loc.longitude;
   editForm.visitedYears = [...loc.visitedYears];
   editForm.visitedUnknownYear = loc.visitedUnknownYear;
+  editForm.rating = loc.rating;
+  editForm.note = loc.note || '';
   editNewYear.value = currentYear;
 }
 
@@ -256,6 +276,8 @@ async function saveEdit() {
       longitude: editForm.longitude,
       visitedYears: editForm.visitedYears,
       visitedUnknownYear: editForm.visitedUnknownYear,
+      rating: editForm.rating,
+      note: editForm.note || null,
     });
     editing.value = null;
   } finally {
@@ -713,5 +735,49 @@ const filteredLocations = computed(() => {
   .overlay {
     align-items: flex-end;
   }
+}
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  grid-column: 1 / -1;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.star-btn.active {
+  color: #f5a623;
+}
+
+.star-btn:hover {
+  color: #f5a623;
+}
+
+.clear-rating {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  margin-left: 0.4rem;
+}
+
+.edit-form textarea {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
 }
 </style>

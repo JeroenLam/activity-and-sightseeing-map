@@ -169,9 +169,13 @@ describe('API Routes', () => {
                 latitude: 52.366,
                 longitude: 4.916,
                 visitedYears: [2024],
+                rating: 4,
+                note: 'Great zoo',
             });
             expect(res.status).toBe(201);
             expect(res.body.name).toBe('Artis');
+            expect(res.body.rating).toBe(4);
+            expect(res.body.note).toBe('Great zoo');
         });
 
         it('POST /api/locations - requires name, type, lat, lng', async () => {
