@@ -21,7 +21,7 @@ onMounted(() => {
 
 <style scoped>
 .page-container {
-  max-width: 800px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 1.5rem;
 }

@@ -16,6 +16,9 @@ export async function createApp(dataDir?: string) {
 
     const app = express();
 
+    // Trust reverse proxy (X-Forwarded-* headers)
+    app.set('trust proxy', 1);
+
     // Security
     app.use(
         helmet({
