@@ -500,7 +500,7 @@ async function retryAllGeocode() {
 
 <style scoped>
 .page-container {
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 1.5rem;
 }
