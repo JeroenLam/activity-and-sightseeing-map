@@ -95,15 +95,17 @@
         "deleteWarning": "Dit type is nog in gebruik bij {count} locatie(s).",
         "save": "Opslaan",
         "cancel": "Annuleren",
-        "export": "Exporteer CSV",
-        "import": "CSV importeren",
+        "export": "Exporteren",
+        "import": "Importeren",
         "importSuccess": "{count} type(s) geïmporteerd",
         "importSkipped": "{count} overgeslagen (bestaan al)",
         "icon": "Icoon",
         "selectIcon": "Kies icoon",
         "searchIcon": "Zoek iconen...",
         "noIconsFound": "Geen iconen gevonden",
-        "clearIcon": "Icoon verwijderen"
+        "clearIcon": "Icoon verwijderen",
+        "importHelp": "Importeer een CSV-bestand met kolommen: name/naam, color/kleur (hex bijv. #FF5733), icon (MDI-icoonnaam bijv. museum). Alleen 'name/naam' is vereist.",
+        "exportHelp": "Exporteer alle locatietypes als CSV-bestand met kolommen: name, color, icon."
     },
     "import": {
         "title": "CSV Importeren",
@@ -139,8 +141,10 @@
         "retry": "Opnieuw",
         "retryAll": "Alles opnieuw proberen",
         "retrying": "Bezig...",
-        "export": "Exporteer CSV",
-        "import": "CSV importeren"
+        "export": "Exporteren",
+        "import": "Importeren",
+        "importHelp": "Importeer een CSV-bestand met kolommen: name/naam, type, city/stad, country/land, link, visited/bezocht (komma-gescheiden jaren of '-' voor onbekend), latitude/breedtegraad, longitude/lengtegraad, rating/beoordeling (1-5), note/notitie.",
+        "exportHelp": "Exporteer alle locaties als CSV-bestand met kolommen: name, type, city, country, link, visited, latitude, longitude, rating, note."
     },
     "language": {
         "nl": "Nederlands",

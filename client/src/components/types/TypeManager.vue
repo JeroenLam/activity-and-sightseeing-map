@@ -3,13 +3,21 @@
     <div class="page-header">
       <h2>{{ t('types.title') }}</h2>
       <div class="header-actions">
-        <label class="btn-primary btn-small import-label">
-          📤 {{ t('types.import') }}
-          <input type="file" accept=".csv" class="hidden-input" @change="onImportFile" />
-        </label>
-        <button class="btn-primary btn-small" @click="exportTypes">
-          📥 {{ t('types.export') }}
-        </button>
+        <div class="btn-with-help">
+          <label class="btn-primary btn-small import-label">
+            📤 {{ t('types.import') }}
+            <input type="file" accept=".csv" class="hidden-input" @change="onImportFile" />
+          </label>
+          <button class="btn-help" :title="t('types.importHelp')" @click="showImportHelp = !showImportHelp">?</button>
+          <div v-if="showImportHelp" class="help-tooltip">{{ t('types.importHelp') }}</div>
+        </div>
+        <div class="btn-with-help">
+          <button class="btn-primary btn-small" @click="exportTypes">
+            📥 {{ t('types.export') }}
+          </button>
+          <button class="btn-help" :title="t('types.exportHelp')" @click="showExportHelp = !showExportHelp">?</button>
+          <div v-if="showExportHelp" class="help-tooltip">{{ t('types.exportHelp') }}</div>
+        </div>
       </div>
     </div>
 
@@ -78,6 +86,8 @@ const editName = ref('');
 const editColor = ref('');
 const editIcon = ref('');
 const importMsg = ref('');
+const showImportHelp = ref(false);
+const showExportHelp = ref(false);
 
 function countLocations(typeId: string): number {
   return locationsStore.locations.filter((l) => l.type === typeId).length;
@@ -221,6 +231,8 @@ async function onDelete(lt: LocationType) {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .page-header h2 {
@@ -230,6 +242,53 @@ async function onDelete(lt: LocationType) {
 .header-actions {
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-with-help {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.btn-help {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn-help:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.help-tooltip {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 280px;
+  white-space: normal;
 }
 
 .import-label {

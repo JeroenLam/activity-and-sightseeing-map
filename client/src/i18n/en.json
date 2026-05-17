@@ -95,15 +95,17 @@
         "deleteWarning": "This type is still used by {count} location(s).",
         "save": "Save",
         "cancel": "Cancel",
-        "export": "Export CSV",
-        "import": "Import CSV",
+        "export": "Export",
+        "import": "Import",
         "importSuccess": "{count} type(s) imported",
         "importSkipped": "{count} skipped (already exist)",
         "icon": "Icon",
         "selectIcon": "Select icon",
         "searchIcon": "Search icons...",
         "noIconsFound": "No icons found",
-        "clearIcon": "Clear icon"
+        "clearIcon": "Clear icon",
+        "importHelp": "Import a CSV file with columns: name, color (hex e.g. #FF5733), icon (MDI icon name e.g. museum). Only 'name' is required.",
+        "exportHelp": "Export all location types as a CSV file with columns: name, color, icon."
     },
     "import": {
         "title": "Import CSV",
@@ -139,8 +141,10 @@
         "retry": "Retry",
         "retryAll": "Retry all",
         "retrying": "Retrying...",
-        "export": "Export CSV",
-        "import": "Import CSV"
+        "export": "Export",
+        "import": "Import",
+        "importHelp": "Import a CSV file with columns: name, type, city, country, link, visited (comma-separated years or '-' for unknown), latitude, longitude, rating (1-5), note.",
+        "exportHelp": "Export all locations as a CSV file with columns: name, type, city, country, link, visited, latitude, longitude, rating, note."
     },
     "language": {
         "nl": "Nederlands",

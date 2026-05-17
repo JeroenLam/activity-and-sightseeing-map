@@ -3,12 +3,20 @@
     <div class="page-header">
       <h2>{{ t('manage.title') }}</h2>
       <div class="header-actions">
-        <button class="btn-primary btn-small" @click="showImport = !showImport">
-          📤 {{ t('manage.import') }}
-        </button>
-        <button v-if="locationsStore.locations.length > 0" class="btn-primary btn-small" @click="exportCsv">
-          📥 {{ t('manage.export') }}
-        </button>
+        <div class="btn-with-help">
+          <button class="btn-primary btn-small" @click="showImport = !showImport">
+            📤 {{ t('manage.import') }}
+          </button>
+          <button class="btn-help" :title="t('manage.importHelp')" @click="showImportHelp = !showImportHelp">?</button>
+          <div v-if="showImportHelp" class="help-tooltip">{{ t('manage.importHelp') }}</div>
+        </div>
+        <div class="btn-with-help">
+          <button v-if="locationsStore.locations.length > 0" class="btn-primary btn-small" @click="exportCsv">
+            📥 {{ t('manage.export') }}
+          </button>
+          <button v-if="locationsStore.locations.length > 0" class="btn-help" :title="t('manage.exportHelp')" @click="showExportHelp = !showExportHelp">?</button>
+          <div v-if="showExportHelp" class="help-tooltip">{{ t('manage.exportHelp') }}</div>
+        </div>
       </div>
     </div>
 
@@ -108,21 +116,23 @@
                 <span v-if="isGeocodeFailed(loc)" class="status-warn" :title="t('manage.noCoordinates')">⚠️</span>
                 <span v-else class="status-ok">✓</span>
               </td>
-              <td class="td-actions">
-                <button
-                  v-if="isGeocodeFailed(loc)"
-                  class="btn-icon"
-                  :disabled="retrying === loc.id"
-                  :title="t('manage.retry')"
-                  @click="retryGeocode(loc)"
-                >🔄</button>
-                <button class="btn-icon" :title="t('manage.edit')" @click="openEdit(loc)">✏️</button>
-                <button
-                  class="btn-icon btn-icon-danger"
-                  :disabled="deleting === loc.id"
-                  :title="t('manage.delete')"
-                  @click="confirmDelete(loc)"
-                >🗑️</button>
+              <td>
+                <div class="td-actions">
+                  <button
+                    v-if="isGeocodeFailed(loc)"
+                    class="btn-icon"
+                    :disabled="retrying === loc.id"
+                    :title="t('manage.retry')"
+                    @click="retryGeocode(loc)"
+                  >🔄</button>
+                  <button class="btn-icon" :title="t('manage.edit')" @click="openEdit(loc)">✏️</button>
+                  <button
+                    class="btn-icon btn-icon-danger"
+                    :disabled="deleting === loc.id"
+                    :title="t('manage.delete')"
+                    @click="confirmDelete(loc)"
+                  >🗑️</button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -237,6 +247,8 @@ const locationsStore = useLocationsStore();
 const typesStore = useTypesStore();
 
 const showImport = ref(false);
+const showImportHelp = ref(false);
+const showExportHelp = ref(false);
 const currentYear = new Date().getFullYear();
 const search = ref('');
 const deleting = ref<string | null>(null);
@@ -507,6 +519,53 @@ async function retryAllGeocode() {
 .header-actions {
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-with-help {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.btn-help {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn-help:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.help-tooltip {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 280px;
+  white-space: normal;
 }
 
 .import-section {
