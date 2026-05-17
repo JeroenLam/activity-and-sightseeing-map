@@ -94,6 +94,7 @@ import type { CsvPreview, ImportResult, ImportProgress } from '@/types';
 
 const { t } = useI18n();
 const locationsStore = useLocationsStore();
+const emit = defineEmits<{ done: [] }>();
 
 const dragover = ref(false);
 const preview = ref<CsvPreview | null>(null);
@@ -178,6 +179,7 @@ function reset() {
   csvContent.value = '';
   importResult.value = null;
   Object.keys(columnMap).forEach((k) => (columnMap[k] = ''));
+  emit('done');
 }
 </script>
 

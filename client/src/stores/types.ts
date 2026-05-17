@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import axios from 'axios';
 import type { LocationType } from '@/types';
 
@@ -46,5 +46,9 @@ export const useTypesStore = defineStore('types', () => {
         return types.value.find((t) => t.id === id);
     }
 
-    return { types, loading, fetchTypes, createType, updateType, deleteType, getTypeById };
+    const sortedTypes = computed(() =>
+        [...types.value].sort((a, b) => a.name.localeCompare(b.name))
+    );
+
+    return { types, sortedTypes, loading, fetchTypes, createType, updateType, deleteType, getTypeById };
 });

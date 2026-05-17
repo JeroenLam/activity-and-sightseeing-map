@@ -33,7 +33,7 @@
         <label>{{ t('location.type') }} *</label>
         <select v-model="form.type" required>
           <option value="" disabled>—</option>
-          <option v-for="lt in typesStore.types" :key="lt.id" :value="lt.id">
+          <option v-for="lt in typesStore.sortedTypes" :key="lt.id" :value="lt.id">
             {{ lt.name }}
           </option>
         </select>
@@ -200,7 +200,13 @@ function updatePinMarker(lat: number, lng: number) {
   if (pinMarker) {
     pinMarker.setLatLng([lat, lng]);
   } else {
-    pinMarker = L.marker([lat, lng]).addTo(pinMap);
+    const pinIcon = L.divIcon({
+      className: '',
+      html: '<div class="pin-icon"></div>',
+      iconSize: [24, 36],
+      iconAnchor: [12, 36],
+    });
+    pinMarker = L.marker([lat, lng], { icon: pinIcon }).addTo(pinMap);
   }
   pinMap.setView([lat, lng], Math.max(pinMap.getZoom(), 13));
 }
@@ -478,6 +484,16 @@ textarea {
   border-radius: 8px;
   border: 1px solid var(--color-border);
   z-index: 0;
+}
+
+.pin-map :deep(.pin-icon) {
+  width: 24px;
+  height: 36px;
+  background: var(--color-primary, #4f46e5);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .btn-device-location {

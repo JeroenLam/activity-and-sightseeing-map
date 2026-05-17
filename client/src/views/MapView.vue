@@ -23,7 +23,9 @@
           :class="{ disabled: disabledTypes.has(lt.id) }"
           @click="toggleType(lt.id)"
         >
-          <span class="legend-dot" :style="{ background: getLegendColor(lt) }"></span>
+          <span class="legend-dot" :style="{ background: getLegendColor(lt) }">
+            <svg v-if="getIconPath(lt.icon)" viewBox="0 0 24 24" class="legend-icon"><path :d="getIconPath(lt.icon)" fill="#fff" /></svg>
+          </span>
           <span>{{ lt.name }}</span>
           <span class="legend-count">({{ visibleTypeCounts.get(lt.id) ?? 0 }})</span>
         </div>
@@ -37,7 +39,9 @@
           :key="loc.id"
           class="visible-item"
         >
-          <span class="legend-dot" :class="{ 'legend-square': loc.visitedYears.length > 0 || loc.visitedUnknownYear }" :style="{ background: getTypeColor(loc.type) }"></span>
+          <span class="legend-dot" :class="{ 'legend-square': loc.visitedYears.length > 0 || loc.visitedUnknownYear }" :style="{ background: getTypeColor(loc.type) }">
+            <svg v-if="getIconPath(typesStore.types.find(t => t.id === loc.type)?.icon)" viewBox="0 0 24 24" class="legend-icon"><path :d="getIconPath(typesStore.types.find(t => t.id === loc.type)?.icon)" fill="#fff" /></svg>
+          </span>
           <div class="visible-item-info">
             <span class="visible-item-name">{{ loc.name }}</span>
             <span class="visible-item-meta">{{ loc.city }}{{ loc.country ? ', ' + loc.country : '' }}</span>
@@ -87,7 +91,7 @@
 
           <label>{{ t('location.type') }}</label>
           <select v-model="editForm.type">
-            <option v-for="lt in typesStore.types" :key="lt.id" :value="lt.id">{{ lt.name }}</option>
+            <option v-for="lt in typesStore.sortedTypes" :key="lt.id" :value="lt.id">{{ lt.name }}</option>
           </select>
 
           <label>{{ t('location.city') }}</label>
@@ -164,6 +168,7 @@ import { useTypesStore } from '@/stores/types';
 import { useThemeStore } from '@/stores/theme';
 import MapContainer from '@/components/map/MapContainer.vue';
 import FilterPanel from '@/components/map/FilterPanel.vue';
+import * as mdiIcons from '@mdi/js';
 import type { Location } from '@/types';
 
 const { t } = useI18n();
@@ -303,9 +308,13 @@ function getLegendColor(lt: { id: string; color: string }): string {
   return themeStore.dark ? lightenColor(lt.color, 60) : lt.color;
 }
 
-const sortedTypes = computed(() =>
-  [...typesStore.types].sort((a, b) => a.name.localeCompare(b.name))
-);
+function getIconPath(iconName: string | undefined): string {
+  if (!iconName) return '';
+  const camel = 'mdi' + iconName.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+  return (mdiIcons as Record<string, string>)[camel] ?? '';
+}
+
+const sortedTypes = computed(() => typesStore.sortedTypes);
 
 const visibleTypeCounts = computed(() => {
   const counts = new Map<string, number>();
@@ -415,10 +424,18 @@ const filteredLocations = computed(() => {
 }
 
 .legend-dot {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.legend-icon {
+  width: 10px;
+  height: 10px;
 }
 
 .legend-square {

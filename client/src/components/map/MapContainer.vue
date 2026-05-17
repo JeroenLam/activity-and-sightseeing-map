@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import L from 'leaflet';
+import * as mdiIcons from '@mdi/js';
 import type { Location, LocationType } from '@/types';
 
 const props = defineProps<{
@@ -101,6 +102,13 @@ function getTypeColor(typeId: string): string {
   return props.darkMode ? lightenColor(base, 60) : base;
 }
 
+function getTypeIconPath(typeId: string): string {
+  const t = props.types.find((ty) => ty.id === typeId);
+  if (!t?.icon) return '';
+  const camel = 'mdi' + t.icon.split('-').map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+  return (mdiIcons as Record<string, string>)[camel] ?? '';
+}
+
 function isVisited(loc: Location): boolean {
   return loc.visitedYears.length > 0 || loc.visitedUnknownYear;
 }
@@ -136,25 +144,31 @@ function renderMarkers() {
 
     let marker: L.CircleMarker | L.Marker;
     const borderColor = props.darkMode ? '#334155' : '#fff';
+    const iconPath = getTypeIconPath(loc.type);
+    const iconSvg = iconPath
+      ? `<svg viewBox="0 0 24 24" style="width:60%;height:60%;"><path d="${iconPath}" fill="${borderColor}"/></svg>`
+      : '';
+
     if (visited) {
       const size = props.markerSize * 2;
       const icon = L.divIcon({
         className: '',
-        html: `<div style="width:${size}px;height:${size}px;background:${color};border:2px solid ${borderColor};opacity:${fillOpacity};box-sizing:border-box;"></div>`,
+        html: `<div style="width:${size}px;height:${size}px;background:${color};border:2px solid ${borderColor};opacity:${fillOpacity};box-sizing:border-box;display:flex;align-items:center;justify-content:center;">${iconSvg}</div>`,
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],
         popupAnchor: [0, -size / 2],
       });
       marker = L.marker([loc.latitude, loc.longitude], { icon, opacity });
     } else {
-      marker = L.circleMarker([loc.latitude, loc.longitude], {
-        radius: props.markerSize,
-        fillColor: color,
-        color: borderColor,
-        weight: 2,
-        opacity,
-        fillOpacity,
+      const size = props.markerSize * 2;
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:${size}px;height:${size}px;background:${color};border:2px solid ${borderColor};opacity:${fillOpacity};box-sizing:border-box;border-radius:50%;display:flex;align-items:center;justify-content:center;">${iconSvg}</div>`,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+        popupAnchor: [0, -size / 2],
       });
+      marker = L.marker([loc.latitude, loc.longitude], { icon, opacity });
     }
 
     const typeName =

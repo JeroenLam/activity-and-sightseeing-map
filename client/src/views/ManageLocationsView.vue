@@ -2,14 +2,24 @@
   <div class="page-container">
     <div class="page-header">
       <h2>{{ t('manage.title') }}</h2>
-      <button v-if="locationsStore.locations.length > 0" class="btn-primary btn-small" @click="exportCsv">
-        📥 {{ t('manage.export') }}
-      </button>
+      <div class="header-actions">
+        <button class="btn-primary btn-small" @click="showImport = !showImport">
+          📤 {{ t('manage.import') }}
+        </button>
+        <button v-if="locationsStore.locations.length > 0" class="btn-primary btn-small" @click="exportCsv">
+          📥 {{ t('manage.export') }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Import section (toggled) -->
+    <div v-if="showImport" class="import-section">
+      <CsvImport @done="onImportDone" />
     </div>
 
     <div v-if="locationsStore.loading" class="loading">{{ t('app.loading') }}</div>
 
-    <div v-else-if="locationsStore.locations.length === 0" class="empty">
+    <div v-else-if="locationsStore.locations.length === 0 && !showImport" class="empty">
       {{ t('manage.empty') }}
     </div>
 
@@ -134,7 +144,7 @@
 
           <label>{{ t('location.type') }}</label>
           <select v-model="editForm.type">
-            <option v-for="lt in typesStore.types" :key="lt.id" :value="lt.id">{{ lt.name }}</option>
+            <option v-for="lt in typesStore.sortedTypes" :key="lt.id" :value="lt.id">{{ lt.name }}</option>
           </select>
 
           <label>{{ t('location.city') }}</label>
@@ -219,12 +229,14 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useLocationsStore } from '@/stores/locations';
 import { useTypesStore } from '@/stores/types';
+import CsvImport from '@/components/locations/CsvImport.vue';
 import type { Location } from '@/types';
 
 const { t } = useI18n();
 const locationsStore = useLocationsStore();
 const typesStore = useTypesStore();
 
+const showImport = ref(false);
 const currentYear = new Date().getFullYear();
 const search = ref('');
 const deleting = ref<string | null>(null);
@@ -377,6 +389,11 @@ function exportCsv() {
   URL.revokeObjectURL(url);
 }
 
+function onImportDone() {
+  showImport.value = false;
+  locationsStore.fetchLocations();
+}
+
 // --- Edit ---
 function openEdit(loc: Location) {
   editing.value = loc;
@@ -485,6 +502,19 @@ async function retryAllGeocode() {
 
 .page-header h2 {
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.import-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
 }
 
 .page-container h2 {
