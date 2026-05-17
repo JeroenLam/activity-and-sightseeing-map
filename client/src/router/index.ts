@@ -34,9 +34,7 @@ const router = createRouter({
         },
         {
             path: '/import',
-            name: 'import',
-            component: () => import('@/views/ImportView.vue'),
-            meta: { requiresAuth: true },
+            redirect: '/manage',
         },
         {
             path: '/profile',

@@ -10,6 +10,8 @@
         "test": "vitest run"
     },
     "dependencies": {
+        "@mdi/js": "^7.4.47",
+        "@mdi/light-js": "^0.2.63",
         "axios": "^1.7.9",
         "leaflet": "^1.9.4",
         "pinia": "^2.2.6",

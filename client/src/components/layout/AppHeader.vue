@@ -21,9 +21,6 @@
       <router-link to="/manage" class="nav-link" active-class="active">
         <span class="nav-icon">📋</span> {{ t('nav.manage') }}
       </router-link>
-      <router-link to="/import" class="nav-link" active-class="active">
-        <span class="nav-icon">📥</span> {{ t('nav.import') }}
-      </router-link>
     </nav>
     <div class="header-right">
       <div v-if="auth.isAuthenticated" class="profile-dropdown-wrap">
@@ -72,9 +69,6 @@
       </router-link>
       <router-link to="/manage" class="nav-link" active-class="active" @click="mobileMenuOpen = false">
         <span class="nav-icon">📋</span> {{ t('nav.manage') }}
-      </router-link>
-      <router-link to="/import" class="nav-link" active-class="active" @click="mobileMenuOpen = false">
-        <span class="nav-icon">📥</span> {{ t('nav.import') }}
       </router-link>
       <div class="mobile-nav-extras">
         <button class="nav-link" @click="theme.toggle(); mobileMenuOpen = false">

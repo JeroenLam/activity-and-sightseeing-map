@@ -1,11 +1,25 @@
 <template>
   <div class="type-manager">
-    <h2>{{ t('types.title') }}</h2>
+    <div class="page-header">
+      <h2>{{ t('types.title') }}</h2>
+      <div class="header-actions">
+        <label class="btn-primary btn-small import-label">
+          📤 {{ t('types.import') }}
+          <input type="file" accept=".csv" class="hidden-input" @change="onImportFile" />
+        </label>
+        <button class="btn-primary btn-small" @click="exportTypes">
+          📥 {{ t('types.export') }}
+        </button>
+      </div>
+    </div>
+
+    <p v-if="importMsg" class="import-msg">{{ importMsg }}</p>
 
     <!-- Add new type -->
     <form class="type-add-form" @submit.prevent="onAdd">
       <input v-model="newName" type="text" :placeholder="t('types.name')" required />
       <input v-model="newColor" type="color" class="color-input" />
+      <MdiIconPicker v-model="newIcon" />
       <button type="submit" class="btn-primary btn-small">{{ t('types.add') }}</button>
     </form>
 
@@ -19,11 +33,16 @@
         <template v-if="editingId === lt.id">
           <input v-model="editName" type="text" class="edit-input" />
           <input v-model="editColor" type="color" class="color-input" />
+          <MdiIconPicker v-model="editIcon" />
           <button class="btn-small btn-primary" @click="onSaveEdit(lt.id)">{{ t('types.save') }}</button>
           <button class="btn-small btn-ghost" @click="editingId = ''">{{ t('types.cancel') }}</button>
         </template>
         <template v-else>
-          <span class="type-color" :style="{ background: lt.color }"></span>
+          <span class="type-color" :style="{ background: lt.color }">
+            <svg v-if="getIconPath(lt.icon)" viewBox="0 0 24 24" class="type-icon-svg">
+              <path :d="getIconPath(lt.icon)" fill="#fff" />
+            </svg>
+          </span>
           <span class="type-name">{{ lt.name }}</span>
           <span class="type-count">({{ countLocations(lt.id) }})</span>
           <div class="type-actions">
@@ -41,41 +60,146 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTypesStore } from '@/stores/types';
 import { useLocationsStore } from '@/stores/locations';
+import MdiIconPicker from './MdiIconPicker.vue';
+import * as mdiIcons from '@mdi/js';
 import type { LocationType } from '@/types';
 
 const { t } = useI18n();
 const typesStore = useTypesStore();
 const locationsStore = useLocationsStore();
 
-const sortedTypes = computed(() =>
-  [...typesStore.types].sort((a, b) => a.name.localeCompare(b.name))
-);
+const sortedTypes = computed(() => typesStore.sortedTypes);
 
 const newName = ref('');
 const newColor = ref('#9E9E9E');
+const newIcon = ref('');
 const editingId = ref('');
 const editName = ref('');
 const editColor = ref('');
+const editIcon = ref('');
+const importMsg = ref('');
 
 function countLocations(typeId: string): number {
   return locationsStore.locations.filter((l) => l.type === typeId).length;
 }
 
+function getIconPath(iconName: string | undefined): string {
+  if (!iconName) return '';
+  // Convert "map-marker" to "mdiMapMarker"
+  const camel = 'mdi' + iconName.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+  return (mdiIcons as Record<string, string>)[camel] ?? '';
+}
+
+function exportTypes() {
+  const header = ['name', 'color', 'icon'];
+  const rows = typesStore.sortedTypes.map((t) =>
+    [t.name, t.color, t.icon ?? ''].map((v) => `"${v.replace(/"/g, '""')}"`).join(',')
+  );
+  const csv = [header.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'location-types.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function onImportFile(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+  importMsg.value = '';
+  const text = await file.text();
+  const lines = text.split('\n').map((l) => l.trim()).filter((l) => l);
+  if (lines.length < 2) return;
+
+  // Parse header
+  const headerLine = lines[0];
+  const headers = headerLine.split(',').map((h) => h.replace(/^"|"$/g, '').trim().toLowerCase());
+  const nameIdx = headers.findIndex((h) => /^(name|naam)$/.test(h));
+  const colorIdx = headers.findIndex((h) => /^(color|kleur)$/.test(h));
+
+  if (nameIdx === -1) {
+    importMsg.value = 'CSV must have a "name" column';
+    return;
+  }
+
+  const existingNames = new Set(typesStore.types.map((t) => t.name.toLowerCase()));
+  let imported = 0;
+  let skipped = 0;
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseCsvLine(lines[i]);
+    const name = cols[nameIdx]?.trim();
+    if (!name) continue;
+
+    if (existingNames.has(name.toLowerCase())) {
+      skipped++;
+      continue;
+    }
+
+    const color = colorIdx !== -1 && cols[colorIdx]?.trim() ? cols[colorIdx].trim() : '#9E9E9E';
+    await typesStore.createType({ name, color });
+    existingNames.add(name.toLowerCase());
+    imported++;
+  }
+
+  importMsg.value = t('types.importSuccess', { count: imported });
+  if (skipped > 0) {
+    importMsg.value += ' — ' + t('types.importSkipped', { count: skipped });
+  }
+
+  // Reset file input
+  (e.target as HTMLInputElement).value = '';
+}
+
+function parseCsvLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        current += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        result.push(current);
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+  }
+  result.push(current);
+  return result;
+}
+
 async function onAdd() {
   if (!newName.value) return;
-  await typesStore.createType({ name: newName.value, color: newColor.value });
+  await typesStore.createType({ name: newName.value, color: newColor.value, icon: newIcon.value });
   newName.value = '';
   newColor.value = '#9E9E9E';
+  newIcon.value = '';
 }
 
 function startEdit(lt: LocationType) {
   editingId.value = lt.id;
   editName.value = lt.name;
   editColor.value = lt.color;
+  editIcon.value = lt.icon || '';
 }
 
 async function onSaveEdit(id: string) {
-  await typesStore.updateType(id, { name: editName.value, color: editColor.value });
+  await typesStore.updateType(id, { name: editName.value, color: editColor.value, icon: editIcon.value });
   editingId.value = '';
 }
 
@@ -92,6 +216,38 @@ async function onDelete(lt: LocationType) {
 </script>
 
 <style scoped>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.page-header h2 {
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.import-label {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.hidden-input {
+  display: none;
+}
+
+.import-msg {
+  font-size: 0.85rem;
+  color: var(--color-success, #16a34a);
+  margin: 0 0 1rem;
+}
+
 .type-manager h2 {
   margin: 0 0 1rem;
 }
@@ -134,10 +290,18 @@ async function onDelete(lt: LocationType) {
 }
 
 .type-color {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.type-icon-svg {
+  width: 14px;
+  height: 14px;
 }
 
 .type-name {
