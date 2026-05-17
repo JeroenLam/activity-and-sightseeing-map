@@ -14,6 +14,8 @@ export interface ParsedCsvLocation {
     visitedUnknownYear: boolean;
     latitude: number | null;
     longitude: number | null;
+    rating: number | null;
+    note: string | null;
 }
 
 export function parseCsvBuffer(buffer: Buffer | string): CsvRow[] {
@@ -44,6 +46,15 @@ export function mapCsvRow(
             .filter((y) => !isNaN(y));
     }
 
+    const ratingRaw = raw('rating');
+    let rating: number | null = null;
+    if (ratingRaw) {
+        const parsed = parseInt(ratingRaw, 10);
+        if (!isNaN(parsed) && parsed >= 1 && parsed <= 5) {
+            rating = parsed;
+        }
+    }
+
     return {
         name: raw('name'),
         type: raw('type'),
@@ -54,6 +65,8 @@ export function mapCsvRow(
         visitedUnknownYear,
         latitude: raw('latitude') ? parseFloat(raw('latitude')) || null : null,
         longitude: raw('longitude') ? parseFloat(raw('longitude')) || null : null,
+        rating,
+        note: raw('note') || null,
     };
 }
 
@@ -70,6 +83,8 @@ export function detectColumnMap(headers: string[]): Record<string, string> {
         ['visited', /^(geweest|visited|bezocht|jaar|year)$/],
         ['latitude', /^(latitude|lat|breedtegraad)$/],
         ['longitude', /^(longitude|lng|lon|lengtegraad)$/],
+        ['rating', /^(rating|beoordeling|score)$/],
+        ['note', /^(note|notitie|opmerking|notes)$/],
     ];
 
     for (const [field, regex] of patterns) {

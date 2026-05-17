@@ -25,6 +25,8 @@ describe('locationService', () => {
         longitude: 4.916,
         visitedYears: [2024],
         visitedUnknownYear: false,
+        rating: null,
+        note: null,
     };
 
     describe('createLocation', () => {
@@ -34,6 +36,22 @@ describe('locationService', () => {
             expect(loc.name).toBe('Artis');
             expect(loc.createdAt).toBeDefined();
             expect(loc.updatedAt).toBeDefined();
+        });
+
+        it('should create a location with rating and note', async () => {
+            const loc = await locationService.createLocation(dataDir, userId, {
+                ...sampleLocation,
+                rating: 4,
+                note: 'Wonderful zoo with lots of animals',
+            });
+            expect(loc.rating).toBe(4);
+            expect(loc.note).toBe('Wonderful zoo with lots of animals');
+        });
+
+        it('should create a location with null rating and note', async () => {
+            const loc = await locationService.createLocation(dataDir, userId, sampleLocation);
+            expect(loc.rating).toBeNull();
+            expect(loc.note).toBeNull();
         });
     });
 
@@ -64,6 +82,36 @@ describe('locationService', () => {
             expect(updated).not.toBeNull();
             expect(updated!.name).toBe('Artis Zoo');
             expect(updated!.visitedYears).toEqual([2024, 2025]);
+        });
+
+        it('should update rating', async () => {
+            const loc = await locationService.createLocation(dataDir, userId, sampleLocation);
+            const updated = await locationService.updateLocation(dataDir, userId, loc.id, {
+                rating: 4,
+            });
+            expect(updated).not.toBeNull();
+            expect(updated!.rating).toBe(4);
+        });
+
+        it('should update note', async () => {
+            const loc = await locationService.createLocation(dataDir, userId, sampleLocation);
+            const updated = await locationService.updateLocation(dataDir, userId, loc.id, {
+                note: 'Great zoo, loved the aquarium section',
+            });
+            expect(updated).not.toBeNull();
+            expect(updated!.note).toBe('Great zoo, loved the aquarium section');
+        });
+
+        it('should clear rating by setting to null', async () => {
+            const loc = await locationService.createLocation(dataDir, userId, {
+                ...sampleLocation,
+                rating: 5,
+            });
+            expect(loc.rating).toBe(5);
+            const updated = await locationService.updateLocation(dataDir, userId, loc.id, {
+                rating: null,
+            });
+            expect(updated!.rating).toBeNull();
         });
 
         it('should return null for non-existent id', async () => {

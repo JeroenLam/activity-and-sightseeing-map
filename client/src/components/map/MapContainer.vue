@@ -177,6 +177,16 @@ function renderMarkers() {
         : `<span>🔗 ${escapeHtml(loc.link)}</span>`;
     }
 
+    let ratingHtml = '';
+    if (loc.rating != null && loc.rating >= 1 && loc.rating <= 5) {
+      ratingHtml = '<span>' + '★'.repeat(loc.rating) + '☆'.repeat(5 - loc.rating) + '</span><br/>';
+    }
+
+    let noteHtml = '';
+    if (loc.note) {
+      noteHtml = `<em style="font-size:0.8rem;color:#666">${escapeHtml(loc.note)}</em><br/>`;
+    }
+
     const editBtnId = `edit-loc-${loc.id}`;
     const addYearId = `add-year-${loc.id}`;
     const addYearInputId = `year-input-${loc.id}`;
@@ -189,6 +199,8 @@ function renderMarkers() {
         <span style="color:${color}">●</span> ${escapeHtml(typeName)}<br/>
         📍 ${escapeHtml(loc.city)}${loc.country ? ', ' + escapeHtml(loc.country) : ''}<br/>
         📅 ${yearsStr}<br/>
+        ${ratingHtml}
+        ${noteHtml}
         ${linkHtml}
         <div style="margin-top:6px;border-top:1px solid #eee;padding-top:6px;display:flex;gap:4px;align-items:center">
           <input id="${addYearInputId}" type="number" value="${currentYear}" min="1900" max="${currentYear}"

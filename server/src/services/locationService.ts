@@ -53,6 +53,8 @@ export async function updateLocation(
     if (data.visitedYears !== undefined) loc.visitedYears = data.visitedYears;
     if (data.visitedUnknownYear !== undefined)
         loc.visitedUnknownYear = data.visitedUnknownYear;
+    if (data.rating !== undefined) loc.rating = data.rating;
+    if (data.note !== undefined) loc.note = data.note;
     loc.updatedAt = new Date().toISOString();
 
     await writeJSON(locationsFile(dataDir, userId), locations);

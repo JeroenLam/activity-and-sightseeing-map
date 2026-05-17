@@ -17,6 +17,8 @@ export interface Location {
     longitude: number;
     visitedYears: number[];
     visitedUnknownYear: boolean;
+    rating: number | null;
+    note: string | null;
     createdAt: string;
     updatedAt: string;
 }

@@ -89,5 +89,51 @@ describe('csvParser', () => {
             expect(parsed.visitedYears).toEqual([2024, 2025]);
             expect(parsed.visitedUnknownYear).toBe(false);
         });
+
+        it('should parse rating and note when columns are mapped', () => {
+            const csvWithRating = `Naam,Wat,Plaats,Land,Link,Geweest,Rating,Note
+Artis,Dierentuin,Amsterdam,NL,https://artis.nl,2024,4,Great zoo with lots of animals`;
+            const rows = parseCsvBuffer(csvWithRating);
+            const mapWithRating = {
+                ...columnMap,
+                rating: 'Rating',
+                note: 'Note',
+            };
+            const parsed = mapCsvRow(rows[0], mapWithRating);
+            expect(parsed.rating).toBe(4);
+            expect(parsed.note).toBe('Great zoo with lots of animals');
+        });
+
+        it('should return null rating for invalid values', () => {
+            const csvWithBadRating = `Naam,Wat,Plaats,Land,Link,Geweest,Rating
+Artis,Dierentuin,Amsterdam,NL,https://artis.nl,2024,7`;
+            const rows = parseCsvBuffer(csvWithBadRating);
+            const mapWithRating = { ...columnMap, rating: 'Rating' };
+            const parsed = mapCsvRow(rows[0], mapWithRating);
+            expect(parsed.rating).toBeNull();
+        });
+
+        it('should return null rating and note when columns not present', () => {
+            const rows = parseCsvBuffer(SAMPLE_CSV);
+            const parsed = mapCsvRow(rows[0], columnMap);
+            expect(parsed.rating).toBeNull();
+            expect(parsed.note).toBeNull();
+        });
+    });
+
+    describe('detectColumnMap - rating and note', () => {
+        it('should detect rating and note columns (English)', () => {
+            const headers = ['Name', 'Type', 'City', 'Country', 'URL', 'Visited', 'Rating', 'Note'];
+            const map = detectColumnMap(headers);
+            expect(map.rating).toBe('Rating');
+            expect(map.note).toBe('Note');
+        });
+
+        it('should detect rating and note columns (Dutch)', () => {
+            const headers = ['Naam', 'Wat', 'Plaats', 'Land', 'Link', 'Geweest', 'Beoordeling', 'Notitie'];
+            const map = detectColumnMap(headers);
+            expect(map.rating).toBe('Beoordeling');
+            expect(map.note).toBe('Notitie');
+        });
     });
 });

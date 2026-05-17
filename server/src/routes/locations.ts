@@ -34,6 +34,8 @@ export function createLocationsRouter(dataDir: string): Router {
             longitude,
             visitedYears,
             visitedUnknownYear,
+            rating,
+            note,
         } = req.body;
         if (!name || !type || latitude == null || longitude == null) {
             res
@@ -41,6 +43,7 @@ export function createLocationsRouter(dataDir: string): Router {
                 .json({ error: 'name, type, latitude, and longitude are required' });
             return;
         }
+        const validRating = rating != null ? Math.min(5, Math.max(1, Math.round(Number(rating)))) : null;
         const location = await locationService.createLocation(
             dataDir,
             (req as any).userId,
@@ -54,6 +57,8 @@ export function createLocationsRouter(dataDir: string): Router {
                 longitude: Number(longitude),
                 visitedYears: visitedYears || [],
                 visitedUnknownYear: visitedUnknownYear || false,
+                rating: validRating,
+                note: note || null,
             }
         );
         res.status(201).json(location);
@@ -210,6 +215,8 @@ export function createLocationsRouter(dataDir: string): Router {
                         longitude: lng,
                         visitedYears: parsed.visitedYears,
                         visitedUnknownYear: parsed.visitedUnknownYear,
+                        rating: parsed.rating,
+                        note: parsed.note,
                     });
                     results.imported++;
                     sendEvent({ type: 'progress', current: i + 1, total, name: parsed.name, status: rowStatus });

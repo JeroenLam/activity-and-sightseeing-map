@@ -23,6 +23,8 @@ describe('locationsStore - extended', () => {
         longitude: 4.916,
         visitedYears: [2024],
         visitedUnknownYear: false,
+        rating: null,
+        note: null,
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01',
     };
@@ -129,6 +131,77 @@ describe('locationsStore - extended', () => {
                 // expected
             }
             expect(store.loading).toBe(false);
+        });
+    });
+
+    describe('rating and note', () => {
+        it('should create a location with rating and note', async () => {
+            const locWithRating = {
+                ...mockLocation,
+                rating: 5,
+                note: 'Amazing experience!',
+            };
+            mockedAxios.post.mockResolvedValueOnce({ data: locWithRating });
+
+            const store = useLocationsStore();
+            const result = await store.createLocation({
+                name: 'Artis',
+                type: 'zoo',
+                city: 'Amsterdam',
+                country: 'NL',
+                link: null,
+                latitude: 52.366,
+                longitude: 4.916,
+                visitedYears: [2024],
+                visitedUnknownYear: false,
+                rating: 5,
+                note: 'Amazing experience!',
+            });
+
+            expect(result.rating).toBe(5);
+            expect(result.note).toBe('Amazing experience!');
+        });
+
+        it('should update location rating', async () => {
+            mockedAxios.get.mockResolvedValueOnce({ data: [mockLocation] });
+
+            const store = useLocationsStore();
+            await store.fetchLocations();
+
+            const updated = { ...mockLocation, rating: 3, updatedAt: '2024-06-01' };
+            mockedAxios.put.mockResolvedValueOnce({ data: updated });
+
+            const result = await store.updateLocation('1', { rating: 3 });
+            expect(result.rating).toBe(3);
+            expect(store.locations[0].rating).toBe(3);
+        });
+
+        it('should update location note', async () => {
+            mockedAxios.get.mockResolvedValueOnce({ data: [mockLocation] });
+
+            const store = useLocationsStore();
+            await store.fetchLocations();
+
+            const updated = { ...mockLocation, note: 'New note', updatedAt: '2024-06-01' };
+            mockedAxios.put.mockResolvedValueOnce({ data: updated });
+
+            const result = await store.updateLocation('1', { note: 'New note' });
+            expect(result.note).toBe('New note');
+            expect(store.locations[0].note).toBe('New note');
+        });
+
+        it('should clear rating by setting to null', async () => {
+            const locWithRating = { ...mockLocation, rating: 4 };
+            mockedAxios.get.mockResolvedValueOnce({ data: [locWithRating] });
+
+            const store = useLocationsStore();
+            await store.fetchLocations();
+
+            const updated = { ...locWithRating, rating: null, updatedAt: '2024-06-01' };
+            mockedAxios.put.mockResolvedValueOnce({ data: updated });
+
+            const result = await store.updateLocation('1', { rating: null });
+            expect(result.rating).toBeNull();
         });
     });
 });
