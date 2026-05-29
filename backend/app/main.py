@@ -6,7 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import engine
 from app.models import Base
-from app.routers import auth, geocoding, locations, public, settings as settings_router, types
+from app.routers import (
+    auth,
+    geocoding,
+    locations,
+    public,
+    settings as settings_router,
+    types,
+)
 
 
 @asynccontextmanager

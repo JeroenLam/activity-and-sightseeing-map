@@ -74,9 +74,7 @@ async def delete_type(db: AsyncSession, user_id: str, type_id: str) -> bool:
     return True
 
 
-async def get_type_usage_count(
-    db: AsyncSession, user_id: str, type_id: str
-) -> int:
+async def get_type_usage_count(db: AsyncSession, user_id: str, type_id: str) -> int:
     result = await db.execute(
         select(func.count())
         .select_from(Location)

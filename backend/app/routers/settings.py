@@ -17,9 +17,7 @@ async def get_settings(user_id: CurrentUserId, db: DB):
     from sqlalchemy import select
 
     result = await db.execute(
-        select(UserVisibilitySettings).where(
-            UserVisibilitySettings.user_id == user_id
-        )
+        select(UserVisibilitySettings).where(UserVisibilitySettings.user_id == user_id)
     )
     visibility = result.scalar_one_or_none()
 
@@ -55,9 +53,7 @@ async def update_settings(data: SettingsUpdate, user_id: CurrentUserId, db: DB):
     from sqlalchemy import select
 
     result = await db.execute(
-        select(UserVisibilitySettings).where(
-            UserVisibilitySettings.user_id == user_id
-        )
+        select(UserVisibilitySettings).where(UserVisibilitySettings.user_id == user_id)
     )
     visibility = result.scalar_one_or_none()
     if not visibility:

@@ -1,97 +1,97 @@
 {
-  "app": {
-    "title": "Activities & Sightseeing"
-  },
-  "nav": {
-    "map": "Map",
-    "add": "Add",
-    "locations": "Locations",
-    "types": "Types",
-    "import": "Import",
-    "profile": "Profile"
-  },
-  "auth": {
-    "login": "Login",
-    "register": "Register",
-    "logout": "Logout",
-    "email": "Email",
-    "password": "Password",
-    "displayName": "Display Name",
-    "loginWithGoogle": "Login with Google",
-    "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?"
-  },
-  "map": {
-    "filterPanel": "Filters",
-    "yearRange": "Year range",
-    "showUnvisited": "Show only unvisited",
-    "viewMode": "View mode",
-    "opacity": "Opacity",
-    "markerSize": "Marker size",
-    "resetView": "Show all"
-  },
-  "location": {
-    "name": "Name",
-    "type": "Type",
-    "city": "City",
-    "country": "Country",
-    "link": "Link",
-    "address": "Address",
-    "rating": "Rating",
-    "comments": "Comments",
-    "tags": "Tags",
-    "yearsVisited": "Years visited",
-    "search": "Search location...",
-    "useMyLocation": "Use my location",
-    "save": "Save",
-    "delete": "Delete",
-    "edit": "Edit"
-  },
-  "types": {
-    "manage": "Manage Types",
-    "name": "Name",
-    "color": "Color",
-    "icon": "Icon",
-    "add": "Add Type",
-    "deleteWarning": "This type is still used by {count} location(s)."
-  },
-  "import": {
-    "title": "Import",
-    "csvLegacy": "CSV Import (legacy)",
-    "geojson": "GeoJSON Import",
-    "upload": "Upload file",
-    "preview": "Preview",
-    "columnMapping": "Column mapping",
-    "start": "Start import",
-    "progress": "Progress",
-    "result": "Result",
-    "imported": "Imported",
-    "skipped": "Skipped",
-    "errors": "Errors"
-  },
-  "settings": {
-    "title": "Profile & Settings",
-    "language": "Language",
-    "darkMode": "Dark mode",
-    "defaultMap": "Default map view",
-    "setDefault": "Save current view",
-    "clearDefault": "Clear default",
-    "changePassword": "Change password",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "publicProfile": "Public profile",
-    "visibility": "Visibility",
-    "showRatings": "Show ratings",
-    "showComments": "Show comments",
-    "locationFilter": "Location filter"
-  },
-  "common": {
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "confirm": "Confirm",
-    "loading": "Loading...",
-    "error": "An error occurred",
-    "success": "Success"
-  }
+    "app": {
+        "title": "Activities & Sightseeing"
+    },
+    "nav": {
+        "map": "Map",
+        "add": "Add",
+        "locations": "Locations",
+        "types": "Types",
+        "import": "Import",
+        "profile": "Profile"
+    },
+    "auth": {
+        "login": "Login",
+        "register": "Register",
+        "logout": "Logout",
+        "email": "Email",
+        "password": "Password",
+        "displayName": "Display Name",
+        "loginWithGoogle": "Login with Google",
+        "noAccount": "Don't have an account?",
+        "hasAccount": "Already have an account?"
+    },
+    "map": {
+        "filterPanel": "Filters",
+        "yearRange": "Year range",
+        "showUnvisited": "Show only unvisited",
+        "viewMode": "View mode",
+        "opacity": "Opacity",
+        "markerSize": "Marker size",
+        "resetView": "Show all"
+    },
+    "location": {
+        "name": "Name",
+        "type": "Type",
+        "city": "City",
+        "country": "Country",
+        "link": "Link",
+        "address": "Address",
+        "rating": "Rating",
+        "comments": "Comments",
+        "tags": "Tags",
+        "yearsVisited": "Years visited",
+        "search": "Search location...",
+        "useMyLocation": "Use my location",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit"
+    },
+    "types": {
+        "manage": "Manage Types",
+        "name": "Name",
+        "color": "Color",
+        "icon": "Icon",
+        "add": "Add Type",
+        "deleteWarning": "This type is still used by {count} location(s)."
+    },
+    "import": {
+        "title": "Import",
+        "csvLegacy": "CSV Import (legacy)",
+        "geojson": "GeoJSON Import",
+        "upload": "Upload file",
+        "preview": "Preview",
+        "columnMapping": "Column mapping",
+        "start": "Start import",
+        "progress": "Progress",
+        "result": "Result",
+        "imported": "Imported",
+        "skipped": "Skipped",
+        "errors": "Errors"
+    },
+    "settings": {
+        "title": "Profile & Settings",
+        "language": "Language",
+        "darkMode": "Dark mode",
+        "defaultMap": "Default map view",
+        "setDefault": "Save current view",
+        "clearDefault": "Clear default",
+        "changePassword": "Change password",
+        "currentPassword": "Current password",
+        "newPassword": "New password",
+        "publicProfile": "Public profile",
+        "visibility": "Visibility",
+        "showRatings": "Show ratings",
+        "showComments": "Show comments",
+        "locationFilter": "Location filter"
+    },
+    "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "confirm": "Confirm",
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "success": "Success"
+    }
 }

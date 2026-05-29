@@ -75,9 +75,7 @@ async def create_local_user(db: AsyncSession, data: RegisterRequest) -> User:
     return user
 
 
-async def authenticate_user(
-    db: AsyncSession, email: str, password: str
-) -> User | None:
+async def authenticate_user(db: AsyncSession, email: str, password: str) -> User | None:
     user = await get_user_by_email(db, email)
     if not user or not user.password_hash:
         return None

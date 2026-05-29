@@ -30,9 +30,7 @@ def _location_to_feature(location: Location) -> LocationFeature:
 
     return LocationFeature(
         id=location.id,
-        geometry=PointGeometry(
-            coordinates=[location.longitude, location.latitude]
-        ),
+        geometry=PointGeometry(coordinates=[location.longitude, location.latitude]),
         properties=LocationProperties(
             name=location.name,
             type=type_inline,
@@ -82,9 +80,7 @@ async def get_locations(
     # Filter by visit years (post-query due to relationship)
     if unvisited:
         locations = [
-            loc
-            for loc in locations
-            if not loc.visits and not loc.visited_unknown_year
+            loc for loc in locations if not loc.visits and not loc.visited_unknown_year
         ]
     elif year_from is not None or year_to is not None:
         filtered = []
@@ -138,23 +134,15 @@ async def create_location(
     db.add(location)
 
     for year in props.years_visited:
-        db.add(
-            LocationVisit(
-                id=str(uuid.uuid4()), location_id=location.id, year=year
-            )
-        )
+        db.add(LocationVisit(id=str(uuid.uuid4()), location_id=location.id, year=year))
 
     for tag in props.tags:
-        db.add(
-            LocationTag(id=str(uuid.uuid4()), location_id=location.id, tag=tag)
-        )
+        db.add(LocationTag(id=str(uuid.uuid4()), location_id=location.id, tag=tag))
 
     await db.commit()
 
     # Reload with relationships
-    query = (await _get_location_query(db, user_id)).where(
-        Location.id == location.id
-    )
+    query = (await _get_location_query(db, user_id)).where(Location.id == location.id)
     result = await db.execute(query)
     location = result.scalar_one()
     return _location_to_feature(location)
@@ -214,9 +202,7 @@ async def update_location(
         # Add new visits
         for year in props.years_visited:
             db.add(
-                LocationVisit(
-                    id=str(uuid.uuid4()), location_id=location.id, year=year
-                )
+                LocationVisit(id=str(uuid.uuid4()), location_id=location.id, year=year)
             )
 
     # Update tags if provided
@@ -225,29 +211,21 @@ async def update_location(
             await db.delete(tag)
         for tag_name in props.tags:
             db.add(
-                LocationTag(
-                    id=str(uuid.uuid4()), location_id=location.id, tag=tag_name
-                )
+                LocationTag(id=str(uuid.uuid4()), location_id=location.id, tag=tag_name)
             )
 
     await db.commit()
 
     # Reload
-    query2 = (await _get_location_query(db, user_id)).where(
-        Location.id == location.id
-    )
+    query2 = (await _get_location_query(db, user_id)).where(Location.id == location.id)
     result2 = await db.execute(query2)
     location = result2.scalar_one()
     return _location_to_feature(location)
 
 
-async def delete_location(
-    db: AsyncSession, user_id: str, location_id: str
-) -> bool:
+async def delete_location(db: AsyncSession, user_id: str, location_id: str) -> bool:
     result = await db.execute(
-        select(Location).where(
-            Location.id == location_id, Location.user_id == user_id
-        )
+        select(Location).where(Location.id == location_id, Location.user_id == user_id)
     )
     location = result.scalar_one_or_none()
     if not location:

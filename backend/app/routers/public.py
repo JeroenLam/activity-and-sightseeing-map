@@ -34,7 +34,8 @@ async def get_public_profile(user_id: str, db: DB):
     # Filter by type visibility
     result = await db.execute(
         select(TypeVisibility).where(
-            TypeVisibility.user_id == user_id, TypeVisibility.public == False  # noqa: E712
+            TypeVisibility.user_id == user_id,
+            TypeVisibility.public == False,  # noqa: E712
         )
     )
     private_type_ids = {tv.type_id for tv in result.scalars().all()}
@@ -42,9 +43,7 @@ async def get_public_profile(user_id: str, db: DB):
 
     return {
         "display_name": user.display_name,
-        "types": [
-            LocationTypeResponse.model_validate(t) for t in public_types
-        ],
+        "types": [LocationTypeResponse.model_validate(t) for t in public_types],
     }
 
 
@@ -54,9 +53,7 @@ async def get_public_locations(user_id: str, db: DB):
 
     # Get visibility settings
     result = await db.execute(
-        select(UserVisibilitySettings).where(
-            UserVisibilitySettings.user_id == user_id
-        )
+        select(UserVisibilitySettings).where(UserVisibilitySettings.user_id == user_id)
     )
     visibility = result.scalar_one_or_none()
     if not visibility:
@@ -65,7 +62,8 @@ async def get_public_locations(user_id: str, db: DB):
     # Get private type IDs
     result = await db.execute(
         select(TypeVisibility).where(
-            TypeVisibility.user_id == user_id, TypeVisibility.public == False  # noqa: E712
+            TypeVisibility.user_id == user_id,
+            TypeVisibility.public == False,  # noqa: E712
         )
     )
     private_type_ids = {tv.type_id for tv in result.scalars().all()}
@@ -88,14 +86,10 @@ async def get_public_locations(user_id: str, db: DB):
 
     # Filter by location_filter setting
     if visibility.location_filter == "visited-only":
-        locations = [
-            loc for loc in locations
-            if loc.visits or loc.visited_unknown_year
-        ]
+        locations = [loc for loc in locations if loc.visits or loc.visited_unknown_year]
     elif visibility.location_filter == "unvisited-only":
         locations = [
-            loc for loc in locations
-            if not loc.visits and not loc.visited_unknown_year
+            loc for loc in locations if not loc.visits and not loc.visited_unknown_year
         ]
 
     # Build features respecting visibility
@@ -129,9 +123,7 @@ async def get_public_locations(user_id: str, db: DB):
         features.append(
             LocationFeature(
                 id=loc.id,
-                geometry=PointGeometry(
-                    coordinates=[loc.longitude, loc.latitude]
-                ),
+                geometry=PointGeometry(coordinates=[loc.longitude, loc.latitude]),
                 properties=properties,
             )
         )
@@ -147,9 +139,7 @@ async def _get_public_user(db: DB, user_id: str) -> User:
         raise HTTPException(status_code=404, detail="User not found")
 
     result = await db.execute(
-        select(UserVisibilitySettings).where(
-            UserVisibilitySettings.user_id == user_id
-        )
+        select(UserVisibilitySettings).where(UserVisibilitySettings.user_id == user_id)
     )
     visibility = result.scalar_one_or_none()
     if not visibility or not visibility.profile_public:

@@ -1,97 +1,97 @@
 {
-  "app": {
-    "title": "Activiteiten & Bezienswaardigheden"
-  },
-  "nav": {
-    "map": "Kaart",
-    "add": "Toevoegen",
-    "locations": "Locaties",
-    "types": "Types",
-    "import": "Importeren",
-    "profile": "Profiel"
-  },
-  "auth": {
-    "login": "Inloggen",
-    "register": "Registreren",
-    "logout": "Uitloggen",
-    "email": "E-mail",
-    "password": "Wachtwoord",
-    "displayName": "Weergavenaam",
-    "loginWithGoogle": "Inloggen met Google",
-    "noAccount": "Nog geen account?",
-    "hasAccount": "Al een account?"
-  },
-  "map": {
-    "filterPanel": "Filters",
-    "yearRange": "Jaarbereik",
-    "showUnvisited": "Toon alleen onbezochte",
-    "viewMode": "Weergavemodus",
-    "opacity": "Doorzichtigheid",
-    "markerSize": "Markergrootte",
-    "resetView": "Alles tonen"
-  },
-  "location": {
-    "name": "Naam",
-    "type": "Type",
-    "city": "Stad",
-    "country": "Land",
-    "link": "Link",
-    "address": "Adres",
-    "rating": "Beoordeling",
-    "comments": "Opmerkingen",
-    "tags": "Tags",
-    "yearsVisited": "Bezoekjaren",
-    "search": "Zoek locatie...",
-    "useMyLocation": "Gebruik mijn locatie",
-    "save": "Opslaan",
-    "delete": "Verwijderen",
-    "edit": "Bewerken"
-  },
-  "types": {
-    "manage": "Types beheren",
-    "name": "Naam",
-    "color": "Kleur",
-    "icon": "Icoon",
-    "add": "Type toevoegen",
-    "deleteWarning": "Dit type is nog in gebruik bij {count} locatie(s)."
-  },
-  "import": {
-    "title": "Importeren",
-    "csvLegacy": "CSV Import (legacy)",
-    "geojson": "GeoJSON Import",
-    "upload": "Bestand uploaden",
-    "preview": "Voorbeeld",
-    "columnMapping": "Kolom mapping",
-    "start": "Importeren starten",
-    "progress": "Voortgang",
-    "result": "Resultaat",
-    "imported": "Geïmporteerd",
-    "skipped": "Overgeslagen",
-    "errors": "Fouten"
-  },
-  "settings": {
-    "title": "Profiel & Instellingen",
-    "language": "Taal",
-    "darkMode": "Donkere modus",
-    "defaultMap": "Standaard kaartweergave",
-    "setDefault": "Huidige weergave opslaan",
-    "clearDefault": "Standaard wissen",
-    "changePassword": "Wachtwoord wijzigen",
-    "currentPassword": "Huidig wachtwoord",
-    "newPassword": "Nieuw wachtwoord",
-    "publicProfile": "Openbaar profiel",
-    "visibility": "Zichtbaarheid",
-    "showRatings": "Beoordelingen tonen",
-    "showComments": "Opmerkingen tonen",
-    "locationFilter": "Locatiefilter"
-  },
-  "common": {
-    "save": "Opslaan",
-    "cancel": "Annuleren",
-    "delete": "Verwijderen",
-    "confirm": "Bevestigen",
-    "loading": "Laden...",
-    "error": "Er is een fout opgetreden",
-    "success": "Succesvol"
-  }
+    "app": {
+        "title": "Activiteiten & Bezienswaardigheden"
+    },
+    "nav": {
+        "map": "Kaart",
+        "add": "Toevoegen",
+        "locations": "Locaties",
+        "types": "Types",
+        "import": "Importeren",
+        "profile": "Profiel"
+    },
+    "auth": {
+        "login": "Inloggen",
+        "register": "Registreren",
+        "logout": "Uitloggen",
+        "email": "E-mail",
+        "password": "Wachtwoord",
+        "displayName": "Weergavenaam",
+        "loginWithGoogle": "Inloggen met Google",
+        "noAccount": "Nog geen account?",
+        "hasAccount": "Al een account?"
+    },
+    "map": {
+        "filterPanel": "Filters",
+        "yearRange": "Jaarbereik",
+        "showUnvisited": "Toon alleen onbezochte",
+        "viewMode": "Weergavemodus",
+        "opacity": "Doorzichtigheid",
+        "markerSize": "Markergrootte",
+        "resetView": "Alles tonen"
+    },
+    "location": {
+        "name": "Naam",
+        "type": "Type",
+        "city": "Stad",
+        "country": "Land",
+        "link": "Link",
+        "address": "Adres",
+        "rating": "Beoordeling",
+        "comments": "Opmerkingen",
+        "tags": "Tags",
+        "yearsVisited": "Bezoekjaren",
+        "search": "Zoek locatie...",
+        "useMyLocation": "Gebruik mijn locatie",
+        "save": "Opslaan",
+        "delete": "Verwijderen",
+        "edit": "Bewerken"
+    },
+    "types": {
+        "manage": "Types beheren",
+        "name": "Naam",
+        "color": "Kleur",
+        "icon": "Icoon",
+        "add": "Type toevoegen",
+        "deleteWarning": "Dit type is nog in gebruik bij {count} locatie(s)."
+    },
+    "import": {
+        "title": "Importeren",
+        "csvLegacy": "CSV Import (legacy)",
+        "geojson": "GeoJSON Import",
+        "upload": "Bestand uploaden",
+        "preview": "Voorbeeld",
+        "columnMapping": "Kolom mapping",
+        "start": "Importeren starten",
+        "progress": "Voortgang",
+        "result": "Resultaat",
+        "imported": "Geïmporteerd",
+        "skipped": "Overgeslagen",
+        "errors": "Fouten"
+    },
+    "settings": {
+        "title": "Profiel & Instellingen",
+        "language": "Taal",
+        "darkMode": "Donkere modus",
+        "defaultMap": "Standaard kaartweergave",
+        "setDefault": "Huidige weergave opslaan",
+        "clearDefault": "Standaard wissen",
+        "changePassword": "Wachtwoord wijzigen",
+        "currentPassword": "Huidig wachtwoord",
+        "newPassword": "Nieuw wachtwoord",
+        "publicProfile": "Openbaar profiel",
+        "visibility": "Zichtbaarheid",
+        "showRatings": "Beoordelingen tonen",
+        "showComments": "Opmerkingen tonen",
+        "locationFilter": "Locatiefilter"
+    },
+    "common": {
+        "save": "Opslaan",
+        "cancel": "Annuleren",
+        "delete": "Verwijderen",
+        "confirm": "Bevestigen",
+        "loading": "Laden...",
+        "error": "Er is een fout opgetreden",
+        "success": "Succesvol"
+    }
 }

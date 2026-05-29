@@ -26,15 +26,17 @@ async def list_locations(
     type_id: str | None = Query(None),
 ):
     return await location_service.get_locations(
-        db, user_id, year_from=year_from, year_to=year_to,
-        unvisited=unvisited, type_id=type_id,
+        db,
+        user_id,
+        year_from=year_from,
+        year_to=year_to,
+        unvisited=unvisited,
+        type_id=type_id,
     )
 
 
 @router.post("", response_model=LocationFeature, status_code=201)
-async def create_location(
-    data: LocationCreateFeature, user_id: CurrentUserId, db: DB
-):
+async def create_location(data: LocationCreateFeature, user_id: CurrentUserId, db: DB):
     return await location_service.create_location(db, user_id, data)
 
 
@@ -138,7 +140,9 @@ async def import_geojson(
                 geometry=feature.geometry,
                 properties={
                     "name": feature.properties.name,
-                    "type_id": feature.properties.type.id if feature.properties.type else None,
+                    "type_id": (
+                        feature.properties.type.id if feature.properties.type else None
+                    ),
                     "city": feature.properties.city,
                     "country": feature.properties.country,
                     "address": feature.properties.address,
@@ -199,7 +203,11 @@ async def geocode_location(location_id: str, user_id: CurrentUserId, db: DB):
     if not results:
         raise HTTPException(status_code=404, detail="Could not geocode location")
 
-    from app.schemas.location import LocationUpdateFeature, LocationUpdateProperties, PointGeometry
+    from app.schemas.location import (
+        LocationUpdateFeature,
+        LocationUpdateProperties,
+        PointGeometry,
+    )
 
     update_data = LocationUpdateFeature(
         geometry=PointGeometry(coordinates=[results[0]["lon"], results[0]["lat"]]),
@@ -208,5 +216,7 @@ async def geocode_location(location_id: str, user_id: CurrentUserId, db: DB):
             country=results[0]["country_code"] or feature.properties.country,
         ),
     )
-    updated = await location_service.update_location(db, user_id, location_id, update_data)
+    updated = await location_service.update_location(
+        db, user_id, location_id, update_data
+    )
     return updated

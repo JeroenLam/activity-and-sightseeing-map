@@ -2,7 +2,6 @@ import csv
 import io
 from typing import Any
 
-
 KNOWN_COLUMNS = {
     "name": ["name", "naam", "title", "titel"],
     "type": ["type", "soort", "category", "categorie"],
@@ -66,9 +65,7 @@ def parse_visited_years(value: str) -> tuple[list[int], bool]:
     return years, unknown
 
 
-def map_csv_row(
-    row: dict[str, str], column_map: dict[str, str]
-) -> dict[str, Any]:
+def map_csv_row(row: dict[str, str], column_map: dict[str, str]) -> dict[str, Any]:
     """Map a CSV row to location fields using column mapping."""
     result: dict[str, Any] = {}
 

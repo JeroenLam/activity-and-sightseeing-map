@@ -23,9 +23,7 @@ async def test_csv_import(authenticated_client):
     client, _ = authenticated_client
     csv_content = "name,city,country,type\nTestPlace,TestCity,NL,Dierentuin"
 
-    mock_results = [
-        {"lat": 52.0, "lon": 5.0, "city": "TestCity", "country_code": "NL"}
-    ]
+    mock_results = [{"lat": 52.0, "lon": 5.0, "city": "TestCity", "country_code": "NL"}]
     with patch(
         "app.services.geocoding_service.search",
         new_callable=AsyncMock,
