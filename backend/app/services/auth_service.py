@@ -16,6 +16,7 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
 
+
 DEFAULT_TYPES = [
     {"name": "Dierentuin", "color": "#4CAF50", "icon": "paw"},
     {"name": "Museum", "color": "#2196F3", "icon": "museum"},

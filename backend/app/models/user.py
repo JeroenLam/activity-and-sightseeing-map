@@ -30,7 +30,10 @@ class User(Base):
         back_populates="user", cascade="all, delete-orphan", lazy="selectin"
     )
     visibility_settings: Mapped["UserVisibilitySettings | None"] = relationship(
-        back_populates="user", cascade="all, delete-orphan", uselist=False, lazy="selectin"
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False,
+        lazy="selectin",
     )
 
 
