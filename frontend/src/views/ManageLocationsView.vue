@@ -14,7 +14,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="feature in locationsStore.collection.features" :key="feature.id">
+        <tr v-for="feature in locationsStore.collection.features" :key="feature.id ?? ''">
           <td>{{ feature.properties.name }}</td>
           <td>{{ feature.properties.type?.name || '-' }}</td>
           <td>{{ feature.properties.city }}</td>

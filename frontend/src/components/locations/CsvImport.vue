@@ -69,12 +69,14 @@ function onFileSelect(event: Event) {
 
 async function onPreview() {
   if (!file.value) return;
-  previewData.value = await locationsStore.csvPreview(file.value);
+  const text = await file.value.text();
+  previewData.value = await locationsStore.previewCsv(text);
 }
 
 async function onImport() {
   if (!file.value) return;
-  importResult.value = await locationsStore.csvImport(file.value);
+  const text = await file.value.text();
+  importResult.value = await locationsStore.importCsv(text);
   previewData.value = null;
 }
 </script>

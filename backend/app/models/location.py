@@ -39,13 +39,13 @@ class Location(Base):
     )
 
     location_type: Mapped["LocationType | None"] = relationship(  # noqa: F821
-        back_populates="locations"
+        back_populates="locations", lazy="selectin"
     )
     visits: Mapped[list["LocationVisit"]] = relationship(
-        back_populates="location", cascade="all, delete-orphan"
+        back_populates="location", cascade="all, delete-orphan", lazy="selectin"
     )
     tags: Mapped[list["LocationTag"]] = relationship(
-        back_populates="location", cascade="all, delete-orphan"
+        back_populates="location", cascade="all, delete-orphan", lazy="selectin"
     )
 
 

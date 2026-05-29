@@ -1,6 +1,6 @@
 import uuid
 
-from passlib.context import CryptContext
+import bcrypt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -8,7 +8,13 @@ from sqlalchemy.orm import selectinload
 from app.models.user import OAuthProvider, User, UserVisibilitySettings
 from app.schemas.auth import RegisterRequest, UserResponse
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
 
 DEFAULT_TYPES = [
     {"name": "Dierentuin", "color": "#4CAF50", "icon": "paw"},
@@ -47,7 +53,7 @@ async def create_local_user(db: AsyncSession, data: RegisterRequest) -> User:
     user = User(
         id=str(uuid.uuid4()),
         email=data.email,
-        password_hash=pwd_context.hash(data.password),
+        password_hash=hash_password(data.password),
         display_name=data.display_name,
     )
     db.add(user)
@@ -79,7 +85,7 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> User
     user = await get_user_by_email(db, email)
     if not user or not user.password_hash:
         return None
-    if not pwd_context.verify(password, user.password_hash):
+    if not verify_password(password, user.password_hash):
         return None
     return user
 
@@ -90,9 +96,9 @@ async def change_password(
     user = await get_user_by_id(db, user_id)
     if not user or not user.password_hash:
         return False
-    if not pwd_context.verify(current_password, user.password_hash):
+    if not verify_password(current_password, user.password_hash):
         return False
-    user.password_hash = pwd_context.hash(new_password)
+    user.password_hash = hash_password(new_password)
     await db.commit()
     return True
 

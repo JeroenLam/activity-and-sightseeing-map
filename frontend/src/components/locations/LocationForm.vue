@@ -67,7 +67,7 @@
 
     <div>
       <label>{{ $t('locations.comment') }}</label>
-      <textarea v-model="form.comment"></textarea>
+      <textarea v-model="form.comments"></textarea>
     </div>
 
     <div>
@@ -111,7 +111,7 @@ const form = reactive({
   years_visited: props.location?.properties.years_visited || [] as number[],
   visited_unknown_year: props.location?.properties.visited_unknown_year || false,
   rating: props.location?.properties.rating || null,
-  comment: props.location?.properties.comment || '',
+  comments: props.location?.properties.comments || '',
   link: props.location?.properties.link || '',
 });
 
@@ -148,28 +148,33 @@ async function useMyLocation() {
   const pos = await getCurrentPosition();
   if (pos) {
     form.lat = pos.lat;
-    form.lng = pos.lng;
+    form.lng = pos.lon;
   }
 }
 
 async function onSubmit() {
-  const payload = {
-    name: form.name,
-    type_id: form.type_id || undefined,
-    city: form.city,
-    country: form.country,
-    lat: form.lat,
-    lng: form.lng,
-    years_visited: form.years_visited,
-    visited_unknown_year: form.visited_unknown_year,
-    rating: form.rating,
-    comment: form.comment,
-    link: form.link,
+  const feature = {
+    type: 'Feature' as const,
+    geometry: {
+      type: 'Point' as const,
+      coordinates: [form.lng, form.lat] as [number, number],
+    },
+    properties: {
+      name: form.name,
+      type_id: form.type_id || null,
+      city: form.city,
+      country: form.country,
+      years_visited: form.years_visited,
+      visited_unknown_year: form.visited_unknown_year,
+      rating: form.rating,
+      comments: form.comments,
+      link: form.link,
+    },
   };
   if (editing.value && props.location) {
-    await locationsStore.updateLocation(props.location.id!, payload);
+    await locationsStore.updateLocation(props.location.id!, feature);
   } else {
-    await locationsStore.createLocation(payload);
+    await locationsStore.createLocation(feature);
   }
   emit('saved');
 }
