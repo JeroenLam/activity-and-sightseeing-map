@@ -8,7 +8,7 @@ async def test_get_settings(authenticated_client):
     response = await client.get("/api/settings")
     assert response.status_code == 200
     data = response.json()
-    assert data["preferred_language"] == "nl"
+    assert data["preferred_language"] == "en"
     assert data["default_map_lat"] is None
     assert data["profile_public"] is False
 

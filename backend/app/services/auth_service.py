@@ -18,13 +18,13 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 
 DEFAULT_TYPES = [
-    {"name": "Dierentuin", "color": "#4CAF50", "icon": "paw"},
+    {"name": "Zoo", "color": "#4CAF50", "icon": "paw"},
     {"name": "Museum", "color": "#2196F3", "icon": "museum"},
-    {"name": "Museum - Historie", "color": "#795548", "icon": "history"},
-    {"name": "Museum - Kunst", "color": "#9C27B0", "icon": "palette"},
-    {"name": "Museum - Oorlog", "color": "#F44336", "icon": "shield"},
-    {"name": "Museum - Wetenschap", "color": "#FF9800", "icon": "science"},
-    {"name": "Pretpark", "color": "#E91E63", "icon": "park"},
+    {"name": "Museum - History", "color": "#795548", "icon": "history"},
+    {"name": "Museum - Art", "color": "#9C27B0", "icon": "palette"},
+    {"name": "Museum - War", "color": "#F44336", "icon": "shield"},
+    {"name": "Museum - Science", "color": "#FF9800", "icon": "science"},
+    {"name": "Theme Park", "color": "#E91E63", "icon": "park"},
 ]
 
 

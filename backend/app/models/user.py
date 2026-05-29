@@ -18,7 +18,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
     display_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    preferred_language: Mapped[str] = mapped_column(String(2), default="nl")
+    preferred_language: Mapped[str] = mapped_column(String(2), default="en")
     default_map_lat: Mapped[float | None] = mapped_column(nullable=True)
     default_map_lng: Mapped[float | None] = mapped_column(nullable=True)
     default_map_zoom: Mapped[int | None] = mapped_column(Integer, nullable=True)

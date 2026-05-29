@@ -4,7 +4,7 @@ import en from './en.json';
 
 export const i18n = createI18n({
     legacy: false,
-    locale: 'nl',
+    locale: 'en',
     fallbackLocale: 'en',
     messages: { nl, en },
 });

@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 @pytest.mark.asyncio
 async def test_csv_preview(authenticated_client):
     client, _ = authenticated_client
-    csv_content = "name,city,country,type,visited\nArtis,Amsterdam,NL,Dierentuin,2023\nRijksmuseum,Amsterdam,NL,Museum,2022"
+    csv_content = "name,city,country,type,visited\nLondon Zoo,London,UK,Zoo,2023\nBritish Museum,London,UK,Museum,2022"
     response = await client.post(
         "/api/locations/import/preview",
         json={"csv": csv_content},
@@ -21,7 +21,7 @@ async def test_csv_preview(authenticated_client):
 @pytest.mark.asyncio
 async def test_csv_import(authenticated_client):
     client, _ = authenticated_client
-    csv_content = "name,city,country,type\nTestPlace,TestCity,NL,Dierentuin"
+    csv_content = "name,city,country,type\nTestPlace,TestCity,UK,Zoo"
 
     mock_results = [{"lat": 52.0, "lon": 5.0, "city": "TestCity", "country_code": "NL"}]
     with patch(
