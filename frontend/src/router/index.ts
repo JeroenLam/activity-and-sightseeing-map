@@ -1,0 +1,68 @@
+import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    {
+      path: '/',
+      name: 'map',
+      component: () => import('@/views/MapView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/add',
+      name: 'add-location',
+      component: () => import('@/views/AddLocationView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/locations',
+      name: 'manage-locations',
+      component: () => import('@/views/ManageLocationsView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/types',
+      name: 'manage-types',
+      component: () => import('@/views/ManageTypesView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/import',
+      name: 'import',
+      component: () => import('@/views/ImportView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('@/views/ProfileView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/auth',
+      name: 'auth',
+      component: () => import('@/views/AuthView.vue'),
+    },
+    {
+      path: '/public/:userId',
+      name: 'public-profile',
+      component: () => import('@/views/PublicMapView.vue'),
+    },
+  ],
+});
+
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore();
+
+  if (!authStore.user && !authStore.loading) {
+    await authStore.fetchUser();
+  }
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    return { name: 'auth' };
+  }
+});
+
+export default router;
