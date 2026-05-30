@@ -74,6 +74,14 @@ export const useLocationsStore = defineStore('locations', () => {
         return data;
     }
 
+    async function deleteAll() {
+        const ids = collection.value.features.map((f) => f.id).filter(Boolean);
+        for (const id of ids) {
+            await axios.delete(`/api/locations/${id}`);
+        }
+        collection.value.features = [];
+    }
+
     return {
         collection,
         loading,
@@ -86,5 +94,6 @@ export const useLocationsStore = defineStore('locations', () => {
         importCsv,
         importGeojson,
         exportGeojson,
+        deleteAll,
     };
 });

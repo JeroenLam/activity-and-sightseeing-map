@@ -56,12 +56,18 @@ const router = createRouter({
 router.beforeEach(async (to) => {
     const authStore = useAuthStore();
 
-    if (!authStore.user && !authStore.loading) {
+    // Always attempt to fetch user if not yet loaded
+    if (!authStore.user) {
         await authStore.fetchUser();
     }
 
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
         return { name: 'auth' };
+    }
+
+    // Redirect authenticated users away from auth page
+    if (to.name === 'auth' && authStore.isAuthenticated) {
+        return { name: 'map' };
     }
 });
 

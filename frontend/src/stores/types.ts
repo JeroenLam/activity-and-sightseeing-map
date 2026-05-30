@@ -35,6 +35,13 @@ export const useTypesStore = defineStore('types', () => {
         types.value = types.value.filter((t) => t.id !== id);
     }
 
+    async function deleteAll() {
+        for (const t of [...types.value]) {
+            await axios.delete(`/api/types/${t.id}`);
+        }
+        types.value = [];
+    }
+
     return {
         types,
         loading,
@@ -42,5 +49,6 @@ export const useTypesStore = defineStore('types', () => {
         createType,
         updateType,
         deleteType,
+        deleteAll,
     };
 });

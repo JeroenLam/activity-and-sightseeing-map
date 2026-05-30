@@ -1,82 +1,93 @@
 <template>
   <div class="csv-import">
-    <h3>{{ $t('import.title') }}</h3>
+    <input ref="fileInput" type="file" accept=".csv" @change="onFile" hidden />
 
-    <div v-if="!previewData">
-      <input type="file" accept=".csv" @change="onFileSelect" />
-      <button :disabled="!file" @click="onPreview">{{ $t('import.preview') }}</button>
-    </div>
+    <template v-if="preview">
+      <h4>{{ t('import.preview') }} ({{ preview.total_rows }} rows)</h4>
 
-    <div v-if="previewData">
-      <h4>{{ $t('import.columnMapping') }}</h4>
-      <table>
-        <thead>
-          <tr>
-            <th>Field</th>
-            <th>CSV Column</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(col, idx) in previewData.detected_columns" :key="idx">
-            <td>{{ col.field }}</td>
-            <td>{{ col.csv_column }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- Column mapping -->
+      <div class="mapping-table">
+        <div v-for="(col, field) in preview.column_map" :key="field" class="mapping-row">
+          <span class="mapping-field">{{ field }}</span>
+          <select v-model="columnMap[field]">
+            <option value="">—</option>
+            <option v-for="h in preview.headers" :key="h" :value="h">{{ h }}</option>
+          </select>
+        </div>
+      </div>
 
-      <h4>{{ $t('import.previewRows') }}</h4>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>City</th>
-            <th>Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(row, idx) in previewData.preview_rows.slice(0, 5)" :key="idx">
-            <td>{{ row.name }}</td>
-            <td>{{ row.city }}</td>
-            <td>{{ row.type_name }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <button class="btn btn-primary" @click="doImport" :disabled="importing" style="margin-top: 0.75rem">
+        {{ importing ? t('import.importing') : t('import.startImport') }}
+      </button>
+    </template>
 
-      <p>Total rows: {{ previewData.total_rows }}</p>
-      <button @click="onImport">{{ $t('import.import') }}</button>
-      <button @click="previewData = null">{{ $t('common.cancel') }}</button>
-    </div>
-
-    <div v-if="importResult">
-      <p>{{ $t('import.success') }}: {{ importResult.imported }} imported, {{ importResult.skipped }} skipped</p>
+    <div v-if="result" class="result-box">
+      <p class="text-success">{{ t('import.imported', { count: result.imported }) }}</p>
+      <p v-if="result.skipped" class="text-secondary">{{ t('import.skipped', { count: result.skipped }) }}</p>
+      <div v-if="result.errors.length">
+        <p class="text-error">{{ t('import.errors') }}:</p>
+        <ul class="error-list">
+          <li v-for="(err, i) in result.errors.slice(0, 10)" :key="i">{{ err }}</li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useLocationsStore } from '@/stores/locations';
+import type { CsvPreview, ImportResult } from '@/types';
 
+const { t } = useI18n();
 const locationsStore = useLocationsStore();
-const file = ref<File | null>(null);
-const previewData = ref<any>(null);
-const importResult = ref<any>(null);
+const emit = defineEmits<{ done: [] }>();
 
-function onFileSelect(event: Event) {
-  const input = event.target as HTMLInputElement;
-  file.value = input.files?.[0] || null;
+const fileInput = ref<HTMLInputElement>();
+const csvText = ref('');
+const preview = ref<CsvPreview | null>(null);
+const columnMap = reactive<Record<string, string>>({});
+const importing = ref(false);
+const result = ref<ImportResult | null>(null);
+
+function triggerFileInput() {
+  fileInput.value?.click();
 }
 
-async function onPreview() {
-  if (!file.value) return;
-  const text = await file.value.text();
-  previewData.value = await locationsStore.previewCsv(text);
+defineExpose({ triggerFileInput });
+
+async function onFile(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+  csvText.value = await file.text();
+  result.value = null;
+  try {
+    const p = await locationsStore.previewCsv(csvText.value);
+    preview.value = p;
+    Object.assign(columnMap, p.column_map);
+  } catch { preview.value = null; }
 }
 
-async function onImport() {
-  if (!file.value) return;
-  const text = await file.value.text();
-  importResult.value = await locationsStore.importCsv(text);
-  previewData.value = null;
+async function doImport() {
+  importing.value = true;
+  try {
+    result.value = await locationsStore.importCsv(csvText.value, columnMap);
+    emit('done');
+  } catch {}
+  finally { importing.value = false; }
 }
 </script>
+
+<style scoped>
+.hint { font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
+h4 { margin: 0.75rem 0 0.5rem; font-size: 0.9rem; }
+
+.mapping-table { display: flex; flex-direction: column; gap: 0.4rem; }
+.mapping-row { display: flex; align-items: center; gap: 0.5rem; }
+.mapping-field { font-size: 0.8rem; font-weight: 500; min-width: 100px; }
+.mapping-row select { flex: 1; font-size: 0.8rem; padding: 0.3rem; }
+
+.result-box { margin-top: 1rem; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; }
+.error-list { list-style: disc; padding-left: 1.25rem; font-size: 0.8rem; color: var(--color-error); }
+</style>

@@ -22,6 +22,24 @@ router = APIRouter(prefix="/api/public", tags=["public"])
 
 @router.get("/{user_id}/profile")
 async def get_public_profile(user_id: str, db: DB):
+    """Get a user's public profile including display name and type legend.
+
+    Returns the user's display name and their public location types
+    (excluding types marked as private). No authentication required.
+
+    Example request:
+        GET /api/public/550e8400-e29b-41d4-a716-446655440000/profile
+
+    Example response:
+        {
+            "display_name": "Jan de Vries",
+            "types": [
+                {"id": "uuid", "name": "Museum", "color": "#2196F3", "icon": "bank"}
+            ]
+        }
+
+    Returns 404 if the user does not exist or their profile is not public.
+    """
     # Check user exists and is public
     user = await _get_public_user(db, user_id)
 
@@ -49,6 +67,22 @@ async def get_public_profile(user_id: str, db: DB):
 
 @router.get("/{user_id}/locations", response_model=LocationFeatureCollection)
 async def get_public_locations(user_id: str, db: DB):
+    """Get a user's public locations as a GeoJSON FeatureCollection.
+
+    Returns locations filtered by the user's visibility settings:
+    - Types marked as private are excluded
+    - Locations are filtered by the user's location_filter setting
+      (show-all, visited-only, or unvisited-only)
+    - Ratings and comments are hidden if disabled in visibility settings
+
+    No authentication required.
+
+    Example request:
+        GET /api/public/550e8400-e29b-41d4-a716-446655440000/locations
+
+    Returns a GeoJSON FeatureCollection. Returns 404 if the user does not
+    exist or their profile is not public.
+    """
     user = await _get_public_user(db, user_id)
 
     # Get visibility settings
