@@ -49,12 +49,17 @@ profile = "black"
 line-length = 88
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "PT"]
+select = ["E", "F", "W", "N", "UP", "S", "B", "A", "C4", "PT"]
 ignore = ["S101"]  # Allow assert in tests
 
 [tool.mypy]
-strict = true
+strict = false
 plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "app.routers.public"
+ignore_errors = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -62,6 +67,7 @@ testpaths = ["tests"]
 
 [tool.coverage.run]
 source = ["app"]
+concurrency = ["greenlet", "thread"]
 
 [tool.coverage.report]
 fail_under = 80

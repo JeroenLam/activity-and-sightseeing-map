@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
 from fastapi import Cookie, Depends, HTTPException, Response, status
@@ -10,8 +10,8 @@ from app.database import get_db
 
 
 def create_token(user_id: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(days=settings.jwt_expiry_days)
-    payload = {"sub": user_id, "exp": expire, "iat": datetime.now(timezone.utc)}
+    expire = datetime.now(UTC) + timedelta(days=settings.jwt_expiry_days)
+    payload = {"sub": user_id, "exp": expire, "iat": datetime.now(UTC)}
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
@@ -54,7 +54,7 @@ async def get_current_user_id(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
-        )
+        ) from None
 
 
 CurrentUserId = Annotated[str, Depends(get_current_user_id)]

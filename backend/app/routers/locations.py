@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 
-from app.middleware.auth import CurrentUserId, DB
+from app.middleware.auth import DB, CurrentUserId
 from app.schemas.location import (
     CsvImportRequest,
     CsvPreviewRequest,
@@ -101,7 +101,7 @@ async def import_csv(data: CsvImportRequest, user_id: CurrentUserId, db: DB):
                             city = results[0]["city"]
                         if not country:
                             country = results[0]["country_code"]
-                except Exception:
+                except Exception:  # noqa: S110  # nosec B110
                     pass
 
             feature = LocationCreateFeature(

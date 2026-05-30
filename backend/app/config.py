@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./data/app.db"
-    jwt_secret: str = "change-me-to-a-random-secret"
+    jwt_secret: str = "change-me-to-a-random-secret"  # noqa: S105
     jwt_expiry_days: int = 7
     jwt_algorithm: str = "HS256"
 

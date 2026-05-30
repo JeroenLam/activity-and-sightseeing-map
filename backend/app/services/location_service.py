@@ -1,12 +1,11 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.location import Location, LocationTag, LocationVisit
-from app.models.location_type import LocationType
 from app.schemas.location import (
     LocationCreateFeature,
     LocationFeature,
@@ -192,7 +191,7 @@ async def update_location(
     if props.visited_unknown_year is not None:
         location.visited_unknown_year = props.visited_unknown_year
 
-    location.updated_at = datetime.now(timezone.utc)
+    location.updated_at = datetime.now(UTC)
 
     # Update visits if provided
     if props.years_visited is not None:

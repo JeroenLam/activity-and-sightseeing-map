@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
-from app.middleware.auth import CurrentUserId, DB
-from app.models.user import User, UserVisibilitySettings
+from app.middleware.auth import DB, CurrentUserId
+from app.models.user import UserVisibilitySettings
 from app.schemas.settings import SettingsResponse, SettingsUpdate
 from app.services.auth_service import get_user_by_id
 

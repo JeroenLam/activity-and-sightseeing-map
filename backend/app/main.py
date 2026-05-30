@@ -11,7 +11,9 @@ from app.routers import (
     geocoding,
     locations,
     public,
-    settings as settings_router,
+)
+from app.routers import settings as settings_router
+from app.routers import (
     types,
 )
 

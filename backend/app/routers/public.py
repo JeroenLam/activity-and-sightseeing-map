@@ -1,9 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.database import get_db
 from app.middleware.auth import DB
 from app.models.location import Location
 from app.models.location_type import LocationType, TypeVisibility
@@ -83,7 +81,7 @@ async def get_public_locations(user_id: str, db: DB):
     Returns a GeoJSON FeatureCollection. Returns 404 if the user does not
     exist or their profile is not public.
     """
-    user = await _get_public_user(db, user_id)
+    await _get_public_user(db, user_id)
 
     # Get visibility settings
     result = await db.execute(

@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response
 
 from app.config import settings
 from app.middleware.auth import (
-    CurrentUserId,
     DB,
+    CurrentUserId,
     clear_token_cookie,
     create_token,
     set_token_cookie,
@@ -40,7 +40,7 @@ async def register(data: RegisterRequest, response: Response, db: DB):
     try:
         user = await auth_service.create_local_user(db, data)
     except ValueError as e:
-        raise HTTPException(status_code=409, detail=str(e))
+        raise HTTPException(status_code=409, detail=str(e)) from e
     token = create_token(user.id)
     set_token_cookie(response, token)
     return auth_service.user_to_response(user)

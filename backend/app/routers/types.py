@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from app.middleware.auth import CurrentUserId, DB
+from app.middleware.auth import DB, CurrentUserId
 from app.schemas.location_type import (
     LocationTypeCreate,
     LocationTypeResponse,
