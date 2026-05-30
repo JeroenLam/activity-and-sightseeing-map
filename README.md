@@ -1,135 +1,178 @@
-# Activity & Sightseeing Map
+# Activities & Sightseeing Map
 
-A full-stack web application for tracking visited and unvisited activities, museums, and sightseeing locations on an interactive map.
+A full-stack web application for tracking visited and planned activities, museums, and sightseeing locations on an interactive Leaflet map.
+
+## Architecture
+
+The application uses a **split-container architecture**:
+
+- **Backend** — Python FastAPI with SQLAlchemy (async SQLite), JWT authentication, GeoJSON API
+- **Frontend** — Vue 3 SPA with TypeScript, served by Vite (dev) or Nginx (prod)
+
+Both services run as separate Docker containers, orchestrated via Docker Compose.
 
 ## Features
 
-- **Interactive Leaflet map** with colored markers per location type (circles for unvisited, squares for visited)
-- **Filter & sort** by year range, view mode (all / visited / unvisited), marker size, and opacity
-- **Toggleable legend** — click a type to show/hide its markers
-- **Dark mode** — full UI and map tile support (CartoDB dark tiles)
-- **CSV import** with streaming progress bar and automatic geocoding (Nominatim + Photon fallback)
-- **Manage tab** — compact sortable table with inline edit, delete, and geocode retry
-- **Location types** — fully customizable with name and color
-- **Bilingual** — Dutch (NL) and English (EN)
-- **Authentication** — local email/password, Google OAuth, GitHub OAuth
-- **User profile** — change password
-- **Progress bar** — shows % of locations visited in the header
-- **Docker** — single-container deployment with data volume
-- **CI/CD** — GitHub Actions with tests + GHCR image publishing
+- **Interactive Leaflet map** with colored markers per location type (squares for visited, circles for unvisited)
+- **Sidebar** with progress bar, type legend with counts, and visible-locations list
+- **Filters** — year range, show unvisited only, adjustable marker size and opacity
+- **Location management** — sortable/searchable table with inline edit, delete, geocode retry, CSV export
+- **Add location** — geocoding search, click-to-place pin map, device location, star rating, notes
+- **GeoJSON import/export** — full data portability in standard GeoJSON FeatureCollection format
+- **CSV import** — legacy format with column mapping and automatic geocoding
+- **Location types** — customizable name and color per type
+- **Dark mode** — full UI support with CSS variables
+- **Bilingual** — English and Dutch (vue-i18n)
+- **Authentication** — email/password with bcrypt, Google OAuth support
+- **Public profiles** — shareable read-only map view
 
 ## Tech Stack
 
-| Layer      | Technology                                       |
-| ---------- | ------------------------------------------------ |
-| Frontend   | Vue 3 (Composition API), TypeScript, Vite, Pinia |
-| Map        | Leaflet + OpenStreetMap / CartoDB tiles          |
-| Backend    | Express 4, TypeScript, Passport.js, JWT          |
-| Geocoding  | Nominatim (primary) + Photon/Komoot (fallback)   |
-| Storage    | JSON files (per-user directories)                |
-| i18n       | vue-i18n 10                                      |
-| Testing    | Jest + supertest (server), Vitest (client)       |
-| Deployment | Docker (Node 20 Alpine, multi-stage build)       |
+| Layer     | Technology                                             |
+| --------- | ------------------------------------------------------ |
+| Backend   | FastAPI, Python 3.12, SQLAlchemy 2.0, Alembic, Pydantic v2 |
+| Auth      | JWT (httpOnly cookies), bcrypt, python-jose, Google OAuth |
+| Database  | SQLite (aiosqlite, async)                              |
+| Frontend  | Vue 3 (Composition API), TypeScript, Vite 6, Pinia    |
+| Map       | Leaflet + OpenStreetMap tiles                          |
+| i18n      | vue-i18n 10 (EN + NL)                                 |
+| Testing   | pytest + httpx (backend), Vitest (frontend)            |
+| Deploy    | Docker Compose (uvicorn + nginx/vite)                  |
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 20+
-- npm
+- Docker & Docker Compose
 
 ### Development
 
 ```bash
-# Install dependencies
-cd server && npm install && cd ..
-cd client && npm install && cd ..
-
-# Start server (with hot reload)
-cd server && npm run dev
-
-# Start client (in a second terminal)
-cd client && npm run dev
+# Start both services with hot reload
+docker compose -f docker-compose-dev.yaml up --build
 ```
 
-The client runs on `http://localhost:5173` and proxies API requests to the server on port `3000`.
+The frontend is available at `http://localhost:5173`, proxying API requests to the backend on port `8000`.
 
-### Docker
+### Production
 
 ```bash
 docker compose up --build
 ```
 
-The app is then available at `http://localhost:3000`.
+The app is served at `http://localhost:80` (nginx serves the built frontend and proxies `/api` to the backend).
+
+### Without Docker
+
+```bash
+# Backend
+cd backend
+uv sync
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload --port 8000
+
+# Frontend (separate terminal)
+cd frontend
+npm install
+npm run dev
+```
 
 ### Environment Variables
 
-| Variable               | Default                 | Description                   |
-| ---------------------- | ----------------------- | ----------------------------- |
-| `PORT`                 | `3000`                  | Server port                   |
-| `DATA_DIR`             | `./data`                | Directory for JSON data files |
-| `JWT_SECRET`           | (required)              | Secret for signing JWT tokens |
-| `JWT_EXPIRY`           | `7d`                    | JWT token expiry duration     |
-| `GOOGLE_CLIENT_ID`     | _(empty = disabled)_    | Google OAuth client ID        |
-| `GOOGLE_CLIENT_SECRET` | _(empty = disabled)_    | Google OAuth client secret    |
-| `GITHUB_CLIENT_ID`     | _(empty = disabled)_    | GitHub OAuth client ID        |
-| `GITHUB_CLIENT_SECRET` | _(empty = disabled)_    | GitHub OAuth client secret    |
-| `OAUTH_CALLBACK_URL`   | `http://localhost:3000` | Base URL for OAuth callbacks  |
+| Variable            | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| `SECRET_KEY`        | (required)           | Secret for signing JWT tokens  |
+| `DATABASE_URL`      | `sqlite+aiosqlite:///./data/app.db` | Database connection string |
+| `GOOGLE_CLIENT_ID`  | _(empty = disabled)_ | Google OAuth client ID         |
+| `GOOGLE_CLIENT_SECRET` | _(empty = disabled)_ | Google OAuth client secret  |
+
+## API Format
+
+The locations API uses **GeoJSON** as the data format:
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "uuid",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.9163, 52.3660]
+      },
+      "properties": {
+        "name": "Artis Zoo",
+        "type": { "id": "uuid", "name": "Zoo", "color": "#4CAF50", "icon": "" },
+        "city": "Amsterdam",
+        "country": "Netherlands",
+        "years_visited": [2019, 2022],
+        "visited_unknown_year": false,
+        "rating": 4,
+        "comments": "Great day out",
+        "tags": [],
+        "link": "https://www.artis.nl/"
+      }
+    }
+  ]
+}
+```
 
 ## Testing
 
 ```bash
-# Server tests (Jest)
-cd server && npm test
+# Backend tests (pytest)
+cd backend && uv run pytest
 
-# Client tests (Vitest)
-cd client && npm test
+# Frontend type-check
+cd frontend && npx vue-tsc --noEmit
 ```
 
 ## Project Structure
 
 ```
-├── client/                 # Vue 3 frontend
+├── backend/                # FastAPI backend
+│   ├── app/
+│   │   ├── models/         # SQLAlchemy models
+│   │   ├── schemas/        # Pydantic schemas
+│   │   ├── services/       # Business logic
+│   │   ├── routers/        # API routes
+│   │   └── middleware/     # Auth middleware
+│   ├── alembic/            # Database migrations
+│   └── tests/              # pytest tests
+├── frontend/               # Vue 3 frontend
 │   ├── src/
 │   │   ├── assets/         # Global CSS
-│   │   ├── components/     # Reusable components (map, layout, filters)
-│   │   ├── i18n/           # NL and EN translations
-│   │   ├── router/         # Vue Router config
+│   │   ├── components/     # UI components (map, layout, auth, locations)
+│   │   ├── composables/    # Vue composables (geocoding)
+│   │   ├── i18n/           # EN and NL translations
+│   │   ├── router/         # Vue Router
 │   │   ├── stores/         # Pinia stores (auth, locations, types, theme)
 │   │   ├── types/          # TypeScript interfaces
 │   │   └── views/          # Page views
 │   └── ...
-├── server/                 # Express backend
-│   ├── src/
-│   │   ├── config/         # Passport strategies
-│   │   ├── middleware/      # Auth middleware
-│   │   ├── routes/         # API routes (auth, locations, types)
-│   │   ├── services/       # Business logic (user, file store)
-│   │   ├── types/          # TypeScript interfaces
-│   │   └── utils/          # File I/O helpers
-│   └── ...
-├── .github/workflows/      # CI/CD pipeline
-├── Dockerfile              # Multi-stage production build
-├── docker-compose.yml      # Docker Compose config
+├── docker-compose.yaml     # Production compose
+├── docker-compose-dev.yaml # Development compose (hot reload)
 └── README.md
 ```
 
 ## CSV Import Format
 
-The import accepts CSV files with the following columns. Only `name` is required; all other columns are optional.
+The CSV import accepts files with the following columns. Only `name` is required.
 
-| Column      | Description                                                        | Example                 |
-| ----------- | ------------------------------------------------------------------ | ----------------------- |
-| `name`      | Name of the location (required)                                    | `Artis Zoo`             |
-| `type`      | Category/type name (created automatically if new)                  | `Zoo`                   |
-| `city`      | City name                                                          | `Amsterdam`             |
-| `country`   | Country name                                                       | `Netherlands`           |
-| `link`      | URL or website description                                         | `https://www.artis.nl/` |
-| `visited`   | Comma-separated years visited, `-` for unknown year, empty if none | `2019, 2022`            |
-| `latitude`  | Latitude (skips geocoding if provided together with longitude)     | `52.3660`               |
-| `longitude` | Longitude (skips geocoding if provided together with latitude)     | `4.9163`                |
+| Column      | Description                                                        | Example         |
+| ----------- | ------------------------------------------------------------------ | --------------- |
+| `name`      | Name of the location (required)                                    | `Artis Zoo`     |
+| `type`      | Category/type name (auto-created if new)                           | `Zoo`           |
+| `city`      | City name                                                          | `Amsterdam`     |
+| `country`   | Country name                                                       | `Netherlands`   |
+| `link`      | URL                                                                | `https://...`   |
+| `visited`   | Comma-separated years, `-` for unknown year, empty if not visited  | `2019, 2022`    |
+| `latitude`  | Latitude (skips geocoding if both lat/lon provided)                | `52.3660`       |
+| `longitude` | Longitude                                                          | `4.9163`        |
+| `rating`    | 1–5 star rating                                                    | `4`             |
+| `note`      | Free-text note                                                     | `Great visit`   |
 
-**Notes:**
-- Column headers are matched case-insensitively. Dutch names are also recognized (e.g. `naam`, `plaats`, `land`, `geweest`, `breedtegraad`, `lengtegraad`).
-- If `latitude` and `longitude` are not provided, coordinates are automatically geocoded using Nominatim/Photon.
-- Import is **additive** — existing locations are not modified or replaced.
+## License
+
+Private project.

@@ -1,0 +1,18 @@
+services:
+  backend:
+    image: ghcr.io/jeroenlam/activity-and-sightseeing-map-backend:latest
+    env_file: .env
+    volumes:
+      - db-data:/app/data
+    ports:
+      - "8000:8000"
+
+  frontend:
+    image: ghcr.io/jeroenlam/activity-and-sightseeing-map-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  db-data:

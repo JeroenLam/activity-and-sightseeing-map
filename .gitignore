@@ -1,11 +1,36 @@
-node_modules
-dist
-data
-*.log
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Build output
+dist/
+*.egg-info/
+
+# Environment
 .env
+
+# Data / DB
+data/
+*.db
+
+# IDE
 .DS_Store
-coverage
+.vscode/
+.idea/
 
+# Logs
+*.log
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# OS
+Thumbs.db
+
+# Legacy
 Museum en Activiteiten lijst - Activiteit.csv
-
-/data/*
+old/*
