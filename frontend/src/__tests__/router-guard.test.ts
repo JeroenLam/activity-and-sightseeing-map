@@ -3,8 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
 
-// Mock axios
-vi.mock('axios', () => ({
+// Mock api module
+vi.mock('@/lib/api', () => ({
     default: {
         get: vi.fn(),
         post: vi.fn(),

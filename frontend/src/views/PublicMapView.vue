@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import axios from 'axios';
+import api from '@/lib/api';
 import MapContainer from '@/components/map/MapContainer.vue';
 import type { LocationFeature } from '@/types';
 
@@ -33,8 +33,8 @@ onMounted(async () => {
   const userId = route.params.userId as string;
   try {
     const [profileResp, locationsResp] = await Promise.all([
-      axios.get(`/api/public/${userId}/profile`),
-      axios.get(`/api/public/${userId}/locations`),
+      api.get(`/api/public/${userId}/profile`),
+      api.get(`/api/public/${userId}/locations`),
     ]);
     profileName.value = profileResp.data.display_name;
     features.value = locationsResp.data.features;

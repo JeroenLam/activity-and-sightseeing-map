@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import axios from 'axios';
+import api from '@/lib/api';
 import type { GeocodingResult, ReverseGeocodingResult } from '@/types';
 
 export function useGeocoding() {
@@ -18,7 +18,7 @@ export function useGeocoding() {
         searching.value = true;
         debounceTimer = setTimeout(async () => {
             try {
-                const { data } = await axios.get<GeocodingResult[]>('/api/geocode/search', {
+                const { data } = await api.get<GeocodingResult[]>('/api/geocode/search', {
                     params: { q: query },
                 });
                 results.value = data;
@@ -32,7 +32,7 @@ export function useGeocoding() {
 
     async function reverseGeocode(lat: number, lon: number): Promise<ReverseGeocodingResult | null> {
         try {
-            const { data } = await axios.get<ReverseGeocodingResult>('/api/geocode/reverse', {
+            const { data } = await api.get<ReverseGeocodingResult>('/api/geocode/reverse', {
                 params: { lat, lon },
             });
             return data;

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import axios from 'axios';
+import api from '@/lib/api';
 import type { LocationType } from '@/types';
 
 export const useTypesStore = defineStore('types', () => {
@@ -10,7 +10,7 @@ export const useTypesStore = defineStore('types', () => {
     async function fetchTypes() {
         loading.value = true;
         try {
-            const { data } = await axios.get<LocationType[]>('/api/types');
+            const { data } = await api.get<LocationType[]>('/api/types');
             types.value = data;
         } finally {
             loading.value = false;
@@ -18,26 +18,26 @@ export const useTypesStore = defineStore('types', () => {
     }
 
     async function createType(payload: { name: string; color: string; icon?: string }): Promise<LocationType> {
-        const { data } = await axios.post<LocationType>('/api/types', payload);
+        const { data } = await api.post<LocationType>('/api/types', payload);
         types.value.push(data);
         return data;
     }
 
     async function updateType(id: string, payload: { name?: string; color?: string; icon?: string }): Promise<LocationType> {
-        const { data } = await axios.put<LocationType>(`/api/types/${id}`, payload);
+        const { data } = await api.put<LocationType>(`/api/types/${id}`, payload);
         const idx = types.value.findIndex((t) => t.id === id);
         if (idx !== -1) types.value[idx] = data;
         return data;
     }
 
     async function deleteType(id: string) {
-        await axios.delete(`/api/types/${id}`);
+        await api.delete(`/api/types/${id}`);
         types.value = types.value.filter((t) => t.id !== id);
     }
 
     async function deleteAll() {
         for (const t of [...types.value]) {
-            await axios.delete(`/api/types/${t.id}`);
+            await api.delete(`/api/types/${t.id}`);
         }
         types.value = [];
     }

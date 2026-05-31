@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import axios from 'axios';
+import api from '@/lib/api';
 import type { UserSettings } from '@/types';
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -19,7 +19,7 @@ export const useSettingsStore = defineStore('settings', () => {
     async function fetchSettings() {
         loading.value = true;
         try {
-            const { data } = await axios.get<UserSettings>('/api/settings');
+            const { data } = await api.get<UserSettings>('/api/settings');
             settings.value = data;
         } finally {
             loading.value = false;
@@ -27,7 +27,7 @@ export const useSettingsStore = defineStore('settings', () => {
     }
 
     async function updateSettings(payload: Partial<UserSettings>) {
-        const { data } = await axios.put<UserSettings>('/api/settings', payload);
+        const { data } = await api.put<UserSettings>('/api/settings', payload);
         settings.value = data;
     }
 

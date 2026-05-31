@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import axios from 'axios';
+import api from '@/lib/api';
 import type { User, OAuthConfig } from '@/types';
 import { i18n } from '@/i18n';
 
@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function fetchOAuthConfig() {
         try {
-            const { data } = await axios.get<OAuthConfig>('/api/auth/oauth-config');
+            const { data } = await api.get<OAuthConfig>('/api/auth/oauth-config');
             oauthConfig.value = data;
         } catch {
             // OAuth not available
@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', () => {
     async function fetchUser() {
         loading.value = true;
         try {
-            const { data } = await axios.get<User>('/api/auth/me');
+            const { data } = await api.get<User>('/api/auth/me');
             user.value = data;
             i18n.global.locale.value = data.preferred_language as 'nl' | 'en';
         } catch {
@@ -37,7 +37,7 @@ export const useAuthStore = defineStore('auth', () => {
     async function login(email: string, password: string) {
         error.value = '';
         try {
-            const { data } = await axios.post<User>('/api/auth/login', { email, password });
+            const { data } = await api.post<User>('/api/auth/login', { email, password });
             user.value = data;
             i18n.global.locale.value = data.preferred_language as 'nl' | 'en';
         } catch (err: any) {
@@ -49,7 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
     async function register(email: string, password: string, displayName: string) {
         error.value = '';
         try {
-            const { data } = await axios.post<User>('/api/auth/register', {
+            const { data } = await api.post<User>('/api/auth/register', {
                 email,
                 password,
                 display_name: displayName,
@@ -63,12 +63,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function logout() {
-        await axios.post('/api/auth/logout');
+        await api.post('/api/auth/logout');
         user.value = null;
     }
 
     async function updateProfile(displayName?: string, preferredLanguage?: string) {
-        const { data } = await axios.put<User>('/api/auth/me', {
+        const { data } = await api.put<User>('/api/auth/me', {
             display_name: displayName,
             preferred_language: preferredLanguage,
         });
@@ -79,7 +79,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function changePassword(currentPassword: string, newPassword: string) {
-        await axios.put('/api/auth/me/password', {
+        await api.put('/api/auth/me/password', {
             current_password: currentPassword,
             new_password: newPassword,
         });
