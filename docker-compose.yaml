@@ -9,6 +9,10 @@ services:
 
   frontend:
     image: ghcr.io/jeroenlam/activity-and-sightseeing-map-frontend:latest
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-}
     ports:
       - "80:80"
     depends_on:
