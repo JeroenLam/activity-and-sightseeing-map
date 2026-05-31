@@ -86,12 +86,13 @@ async def import_csv(data: CsvImportRequest, user_id: CurrentUserId, db: DB):
             if type_name and type_name.lower() in type_map:
                 type_id = type_map[type_name.lower()]
 
-            # Geocode if no coordinates
+            # Use provided coordinates or geocode
             city = mapped.get("city", "")
             country = mapped.get("country", "")
-            lat, lon = 0.0, 0.0
+            lat = mapped.get("latitude", 0.0)
+            lon = mapped.get("longitude", 0.0)
 
-            if city:
+            if not lat and not lon and city:
                 try:
                     results = await geocoding_service.search(f"{name}, {city}")
                     if results:
@@ -112,9 +113,13 @@ async def import_csv(data: CsvImportRequest, user_id: CurrentUserId, db: DB):
                     "type_id": type_id,
                     "city": city,
                     "country": country,
+                    "address": mapped.get("address"),
                     "link": mapped.get("link"),
                     "years_visited": mapped.get("years_visited", []),
                     "visited_unknown_year": mapped.get("visited_unknown_year", False),
+                    "rating": mapped.get("rating"),
+                    "comments": mapped.get("comments"),
+                    "tags": mapped.get("tags", []),
                 },
             )
             await location_service.create_location(db, user_id, feature)

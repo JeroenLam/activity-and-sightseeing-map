@@ -7,8 +7,22 @@ KNOWN_COLUMNS = {
     "type": ["type", "soort", "category", "categorie"],
     "city": ["city", "stad", "plaats", "place"],
     "country": ["country", "land", "country_code"],
+    "address": ["address", "adres", "street", "straat"],
     "link": ["link", "url", "website"],
     "visited": ["visited", "bezocht", "years", "jaren", "year", "jaar"],
+    "rating": ["rating", "beoordeling", "score", "stars", "sterren"],
+    "comments": [
+        "comments",
+        "comment",
+        "opmerkingen",
+        "opmerking",
+        "notes",
+        "note",
+        "notities",
+    ],
+    "tags": ["tags", "tag", "labels", "label"],
+    "latitude": ["latitude", "lat", "breedtegraad"],
+    "longitude": ["longitude", "lon", "lng", "lengtegraad"],
 }
 
 
@@ -79,10 +93,45 @@ def map_csv_row(row: dict[str, str], column_map: dict[str, str]) -> dict[str, An
         result["country"] = row.get(column_map["country"], "").strip()
     if "link" in column_map:
         result["link"] = row.get(column_map["link"], "").strip() or None
+    if "address" in column_map:
+        result["address"] = row.get(column_map["address"], "").strip() or None
     if "visited" in column_map:
         visited_str = row.get(column_map["visited"], "").strip()
         years, unknown = parse_visited_years(visited_str)
         result["years_visited"] = years
         result["visited_unknown_year"] = unknown
+    if "rating" in column_map:
+        rating_str = row.get(column_map["rating"], "").strip()
+        if rating_str:
+            try:
+                rating = int(rating_str)
+                if 1 <= rating <= 5:
+                    result["rating"] = rating
+            except ValueError:
+                pass
+    if "comments" in column_map:
+        result["comments"] = row.get(column_map["comments"], "").strip() or None
+    if "tags" in column_map:
+        tags_str = row.get(column_map["tags"], "").strip()
+        if tags_str:
+            result["tags"] = [
+                t.strip() for t in tags_str.replace(";", ",").split(",") if t.strip()
+            ]
+        else:
+            result["tags"] = []
+    if "latitude" in column_map:
+        lat_str = row.get(column_map["latitude"], "").strip()
+        if lat_str:
+            try:
+                result["latitude"] = float(lat_str)
+            except ValueError:
+                pass
+    if "longitude" in column_map:
+        lon_str = row.get(column_map["longitude"], "").strip()
+        if lon_str:
+            try:
+                result["longitude"] = float(lon_str)
+            except ValueError:
+                pass
 
     return result

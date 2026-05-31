@@ -28,16 +28,16 @@ Both services run as separate Docker containers, orchestrated via Docker Compose
 
 ## Tech Stack
 
-| Layer     | Technology                                             |
-| --------- | ------------------------------------------------------ |
-| Backend   | FastAPI, Python 3.12, SQLAlchemy 2.0, Alembic, Pydantic v2 |
-| Auth      | JWT (httpOnly cookies), bcrypt, python-jose, Google OAuth |
-| Database  | SQLite (aiosqlite, async)                              |
-| Frontend  | Vue 3 (Composition API), TypeScript, Vite 6, Pinia    |
-| Map       | Leaflet + OpenStreetMap tiles                          |
-| i18n      | vue-i18n 10 (EN + NL)                                 |
-| Testing   | pytest + httpx (backend), Vitest (frontend)            |
-| Deploy    | Docker Compose (uvicorn + nginx/vite)                  |
+| Layer    | Technology                                                 |
+| -------- | ---------------------------------------------------------- |
+| Backend  | FastAPI, Python 3.12, SQLAlchemy 2.0, Alembic, Pydantic v2 |
+| Auth     | JWT (httpOnly cookies), bcrypt, python-jose, Google OAuth  |
+| Database | SQLite (aiosqlite, async)                                  |
+| Frontend | Vue 3 (Composition API), TypeScript, Vite 6, Pinia         |
+| Map      | Leaflet + OpenStreetMap tiles                              |
+| i18n     | vue-i18n 10 (EN + NL)                                      |
+| Testing  | pytest + httpx (backend), Vitest (frontend)                |
+| Deploy   | Docker Compose (uvicorn + nginx/vite)                      |
 
 ## Quick Start
 
@@ -79,12 +79,12 @@ npm run dev
 
 ### Environment Variables
 
-| Variable            | Default              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| `SECRET_KEY`        | (required)           | Secret for signing JWT tokens  |
-| `DATABASE_URL`      | `sqlite+aiosqlite:///./data/app.db` | Database connection string |
-| `GOOGLE_CLIENT_ID`  | _(empty = disabled)_ | Google OAuth client ID         |
-| `GOOGLE_CLIENT_SECRET` | _(empty = disabled)_ | Google OAuth client secret  |
+| Variable               | Default                             | Description                   |
+| ---------------------- | ----------------------------------- | ----------------------------- |
+| `SECRET_KEY`           | (required)                          | Secret for signing JWT tokens |
+| `DATABASE_URL`         | `sqlite+aiosqlite:///./data/app.db` | Database connection string    |
+| `GOOGLE_CLIENT_ID`     | _(empty = disabled)_                | Google OAuth client ID        |
+| `GOOGLE_CLIENT_SECRET` | _(empty = disabled)_                | Google OAuth client secret    |
 
 ## API Format
 
@@ -158,20 +158,30 @@ cd frontend && npx vue-tsc --noEmit
 
 ## CSV Import Format
 
-The CSV import accepts files with the following columns. Only `name` is required.
+The CSV import accepts files with a header row. Columns are auto-detected by header name (case-insensitive). Only `name` is required.
 
-| Column      | Description                                                        | Example         |
-| ----------- | ------------------------------------------------------------------ | --------------- |
-| `name`      | Name of the location (required)                                    | `Artis Zoo`     |
-| `type`      | Category/type name (auto-created if new)                           | `Zoo`           |
-| `city`      | City name                                                          | `Amsterdam`     |
-| `country`   | Country name                                                       | `Netherlands`   |
-| `link`      | URL                                                                | `https://...`   |
-| `visited`   | Comma-separated years, `-` for unknown year, empty if not visited  | `2019, 2022`    |
-| `latitude`  | Latitude (skips geocoding if both lat/lon provided)                | `52.3660`       |
-| `longitude` | Longitude                                                          | `4.9163`        |
-| `rating`    | 1–5 star rating                                                    | `4`             |
-| `note`      | Free-text note                                                     | `Great visit`   |
+| Column     | Recognized headers                                                             | Example             |
+| ---------- | ------------------------------------------------------------------------------ | ------------------- |
+| `name`     | `name`, `naam`, `title`, `titel`                                               | `Artis Zoo`         |
+| `type`     | `type`, `soort`, `category`, `categorie`                                       | `Zoo`               |
+| `city`     | `city`, `stad`, `plaats`, `place`                                              | `Amsterdam`         |
+| `country`  | `country`, `land`, `country_code`                                              | `Netherlands`       |
+| `address`  | `address`, `adres`, `street`, `straat`                                         | `Plantage Kerklaan` |
+| `link`     | `link`, `url`, `website`                                                       | `https://...`       |
+| `visited`  | `visited`, `bezocht`, `years`, `jaren`, `year`, `jaar`                         | `2019,2022`         |
+| `rating`   | `rating`, `beoordeling`, `score`, `stars`, `sterren`                           | `4`                 |
+| `comments` | `comments`, `comment`, `opmerkingen`, `opmerking`, `notes`, `note`, `notities` | `Great visit`       |
+| `tags`     | `tags`, `tag`, `labels`, `label`                                               | `family,outdoor`    |
+
+**Visited column format:**
+- Empty → not visited
+- `-` → visited but year unknown
+- `2022` → single year
+- `2019,2022` or `2019;2022` → multiple years
+
+**Tags column format:** comma or semicolon-separated values.
+
+Locations are automatically geocoded based on `name` + `city` during import. The column mapping can be manually adjusted in the preview step.
 
 ## License
 
