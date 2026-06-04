@@ -177,7 +177,7 @@ async def import_csv_row(data: CsvRowImportRequest, user_id: CurrentUserId, db: 
                         city = results[0]["city"]
                     if not country:
                         country = results[0]["country_code"]
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
 
         feature = LocationCreateFeature(
