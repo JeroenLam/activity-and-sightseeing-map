@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
 
 from app.middleware.auth import DB, CurrentUserId
 from app.schemas.location import (
@@ -49,7 +50,7 @@ async def export_geojson(user_id: CurrentUserId, db: DB):
 async def preview_csv_import(data: CsvPreviewRequest, user_id: CurrentUserId, db: DB):
     headers, rows = csv_service.parse_csv(data.csv)
     column_map = csv_service.detect_column_map(headers)
-    preview = rows[:5] if rows else []
+    preview = rows[:10] if rows else []
     return CsvPreviewResponse(
         headers=headers,
         column_map=column_map,
@@ -89,10 +90,10 @@ async def import_csv(data: CsvImportRequest, user_id: CurrentUserId, db: DB):
             # Use provided coordinates or geocode
             city = mapped.get("city", "")
             country = mapped.get("country", "")
-            lat = mapped.get("latitude", 0.0)
-            lon = mapped.get("longitude", 0.0)
+            lat = mapped.get("latitude")
+            lon = mapped.get("longitude")
 
-            if not lat and not lon and city:
+            if lat is None and lon is None and city:
                 try:
                     results = await geocoding_service.search(f"{name}, {city}")
                     if results:
@@ -107,7 +108,7 @@ async def import_csv(data: CsvImportRequest, user_id: CurrentUserId, db: DB):
 
             feature = LocationCreateFeature(
                 type="Feature",
-                geometry={"type": "Point", "coordinates": [lon, lat]},
+                geometry={"type": "Point", "coordinates": [lon or 0.0, lat or 0.0]},
                 properties={
                     "name": name,
                     "type_id": type_id,
@@ -128,6 +129,78 @@ async def import_csv(data: CsvImportRequest, user_id: CurrentUserId, db: DB):
             errors.append(f"Row {i + 1}: {str(e)}")
 
     return ImportResult(imported=imported, skipped=skipped, errors=errors)
+
+
+class CsvRowImportRequest(BaseModel):
+    row: dict[str, str]
+    column_map: dict[str, str]
+
+
+class CsvRowImportResult(BaseModel):
+    status: str  # "imported", "skipped", "error"
+    error: str | None = None
+
+
+@router.post("/import/row", response_model=CsvRowImportResult)
+async def import_csv_row(data: CsvRowImportRequest, user_id: CurrentUserId, db: DB):
+    """Import a single CSV row. Used for progress-tracked imports."""
+    from app.services.type_service import get_types
+
+    try:
+        mapped = csv_service.map_csv_row(data.row, data.column_map)
+        name = mapped.get("name", "")
+        if not name:
+            return CsvRowImportResult(status="skipped")
+
+        existing_types = await get_types(db, user_id)
+        type_map = {t.name.lower(): t.id for t in existing_types}
+
+        # Resolve type
+        type_id = None
+        type_name = mapped.get("type_name", "")
+        if type_name and type_name.lower() in type_map:
+            type_id = type_map[type_name.lower()]
+
+        # Use provided coordinates or geocode
+        city = mapped.get("city", "")
+        country = mapped.get("country", "")
+        lat = mapped.get("latitude")
+        lon = mapped.get("longitude")
+
+        if lat is None and lon is None and city:
+            try:
+                results = await geocoding_service.search(f"{name}, {city}")
+                if results:
+                    lat = results[0]["lat"]
+                    lon = results[0]["lon"]
+                    if not city:
+                        city = results[0]["city"]
+                    if not country:
+                        country = results[0]["country_code"]
+            except Exception:
+                pass
+
+        feature = LocationCreateFeature(
+            type="Feature",
+            geometry={"type": "Point", "coordinates": [lon or 0.0, lat or 0.0]},
+            properties={
+                "name": name,
+                "type_id": type_id,
+                "city": city,
+                "country": country,
+                "address": mapped.get("address"),
+                "link": mapped.get("link"),
+                "years_visited": mapped.get("years_visited", []),
+                "visited_unknown_year": mapped.get("visited_unknown_year", False),
+                "rating": mapped.get("rating"),
+                "comments": mapped.get("comments"),
+                "tags": mapped.get("tags", []),
+            },
+        )
+        await location_service.create_location(db, user_id, feature)
+        return CsvRowImportResult(status="imported")
+    except Exception as e:
+        return CsvRowImportResult(status="error", error=str(e))
 
 
 @router.post("/import/geojson", response_model=ImportResult)
