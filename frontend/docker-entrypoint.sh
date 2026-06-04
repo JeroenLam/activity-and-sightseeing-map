@@ -1,9 +1,12 @@
 #!/bin/sh
 # Generate runtime config from environment variables
-cat <<EOF > /usr/share/nginx/html/config.js
+# Use single quotes to avoid issues with special characters in URLs
+API_URL="${VITE_API_URL:-}"
+
+cat > /usr/share/nginx/html/config.js <<ENDOFCONFIG
 window.__APP_CONFIG__ = {
-  API_URL: "${VITE_API_URL:-}"
+  API_URL: '${API_URL}'
 };
-EOF
+ENDOFCONFIG
 
 exec "$@"
