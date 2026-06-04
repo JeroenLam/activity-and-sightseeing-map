@@ -111,9 +111,13 @@
         "upload": "Import",
         "uploadHint": "Drag a CSV file here or click to select",
         "preview": "Preview",
+        "previewData": "First rows",
+        "rows": "rows",
         "columnMapping": "Column mapping",
         "field": "Field",
         "csvColumn": "CSV column",
+        "notPresent": "Not present in CSV",
+        "requiredFieldsHint": "All required fields (*) must be mapped.",
         "startImport": "Start import",
         "importing": "Importing...",
         "progress": "{current} of {total} processed",
@@ -130,7 +134,19 @@
         "typesImportHint": "CSV with columns: name (required), color (hex e.g. #FF5733), icon (MDI icon name e.g. museum).",
         "selectGeojson": "Select GeoJSON file",
         "geojsonSuccess": "GeoJSON imported successfully",
-        "exportAll": "Export All"
+        "exportAll": "Export All",
+        "fields": {
+            "name": "Name",
+            "type": "Type",
+            "city": "City",
+            "country": "Country",
+            "visited": "Visited years",
+            "link": "Website link",
+            "rating": "Rating",
+            "comments": "Note/Comment",
+            "latitude": "Latitude",
+            "longitude": "Longitude"
+        }
     },
     "manage": {
         "title": "Manage Locations",

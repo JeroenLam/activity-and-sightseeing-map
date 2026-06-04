@@ -1,3 +1,3 @@
 window.__APP_CONFIG__ = {
-  API_URL: 'https://amap-api.jeroenlam.nl'
+  API_URL: 'http://localhost:8000'
 };

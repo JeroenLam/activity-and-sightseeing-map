@@ -111,9 +111,13 @@
         "upload": "Importeren",
         "uploadHint": "Sleep een CSV-bestand hierheen of klik om te selecteren",
         "preview": "Voorbeeld",
+        "previewData": "Eerste rijen",
+        "rows": "rijen",
         "columnMapping": "Kolom mapping",
         "field": "Veld",
         "csvColumn": "CSV-kolom",
+        "notPresent": "Niet aanwezig in CSV",
+        "requiredFieldsHint": "Alle verplichte velden (*) moeten gekoppeld zijn.",
         "startImport": "Importeren starten",
         "importing": "Bezig met importeren...",
         "progress": "{current} van {total} verwerkt",
@@ -130,7 +134,19 @@
         "typesImportHint": "CSV met kolommen: name (verplicht), color (hex bijv. #FF5733), icon (MDI icoon naam bijv. museum).",
         "selectGeojson": "Selecteer GeoJSON-bestand",
         "geojsonSuccess": "GeoJSON succesvol geïmporteerd",
-        "exportAll": "Alles exporteren"
+        "exportAll": "Alles exporteren",
+        "fields": {
+            "name": "Naam",
+            "type": "Type",
+            "city": "Stad",
+            "country": "Land",
+            "visited": "Bezoekjaren",
+            "link": "Websitelink",
+            "rating": "Beoordeling",
+            "comments": "Notitie/Opmerking",
+            "latitude": "Breedtegraad",
+            "longitude": "Lengtegraad"
+        }
     },
     "manage": {
         "title": "Locaties beheren",
