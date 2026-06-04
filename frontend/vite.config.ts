@@ -14,11 +14,11 @@ export default defineConfig({
         port: 5173,
         proxy: !process.env.VITE_API_URL
             ? {
-                  '/api': {
-                      target: 'http://backend:8000',
-                      changeOrigin: true,
-                  },
-              }
+                '/api': {
+                    target: 'http://backend:8000',
+                    changeOrigin: true,
+                },
+            }
             : undefined,
     },
 });
