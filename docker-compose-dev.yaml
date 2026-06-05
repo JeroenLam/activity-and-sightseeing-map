@@ -1,14 +1,14 @@
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
-    env_file: .env
-    volumes:
-      - ./backend:/app
-      - ./data:/app/data
-    ports:
-      - "8000:8000"
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile.dev
+  #   env_file: .env
+  #   volumes:
+  #     - ./backend:/app
+  #     - ./data:/app/data
+  #   ports:
+  #     - "8000:8000"
 
   frontend:
     build:
@@ -16,13 +16,14 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       - VITE_API_URL=${VITE_API_URL:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
     volumes:
       - ./frontend:/app
       - /app/node_modules
     ports:
       - "5173:5173"
-    depends_on:
-      - backend
+    # depends_on:
+    #   - backend
 
-volumes:
-  db-data:
+# volumes:
+#   db-data:
