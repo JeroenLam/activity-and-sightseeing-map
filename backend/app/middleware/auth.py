@@ -20,8 +20,8 @@ def set_token_cookie(response: Response, token: str) -> None:
         key="token",
         value=token,
         httponly=True,
-        samesite="lax",
-        secure=False,  # Set to True in production with HTTPS
+        samesite="none",
+        secure=True,
         max_age=settings.jwt_expiry_days * 24 * 60 * 60,
         path="/",
     )

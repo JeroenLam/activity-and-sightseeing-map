@@ -13,6 +13,7 @@ services:
       context: ./frontend
     environment:
       - VITE_API_URL=${VITE_API_URL:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
     ports:
       - "80:80"
     depends_on:

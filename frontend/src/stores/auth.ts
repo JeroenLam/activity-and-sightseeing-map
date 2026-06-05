@@ -27,8 +27,12 @@ export const useAuthStore = defineStore('auth', () => {
             const { data } = await api.get<User>('/api/auth/me');
             user.value = data;
             i18n.global.locale.value = data.preferred_language as 'nl' | 'en';
-        } catch {
+        } catch (err: any) {
             user.value = null;
+            // Re-throw connection errors so the app can display them
+            if (err.apiError && (err.apiError.code === 'ERR_NETWORK' || err.apiError.code === 'ERR_TIMEOUT' || err.apiError.code === 'ERR_CONNECTION_REFUSED')) {
+                throw err;
+            }
         } finally {
             loading.value = false;
         }
