@@ -149,10 +149,15 @@ onMounted(() => {
     attribution: '&copy; OpenStreetMap',
     maxZoom: 19,
   }).addTo(pinMap);
-  pinMap.on('click', (e: L.LeafletMouseEvent) => {
+  pinMap.on('click', async (e: L.LeafletMouseEvent) => {
     form.latitude = e.latlng.lat;
     form.longitude = e.latlng.lng;
     updatePinMarker(e.latlng.lat, e.latlng.lng);
+    const result = await geocoding.reverseGeocode(e.latlng.lat, e.latlng.lng);
+    if (result) {
+      if (result.country_code) form.country = result.country_code;
+      if (result.city && !form.city) form.city = result.city;
+    }
   });
 });
 
@@ -177,7 +182,17 @@ function useDeviceLocation() {
   if (!navigator.geolocation) { locationError.value = t('location.locationError'); return; }
   locating.value = true; locationError.value = '';
   navigator.geolocation.getCurrentPosition(
-    (pos) => { form.latitude = pos.coords.latitude; form.longitude = pos.coords.longitude; updatePinMarker(pos.coords.latitude, pos.coords.longitude); locating.value = false; },
+    async (pos) => {
+      form.latitude = pos.coords.latitude;
+      form.longitude = pos.coords.longitude;
+      updatePinMarker(pos.coords.latitude, pos.coords.longitude);
+      locating.value = false;
+      const result = await geocoding.reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+      if (result) {
+        if (result.country_code) form.country = result.country_code;
+        if (result.city && !form.city) form.city = result.city;
+      }
+    },
     () => { locationError.value = t('location.locationError'); locating.value = false; },
     { enableHighAccuracy: true, timeout: 10000 }
   );
@@ -187,6 +202,7 @@ function selectResult(result: any) {
   form.latitude = result.lat;
   form.longitude = result.lon;
   if (result.city) form.city = result.city;
+  if (result.country_code) form.country = result.country_code;
   if (!form.name) form.name = result.display_name.split(',')[0]?.trim() || '';
   geocoding.clear();
   searchQuery.value = result.display_name;
