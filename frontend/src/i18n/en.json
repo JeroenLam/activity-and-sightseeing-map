@@ -82,8 +82,8 @@
         "useDeviceLocation": "Use my location",
         "pinOnMap": "Place a pin on the map to set coordinates",
         "locating": "Locating...",
-        "locationError": "Could not get your location"
-        ,"duplicateWarningTitle": "Possible duplicate nearby",
+        "locationError": "Could not get your location",
+        "duplicateWarningTitle": "Possible duplicate nearby",
         "duplicateWarningBody": "There are {count} existing locations within about {distance} meters of these coordinates."
     },
     "types": {

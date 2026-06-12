@@ -103,11 +103,7 @@ class BulkLocationUpdateProperties(BaseModel):
 
     @model_validator(mode="after")
     def validate_has_changes(self) -> "BulkLocationUpdateProperties":
-        if (
-            self.type_id is None
-            and self.rating is None
-            and self.year_to_add is None
-        ):
+        if self.type_id is None and self.rating is None and self.year_to_add is None:
             raise ValueError("At least one bulk edit change must be provided")
         return self
 

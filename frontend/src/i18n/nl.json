@@ -82,8 +82,8 @@
         "useDeviceLocation": "Gebruik mijn locatie",
         "pinOnMap": "Plaats een pin op de kaart voor coördinaten",
         "locating": "Locatie bepalen...",
-        "locationError": "Kon locatie niet bepalen"
-        ,"duplicateWarningTitle": "Mogelijk duplicaat in de buurt",
+        "locationError": "Kon locatie niet bepalen",
+        "duplicateWarningTitle": "Mogelijk duplicaat in de buurt",
         "duplicateWarningBody": "Er zijn {count} bestaande locaties binnen ongeveer {distance} meter van deze coördinaten."
     },
     "types": {
