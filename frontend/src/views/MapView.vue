@@ -62,6 +62,9 @@
         :marker-size="markerSize"
         :visited-opacity="visitedOpacity"
         :unvisited-opacity="unvisitedOpacity"
+        :initial-lat="settingsStore.settings.default_map_lat ?? undefined"
+        :initial-lng="settingsStore.settings.default_map_lng ?? undefined"
+        :initial-zoom="settingsStore.settings.default_map_zoom ?? undefined"
         @bounds-change="onBoundsChange"
         @edit="openEdit"
         @add-year="onAddYear"
@@ -134,10 +137,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue';
+import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useLocationsStore } from '@/stores/locations';
 import { useTypesStore } from '@/stores/types';
+import { useSettingsStore } from '@/stores/settings';
 import FilterPanel from '@/components/map/FilterPanel.vue';
 import MapContainer from '@/components/map/MapContainer.vue';
 import type { LocationFeature } from '@/types';
@@ -145,15 +149,28 @@ import type { LocationFeature } from '@/types';
 const { t } = useI18n();
 const locationsStore = useLocationsStore();
 const typesStore = useTypesStore();
+const settingsStore = useSettingsStore();
+
+const STORAGE_KEY = 'map-filter-state';
+
+function loadFilterState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return null;
+}
+
+const saved = loadFilterState();
 
 const sidebarOpen = ref(true);
-const yearFrom = ref<number | undefined>(undefined);
-const yearTo = ref<number | undefined>(undefined);
-const viewMode = ref<'all' | 'visited' | 'unvisited'>('all');
-const disabledTypes = ref<Set<string>>(new Set());
-const markerSize = ref(20);
-const visitedOpacity = ref(1);
-const unvisitedOpacity = ref(1);
+const yearFrom = ref<number | undefined>(saved?.yearFrom ?? undefined);
+const yearTo = ref<number | undefined>(saved?.yearTo ?? undefined);
+const viewMode = ref<'all' | 'visited' | 'unvisited'>(saved?.viewMode ?? 'all');
+const disabledTypes = ref<Set<string>>(new Set(saved?.disabledTypes ?? []));
+const markerSize = ref(saved?.markerSize ?? 20);
+const visitedOpacity = ref(saved?.visitedOpacity ?? 1);
+const unvisitedOpacity = ref(saved?.unvisitedOpacity ?? 1);
 const mapRef = ref<InstanceType<typeof MapContainer>>();
 const visibleLocations = ref<LocationFeature[]>([]);
 const currentYear = new Date().getFullYear();
@@ -289,8 +306,24 @@ async function onAddYear(f: LocationFeature) {
   });
 }
 
+watch(
+  [yearFrom, yearTo, viewMode, disabledTypes, markerSize, visitedOpacity, unvisitedOpacity],
+  () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      yearFrom: yearFrom.value,
+      yearTo: yearTo.value,
+      viewMode: viewMode.value,
+      disabledTypes: [...disabledTypes.value],
+      markerSize: markerSize.value,
+      visitedOpacity: visitedOpacity.value,
+      unvisitedOpacity: unvisitedOpacity.value,
+    }));
+  },
+  { deep: true }
+);
+
 onMounted(async () => {
-  await Promise.all([locationsStore.fetchLocations(), typesStore.fetchTypes()]);
+  await Promise.all([locationsStore.fetchLocations(), typesStore.fetchTypes(), settingsStore.fetchSettings()]);
 });
 </script>
 

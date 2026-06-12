@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch, withDefaults } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import * as mdiIcons from '@mdi/js';
@@ -12,12 +12,19 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   features: LocationFeature[];
   markerSize: number;
   visitedOpacity: number;
   unvisitedOpacity: number;
-}>();
+  initialLat?: number;
+  initialLng?: number;
+  initialZoom?: number;
+}>(), {
+  initialLat: 52.1,
+  initialLng: 5.3,
+  initialZoom: 7,
+});
 
 const emit = defineEmits<{
   'bounds-change': [visible: LocationFeature[]];
@@ -136,7 +143,7 @@ defineExpose({ panTo });
 
 onMounted(() => {
   if (!mapEl.value) return;
-  map = L.map(mapEl.value).setView([52.1, 5.3], 7);
+  map = L.map(mapEl.value).setView([props.initialLat, props.initialLng], props.initialZoom);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap',
     maxZoom: 19,
