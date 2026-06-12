@@ -37,6 +37,11 @@ class StatisticsResponse(BaseModel):
     total_visited: int
     total_unvisited: int
     total_countries: int
+    total_cities: int
+    total_ratings_provided: int
+    total_comments_provided: int
+    total_locations_visited_multiple_years: int
+    total_visited_continents: int
     visits_per_year: list[YearStat]
     locations_per_type: list[TypeStat]
     visited_locations_per_type: list[TypeStat]

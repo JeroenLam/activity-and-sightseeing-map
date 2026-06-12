@@ -11,6 +11,11 @@ async def test_statistics_empty(authenticated_client):
     assert data["total_visited"] == 0
     assert data["total_unvisited"] == 0
     assert data["total_countries"] == 0
+    assert data["total_cities"] == 0
+    assert data["total_ratings_provided"] == 0
+    assert data["total_comments_provided"] == 0
+    assert data["total_locations_visited_multiple_years"] == 0
+    assert data["total_visited_continents"] == 0
     assert data["visits_per_year"] == []
     assert data["locations_per_type"] == []
     assert data["visited_locations_per_type"] == []
@@ -44,6 +49,8 @@ async def test_statistics_with_locations(authenticated_client):
                 "city": "Amsterdam",
                 "country": "NL",
                 "years_visited": [2022, 2023],
+                "rating": 5,
+                "comments": "Must-see museum",
             },
         },
     )
@@ -75,6 +82,8 @@ async def test_statistics_with_locations(authenticated_client):
                 "city": "Berlin",
                 "country": "DE",
                 "years_visited": [],
+                "rating": 4,
+                "comments": "Unvisited comment should not count",
             },
         },
     )
@@ -87,6 +96,11 @@ async def test_statistics_with_locations(authenticated_client):
     assert data["total_visited"] == 2
     assert data["total_unvisited"] == 1
     assert data["total_countries"] == 3
+    assert data["total_cities"] == 2
+    assert data["total_ratings_provided"] == 1
+    assert data["total_comments_provided"] == 1
+    assert data["total_locations_visited_multiple_years"] == 1
+    assert data["total_visited_continents"] == 1
 
     # Visits per year
     years = {item["year"]: item["count"] for item in data["visits_per_year"]}

@@ -184,6 +184,11 @@ export interface Statistics {
     total_visited: number;
     total_unvisited: number;
     total_countries: number;
+    total_cities: number;
+    total_ratings_provided: number;
+    total_comments_provided: number;
+    total_locations_visited_multiple_years: number;
+    total_visited_continents: number;
     visits_per_year: YearStat[];
     locations_per_type: TypeStat[];
     visited_locations_per_type: TypeStat[];
