@@ -1,12 +1,20 @@
 <template>
   <div class="map-page">
+    <!-- Mobile overlay backdrop -->
+    <div v-if="sidebarOpen" class="sidebar-backdrop" @click="sidebarOpen = false"></div>
+
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ collapsed: !sidebarOpen }">
-      <div class="sidebar-toggle" @click="sidebarOpen = !sidebarOpen">
+      <div class="sidebar-toggle desktop-toggle" @click="sidebarOpen = !sidebarOpen">
         {{ sidebarOpen ? '◀' : '▶' }}
       </div>
 
       <div v-if="sidebarOpen" class="sidebar-content">
+        <div class="sidebar-header">
+          <span class="sidebar-title">{{ t('map.filters') }}</span>
+          <button class="sidebar-close" @click="sidebarOpen = false">✕</button>
+        </div>
+
         <!-- Progress -->
         <div class="progress-section">
           <div class="progress-bar">
@@ -56,6 +64,11 @@
 
     <!-- Map -->
     <div class="map-area">
+      <!-- Mobile floating toggle button -->
+      <button v-if="!sidebarOpen" class="mobile-sidebar-btn" @click="sidebarOpen = true">
+        ☰
+      </button>
+
       <MapContainer
         ref="mapRef"
         :features="filteredFeatures"
@@ -367,6 +380,18 @@ onMounted(async () => {
   color: var(--color-text-secondary);
 }
 
+.sidebar-header {
+  display: none;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+.mobile-sidebar-btn {
+  display: none;
+}
+
 .sidebar-content {
   padding: 1rem;
   display: flex;
@@ -581,20 +606,79 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .sidebar {
-    position: absolute;
-    z-index: 50;
-    height: 100%;
-    width: 280px;
-    min-width: 280px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1200;
+    height: 100vh;
+    width: 300px;
+    min-width: 300px;
+    max-width: 85vw;
+    transform: translateX(0);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
   }
   .sidebar.collapsed {
-    width: 0;
-    min-width: 0;
+    transform: translateX(-100%);
+    width: 300px;
+    min-width: 300px;
+    box-shadow: none;
   }
-  .sidebar-toggle {
-    right: -28px;
-    padding: 0.75rem 6px;
-    font-size: 0.85rem;
+  .desktop-toggle {
+    display: none;
+  }
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 0.5rem;
+  }
+  .sidebar-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .sidebar-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    padding: 0.25rem;
+    border-radius: 4px;
+  }
+  .sidebar-close:hover {
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: rgba(0, 0, 0, 0.4);
+  }
+  .mobile-sidebar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 500;
+    width: 44px;
+    height: 44px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--color-text);
+  }
+  .mobile-sidebar-btn:hover {
+    background: var(--color-bg);
   }
   .sidebar-content {
     padding: 0.75rem;
