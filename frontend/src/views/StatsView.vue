@@ -2,9 +2,23 @@
   <div class="page-container">
     <h2>{{ t('stats.title') }}</h2>
 
-    <div v-if="store.loading" class="text-secondary">{{ t('common.loading') }}</div>
+    <div v-if="isLoading" class="text-secondary">{{ t('common.loading') }}</div>
 
     <template v-else-if="store.statistics">
+      <div class="achievement-section">
+        <div class="section-heading">
+          <h3>{{ t('stats.achievementsTitle') }}</h3>
+          <p>{{ t('stats.achievementsSubtitle') }}</p>
+        </div>
+        <div class="achievement-grid">
+          <AchievementBadge
+            v-for="achievement in achievements"
+            :key="achievement.id"
+            :achievement="achievement"
+          />
+        </div>
+      </div>
+
       <!-- Summary cards -->
       <div class="stats-cards">
         <div class="stat-card">
@@ -56,6 +70,9 @@
 import { computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useStatisticsStore } from '@/stores/statistics';
+import { useLocationsStore } from '@/stores/locations';
+import AchievementBadge from '@/components/stats/AchievementBadge.vue';
+import { buildAchievements } from '@/lib/achievements';
 import {
   Chart as ChartJS,
   Title,
@@ -72,8 +89,18 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale,
 
 const { t } = useI18n();
 const store = useStatisticsStore();
+const locationsStore = useLocationsStore();
 
-onMounted(() => store.fetchStatistics());
+onMounted(() => {
+  void Promise.all([store.fetchStatistics(), locationsStore.fetchLocations()]);
+});
+
+const isLoading = computed(() => store.loading || locationsStore.loading);
+
+const achievements = computed(() => {
+  if (!store.statistics) return [];
+  return buildAchievements(store.statistics, locationsStore.collection.features);
+});
 
 const yearChartData = computed(() => {
   const stats = store.statistics;
@@ -164,6 +191,31 @@ const countryChartOptions = computed(() => ({
   margin: 0 0 1.5rem;
 }
 
+.achievement-section {
+  margin-bottom: 2rem;
+}
+
+.section-heading {
+  margin-bottom: 1rem;
+}
+
+.section-heading h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+}
+
+.section-heading p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
 .stats-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -218,6 +270,7 @@ const countryChartOptions = computed(() => ({
 
 @media (max-width: 768px) {
   .page-container { padding: 1rem; }
+  .achievement-grid { grid-template-columns: 1fr; }
   .stats-cards { grid-template-columns: repeat(2, 1fr); }
   .chart-container { height: 250px; padding: 0.75rem; }
   .chart-container-small { max-width: 100%; }

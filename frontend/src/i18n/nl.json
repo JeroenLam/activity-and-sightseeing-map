@@ -236,6 +236,10 @@
     },
     "stats": {
         "title": "Statistieken",
+        "achievementsTitle": "Prestaties",
+        "achievementsSubtitle": "Speel badges vrij terwijl je meer plekken opslaat en meer landen verkent.",
+        "achievementProgressSingle": "{current} / {goal}",
+        "achievementProgressDual": "{current} / {goal} locaties, {secondaryCurrent} / {secondaryGoal} landen",
         "totalLocations": "Totaal Locaties",
         "totalVisited": "Bezocht",
         "totalUnvisited": "Niet Bezocht",
@@ -244,6 +248,32 @@
         "locationsByType": "Locaties per Type",
         "locationsByCountry": "Locaties per Land",
         "visits": "Bezoeken",
-        "locations": "Locaties"
+        "locations": "Locaties",
+        "achievements": {
+            "firstPin": {
+                "title": "Eerste Pin",
+                "description": "Sla je allereerste locatie op."
+            },
+            "locationCollector": {
+                "title": "Locatieverzamelaar",
+                "description": "Sla in totaal 10 locaties op."
+            },
+            "centurion": {
+                "title": "Centurion",
+                "description": "Sla in totaal 100 locaties op."
+            },
+            "borderBreaker": {
+                "title": "Grensverlegger",
+                "description": "Bezoek locaties in 2 verschillende landen."
+            },
+            "globeTrotter": {
+                "title": "Wereldreiziger",
+                "description": "Bezoek locaties in 10 verschillende landen."
+            },
+            "crossCountryExplorer": {
+                "title": "Meerlandenverkenner",
+                "description": "Bezoek 10 verschillende locaties verspreid over minstens 2 landen."
+            }
+        }
     }
 }

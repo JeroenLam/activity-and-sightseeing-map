@@ -236,6 +236,10 @@
     },
     "stats": {
         "title": "Statistics",
+        "achievementsTitle": "Achievements",
+        "achievementsSubtitle": "Unlock badges as you log more places and explore more countries.",
+        "achievementProgressSingle": "{current} / {goal}",
+        "achievementProgressDual": "{current} / {goal} locations, {secondaryCurrent} / {secondaryGoal} countries",
         "totalLocations": "Total Locations",
         "totalVisited": "Visited",
         "totalUnvisited": "Not Visited",
@@ -244,6 +248,32 @@
         "locationsByType": "Locations by Type",
         "locationsByCountry": "Locations by Country",
         "visits": "Visits",
-        "locations": "Locations"
+        "locations": "Locations",
+        "achievements": {
+            "firstPin": {
+                "title": "First Pin",
+                "description": "Log your very first location."
+            },
+            "locationCollector": {
+                "title": "Location Collector",
+                "description": "Log 10 total locations."
+            },
+            "centurion": {
+                "title": "Centurion",
+                "description": "Log 100 total locations."
+            },
+            "borderBreaker": {
+                "title": "Border Breaker",
+                "description": "Visit locations in 2 different countries."
+            },
+            "globeTrotter": {
+                "title": "Globe Trotter",
+                "description": "Visit locations in 10 different countries."
+            },
+            "crossCountryExplorer": {
+                "title": "Cross-Country Explorer",
+                "description": "Visit 10 different locations across at least 2 countries."
+            }
+        }
     }
 }
