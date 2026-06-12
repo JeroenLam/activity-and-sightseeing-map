@@ -28,11 +28,7 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
     total_locations = len(locations)
 
     # Visited vs unvisited
-    visited = [
-        loc
-        for loc in locations
-        if loc.visits or loc.visited_unknown_year
-    ]
+    visited = [loc for loc in locations if loc.visits or loc.visited_unknown_year]
     total_visited = len(visited)
     total_unvisited = total_locations - total_visited
 
@@ -51,7 +47,11 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
     type_counter: Counter[tuple[str | None, str, str]] = Counter()
     for loc in locations:
         if loc.location_type:
-            key = (loc.location_type.id, loc.location_type.name, loc.location_type.color)
+            key = (
+                loc.location_type.id,
+                loc.location_type.name,
+                loc.location_type.color,
+            )
         else:
             key = (None, "Uncategorized", "#9E9E9E")
         type_counter[key] += 1

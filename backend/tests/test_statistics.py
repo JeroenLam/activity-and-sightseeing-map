@@ -95,7 +95,9 @@ async def test_statistics_with_locations(authenticated_client):
     assert types["Uncategorized"] == 1
 
     # Locations per country
-    countries = {item["country"]: item["count"] for item in data["locations_per_country"]}
+    countries = {
+        item["country"]: item["count"] for item in data["locations_per_country"]
+    }
     assert countries["NL"] == 1
     assert countries["FR"] == 1
     assert countries["DE"] == 1
