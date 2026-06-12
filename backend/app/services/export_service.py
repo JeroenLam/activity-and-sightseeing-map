@@ -1,135 +1,110 @@
 """KML and GPX export utilities."""
 
-from xml.etree import ElementTree as ET
+from html import escape
 
 from app.schemas.location import LocationFeatureCollection
 
 
-def _indent(elem: ET.Element, level: int = 0) -> None:
-    """Add pretty-print indentation (compatible with Python < 3.9)."""
-    indent = "\n" + "  " * level
-    if len(elem):
-        if not elem.text or not elem.text.strip():
-            elem.text = indent + "  "
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = indent
-        for child in elem:
-            _indent(child, level + 1)
-        if not child.tail or not child.tail.strip():  # noqa: F821
-            child.tail = indent
-    else:
-        if level and (not elem.tail or not elem.tail.strip()):
-            elem.tail = indent
+def _xml_text(value: str) -> str:
+    """Escape XML special characters for text nodes."""
+    return escape(value, quote=False)
+
+
+def _xml_attr(value: str) -> str:
+    """Escape XML special characters for attribute values."""
+    return escape(value, quote=True)
+
+
+def _build_description_lines(feature) -> list[str]:
+    """Build common human-readable description lines for exports."""
+    props = feature.properties
+    lines: list[str] = []
+    if props.city:
+        lines.append(f"City: {props.city}")
+    if props.country:
+        lines.append(f"Country: {props.country}")
+    if props.type:
+        lines.append(f"Type: {props.type.name}")
+    if props.years_visited:
+        lines.append(f"Visited: {', '.join(str(y) for y in props.years_visited)}")
+    if props.visited_unknown_year and not props.years_visited:
+        lines.append("Visited: (year unknown)")
+    if props.rating is not None:
+        lines.append(f"Rating: {props.rating}/5")
+    if props.comments:
+        lines.append(f"Notes: {props.comments}")
+    if props.link:
+        lines.append(f"Link: {props.link}")
+    return lines
 
 
 def locations_to_kml(collection: LocationFeatureCollection) -> str:
     """Convert a LocationFeatureCollection to a KML XML string."""
-    kml = ET.Element("kml", xmlns="http://www.opengis.net/kml/2.2")
-    document = ET.SubElement(kml, "Document")
-
-    doc_name = ET.SubElement(document, "name")
-    doc_name.text = "Locations"
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<kml xmlns="http://www.opengis.net/kml/2.2">',
+        "  <Document>",
+        "    <name>Locations</name>",
+    ]
 
     for feature in collection.features:
         props = feature.properties
         lon, lat = feature.geometry.coordinates
 
-        placemark = ET.SubElement(document, "Placemark")
+        lines.append("    <Placemark>")
+        lines.append(f"      <name>{_xml_text(props.name)}</name>")
 
-        pm_name = ET.SubElement(placemark, "name")
-        pm_name.text = props.name
+        description_lines = _build_description_lines(feature)
+        if description_lines:
+            description_text = _xml_text(chr(10).join(description_lines))
+            lines.append(f"      <description>{description_text}</description>")
 
-        desc_parts: list[str] = []
-        if props.city:
-            desc_parts.append(f"City: {props.city}")
-        if props.country:
-            desc_parts.append(f"Country: {props.country}")
-        if props.type:
-            desc_parts.append(f"Type: {props.type.name}")
-        if props.years_visited:
-            desc_parts.append(
-                f"Visited: {', '.join(str(y) for y in props.years_visited)}"
-            )
-        if props.visited_unknown_year and not props.years_visited:
-            desc_parts.append("Visited: (year unknown)")
-        if props.rating is not None:
-            desc_parts.append(f"Rating: {props.rating}/5")
-        if props.comments:
-            desc_parts.append(f"Notes: {props.comments}")
-        if props.link:
-            desc_parts.append(f"Link: {props.link}")
+        lines.append("      <Point>")
+        lines.append(f"        <coordinates>{lon},{lat},0</coordinates>")
+        lines.append("      </Point>")
+        lines.append("    </Placemark>")
 
-        if desc_parts:
-            desc = ET.SubElement(placemark, "description")
-            desc.text = "\n".join(desc_parts)
-
-        point = ET.SubElement(placemark, "Point")
-        coords = ET.SubElement(point, "coordinates")
-        coords.text = f"{lon},{lat},0"
-
-    _indent(kml)
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(
-        kml, encoding="unicode"
-    )
+    lines.append("  </Document>")
+    lines.append("</kml>")
+    return "\n".join(lines)
 
 
 def locations_to_gpx(collection: LocationFeatureCollection) -> str:
     """Convert a LocationFeatureCollection to a GPX XML string."""
-    gpx = ET.Element(
-        "gpx",
-        {
-            "version": "1.1",
-            "creator": "Activiteiten",
-            "xmlns": "http://www.topografix.com/GPX/1/1",
-            "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
-            "xsi:schemaLocation": (
-                "http://www.topografix.com/GPX/1/1 "
-                "http://www.topografix.com/GPX/1/1/gpx.xsd"
-            ),
-        },
-    )
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<gpx version="1.1" creator="Activiteiten" '
+        'xmlns="http://www.topografix.com/GPX/1/1" '
+        'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+        'xsi:schemaLocation="http://www.topografix.com/GPX/1/1 '
+        'http://www.topografix.com/GPX/1/1/gpx.xsd">',
+    ]
 
     for feature in collection.features:
         props = feature.properties
         lon, lat = feature.geometry.coordinates
 
-        wpt = ET.SubElement(gpx, "wpt", {"lat": str(lat), "lon": str(lon)})
+        lines.append(f'  <wpt lat="{_xml_attr(str(lat))}" lon="{_xml_attr(str(lon))}">')
+        lines.append(f"    <name>{_xml_text(props.name)}</name>")
 
-        wpt_name = ET.SubElement(wpt, "name")
-        wpt_name.text = props.name
-
-        desc_parts: list[str] = []
-        if props.city:
-            desc_parts.append(f"City: {props.city}")
-        if props.country:
-            desc_parts.append(f"Country: {props.country}")
-        if props.years_visited:
-            desc_parts.append(
-                f"Visited: {', '.join(str(y) for y in props.years_visited)}"
+        description_lines = _build_description_lines(feature)
+        if description_lines:
+            lines.append(
+                f"    <desc>{_xml_text(chr(10).join(description_lines))}</desc>"
             )
-        if props.visited_unknown_year and not props.years_visited:
-            desc_parts.append("Visited: (year unknown)")
-        if props.rating is not None:
-            desc_parts.append(f"Rating: {props.rating}/5")
-
-        if desc_parts:
-            desc = ET.SubElement(wpt, "desc")
-            desc.text = "\n".join(desc_parts)
 
         if props.comments:
-            cmt = ET.SubElement(wpt, "cmt")
-            cmt.text = props.comments
+            lines.append(f"    <cmt>{_xml_text(props.comments)}</cmt>")
 
         if props.link:
-            link_el = ET.SubElement(wpt, "link", href=props.link)
-            link_text = ET.SubElement(link_el, "text")
-            link_text.text = props.name
+            lines.append(f'    <link href="{_xml_attr(props.link)}">')
+            lines.append(f"      <text>{_xml_text(props.name)}</text>")
+            lines.append("    </link>")
 
         if props.type:
-            wpt_type = ET.SubElement(wpt, "type")
-            wpt_type.text = props.type.name
+            lines.append(f"    <type>{_xml_text(props.type.name)}</type>")
 
-    _indent(gpx)
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(
-        gpx, encoding="unicode"
-    )
+        lines.append("  </wpt>")
+
+    lines.append("</gpx>")
+    return "\n".join(lines)
