@@ -195,6 +195,8 @@
         "passwordError": "Failed to change password",
         "defaultMapPosition": "Default Map Position",
         "defaultMapHint": "Pan and zoom the map to your preferred default view, then save.",
+        "mapTileSet": "Map style",
+        "mapTileAuto": "Auto (follow theme)",
         "lat": "Lat",
         "lng": "Lng",
         "zoom": "Zoom",

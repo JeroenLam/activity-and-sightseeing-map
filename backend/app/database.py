@@ -1,5 +1,7 @@
 from collections.abc import AsyncGenerator
 
+from sqlalchemy import inspect, text
+from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import settings
@@ -11,6 +13,22 @@ engine = create_async_engine(
 )
 
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+
+def ensure_schema_compatibility(connection: Connection) -> None:
+    inspector = inspect(connection)
+
+    if "users" not in inspector.get_table_names():
+        return
+
+    user_columns = {column["name"] for column in inspector.get_columns("users")}
+    if "map_tile_set" not in user_columns:
+        connection.execute(
+            text(
+                "ALTER TABLE users "
+                "ADD COLUMN map_tile_set VARCHAR(40) NOT NULL DEFAULT 'auto'"
+            )
+        )
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:

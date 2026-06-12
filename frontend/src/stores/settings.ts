@@ -9,6 +9,7 @@ export const useSettingsStore = defineStore('settings', () => {
         default_map_lat: null,
         default_map_lng: null,
         default_map_zoom: null,
+        map_tile_set: 'auto',
         profile_public: false,
         location_filter: 'show-all',
         show_ratings: true,

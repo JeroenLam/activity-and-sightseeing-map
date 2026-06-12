@@ -97,11 +97,20 @@ export interface BulkLocationUpdateRequest {
     properties: BulkLocationUpdateProperties;
 }
 
+export type MapTileSet =
+    | 'auto'
+    | 'openstreetmap'
+    | 'carto-light'
+    | 'carto-dark'
+    | 'esri-world-imagery'
+    | 'opentopomap';
+
 export interface UserSettings {
     preferred_language: string;
     default_map_lat: number | null;
     default_map_lng: number | null;
     default_map_zoom: number | null;
+    map_tile_set: MapTileSet;
     profile_public: boolean;
     location_filter: string;
     show_ratings: boolean;

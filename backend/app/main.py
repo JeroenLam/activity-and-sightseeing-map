@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.database import engine
+from app.database import engine, ensure_schema_compatibility
 from app.models import Base
 from app.routers import (
     auth,
@@ -24,6 +24,7 @@ async def lifespan(app: FastAPI):
     # Create tables on startup (Alembic handles migrations in production)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(ensure_schema_compatibility)
     yield
 
 

@@ -195,6 +195,8 @@
         "passwordError": "Wachtwoord wijzigen mislukt",
         "defaultMapPosition": "Standaard kaartpositie",
         "defaultMapHint": "Verschuif en zoom de kaart naar je gewenste standaardweergave en sla op.",
+        "mapTileSet": "Kaartstijl",
+        "mapTileAuto": "Automatisch (volg thema)",
         "lat": "Lat",
         "lng": "Lng",
         "zoom": "Zoom",

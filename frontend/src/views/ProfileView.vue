@@ -18,6 +18,14 @@
     <h3>{{ t('profile.defaultMapPosition') }}</h3>
     <div class="map-picker-section">
       <p class="hint">{{ t('profile.defaultMapHint') }}</p>
+      <div class="setting-row map-style-row">
+        <label>{{ t('profile.mapTileSet') }}</label>
+        <select v-model="mapTileSet" :disabled="savingTileSet" @change="saveMapTileSet">
+          <option v-for="option in MAP_TILE_OPTIONS" :key="option.id" :value="option.id">
+            {{ option.id === 'auto' ? t('profile.mapTileAuto') : option.label }}
+          </option>
+        </select>
+      </div>
       <div class="map-picker" ref="mapPickerEl"></div>
       <div class="map-coords">
         <span>{{ t('profile.lat') }}: {{ mapLat.toFixed(4) }}</span>
@@ -121,12 +129,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick, computed } from 'vue';
+import { ref, reactive, onMounted, nextTick, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import { useSettingsStore } from '@/stores/settings';
 import { useLocationsStore } from '@/stores/locations';
 import { useTypesStore } from '@/stores/types';
+import { useThemeStore } from '@/stores/theme';
+import { MAP_TILE_OPTIONS, getMapTileDefinition } from '@/lib/mapTiles';
 import L from 'leaflet';
 
 const { t } = useI18n();
@@ -134,6 +144,7 @@ const auth = useAuthStore();
 const settingsStore = useSettingsStore();
 const locationsStore = useLocationsStore();
 const typesStore = useTypesStore();
+const themeStore = useThemeStore();
 
 // Password
 const currentPassword = ref('');
@@ -150,7 +161,10 @@ const mapLng = ref(5.3);
 const mapZoom = ref(7);
 const savingMap = ref(false);
 const mapSaved = ref(false);
+const savingTileSet = ref(false);
+const mapTileSet = ref<'auto' | 'openstreetmap' | 'carto-light' | 'carto-dark' | 'esri-world-imagery' | 'opentopomap'>('auto');
 let pickerMap: L.Map | null = null;
+let pickerTileLayer: L.TileLayer | null = null;
 
 // Share settings
 const shareSettings = reactive({
@@ -176,6 +190,7 @@ onMounted(async () => {
   mapLat.value = s.default_map_lat ?? 52.1;
   mapLng.value = s.default_map_lng ?? 5.3;
   mapZoom.value = s.default_map_zoom ?? 7;
+  mapTileSet.value = s.map_tile_set;
   shareSettings.profile_public = s.profile_public;
   shareSettings.location_filter = s.location_filter;
   shareSettings.show_ratings = s.show_ratings;
@@ -188,9 +203,7 @@ onMounted(async () => {
 function initMapPicker() {
   if (!mapPickerEl.value || pickerMap) return;
   pickerMap = L.map(mapPickerEl.value).setView([mapLat.value, mapLng.value], mapZoom.value);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap',
-  }).addTo(pickerMap);
+  syncPickerTileLayer();
   pickerMap.on('moveend', () => {
     if (!pickerMap) return;
     const center = pickerMap.getCenter();
@@ -198,6 +211,15 @@ function initMapPicker() {
     mapLng.value = center.lng;
     mapZoom.value = pickerMap.getZoom();
   });
+}
+
+function syncPickerTileLayer() {
+  if (!pickerMap) return;
+  if (pickerTileLayer) {
+    pickerMap.removeLayer(pickerTileLayer);
+  }
+  const tileDefinition = getMapTileDefinition(mapTileSet.value, themeStore.dark);
+  pickerTileLayer = L.tileLayer(tileDefinition.url, tileDefinition.options).addTo(pickerMap);
 }
 
 async function saveMapPosition() {
@@ -214,6 +236,22 @@ async function saveMapPosition() {
     savingMap.value = false;
   }
 }
+
+async function saveMapTileSet() {
+  savingTileSet.value = true;
+  try {
+    await settingsStore.updateSettings({
+      map_tile_set: mapTileSet.value,
+    });
+  } finally {
+    savingTileSet.value = false;
+  }
+}
+
+watch(
+  [mapTileSet, () => themeStore.dark],
+  () => syncPickerTileLayer(),
+);
 
 async function saveShareSettings() {
   await settingsStore.updateSettings({
@@ -286,6 +324,7 @@ async function onSubmit() {
 .profile-field label { font-weight: 600; min-width: 100px; color: var(--color-text-secondary); }
 
 .map-picker-section { display: flex; flex-direction: column; gap: 0.5rem; }
+.map-style-row { padding: 0; }
 .map-picker { height: 250px; border-radius: 8px; border: 1px solid var(--color-border); z-index: 0; }
 .map-coords { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--color-text-secondary); }
 

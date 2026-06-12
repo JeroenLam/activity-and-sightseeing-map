@@ -26,6 +26,7 @@ async def get_settings(user_id: CurrentUserId, db: DB):
         default_map_lat=user.default_map_lat,
         default_map_lng=user.default_map_lng,
         default_map_zoom=user.default_map_zoom,
+        map_tile_set=user.map_tile_set,
         profile_public=visibility.profile_public if visibility else False,
         location_filter=visibility.location_filter if visibility else "show-all",
         show_ratings=visibility.show_ratings if visibility else True,
@@ -48,6 +49,8 @@ async def update_settings(data: SettingsUpdate, user_id: CurrentUserId, db: DB):
         user.default_map_lng = data.default_map_lng
     if data.default_map_zoom is not None:
         user.default_map_zoom = data.default_map_zoom
+    if data.map_tile_set is not None:
+        user.map_tile_set = data.map_tile_set
 
     # Update visibility settings
     from sqlalchemy import select
@@ -76,6 +79,7 @@ async def update_settings(data: SettingsUpdate, user_id: CurrentUserId, db: DB):
         default_map_lat=user.default_map_lat,
         default_map_lng=user.default_map_lng,
         default_map_zoom=user.default_map_zoom,
+        map_tile_set=user.map_tile_set,
         profile_public=visibility.profile_public,
         location_filter=visibility.location_filter,
         show_ratings=visibility.show_ratings,

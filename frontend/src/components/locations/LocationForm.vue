@@ -121,14 +121,19 @@ import { computed, ref, reactive, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTypesStore } from '@/stores/types';
 import { useLocationsStore } from '@/stores/locations';
+import { useSettingsStore } from '@/stores/settings';
+import { useThemeStore } from '@/stores/theme';
 import { useGeocoding } from '@/composables/useGeocoding';
 import { findNearbyLocations } from '@/utils/locationProximity';
+import { getMapTileDefinition } from '@/lib/mapTiles';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const { t } = useI18n();
 const typesStore = useTypesStore();
 const locationsStore = useLocationsStore();
+const settingsStore = useSettingsStore();
+const themeStore = useThemeStore();
 const geocoding = useGeocoding();
 
 const searchQuery = ref('');
@@ -141,7 +146,9 @@ const locationError = ref('');
 const pinMapEl = ref<HTMLDivElement>();
 let pinMap: L.Map | null = null;
 let pinMarker: L.Marker | null = null;
+let tileLayer: L.TileLayer | null = null;
 const DUPLICATE_THRESHOLD_METERS = 200;
+const tileDefinition = computed(() => getMapTileDefinition(settingsStore.settings.map_tile_set, themeStore.dark));
 
 const form = reactive({
   name: '',
@@ -167,16 +174,21 @@ const nearbyDuplicates = computed(() => {
   });
 });
 
+function syncTileLayer() {
+  if (!pinMap) return;
+  if (tileLayer) {
+    pinMap.removeLayer(tileLayer);
+  }
+  tileLayer = L.tileLayer(tileDefinition.value.url, tileDefinition.value.options).addTo(pinMap);
+}
+
 onMounted(() => {
   if (!locationsStore.collection.features.length) {
     void locationsStore.fetchLocations();
   }
   if (!pinMapEl.value) return;
   pinMap = L.map(pinMapEl.value).setView([52.1, 5.3], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap',
-    maxZoom: 19,
-  }).addTo(pinMap);
+  syncTileLayer();
   pinMap.on('click', async (e: L.LeafletMouseEvent) => {
     form.latitude = e.latlng.lat;
     form.longitude = e.latlng.lng;
@@ -190,6 +202,11 @@ onMounted(() => {
 });
 
 onUnmounted(() => { pinMap?.remove(); pinMap = null; });
+
+watch(
+  () => tileDefinition.value.id,
+  () => syncTileLayer(),
+);
 
 function updatePinMarker(lat: number, lng: number) {
   if (!pinMap) return;
