@@ -11,6 +11,7 @@ from app.routers import (
     geocoding,
     locations,
     public,
+    statistics,
 )
 from app.routers import settings as settings_router
 from app.routers import (
@@ -49,6 +50,7 @@ app.include_router(types.router)
 app.include_router(settings_router.router)
 app.include_router(geocoding.router)
 app.include_router(public.router)
+app.include_router(statistics.router)
 
 
 @app.get("/api/health")

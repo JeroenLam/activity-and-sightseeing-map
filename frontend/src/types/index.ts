@@ -127,3 +127,30 @@ export interface ImportResult {
     skipped: number;
     errors: string[];
 }
+
+export interface YearStat {
+    year: number;
+    count: number;
+}
+
+export interface TypeStat {
+    type_id: string | null;
+    type_name: string;
+    color: string;
+    count: number;
+}
+
+export interface CountryStat {
+    country: string;
+    count: number;
+}
+
+export interface Statistics {
+    total_locations: number;
+    total_visited: number;
+    total_unvisited: number;
+    total_countries: number;
+    visits_per_year: YearStat[];
+    locations_per_type: TypeStat[];
+    locations_per_country: CountryStat[];
+}

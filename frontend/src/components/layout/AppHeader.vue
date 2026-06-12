@@ -12,6 +12,7 @@
       <router-link to="/add" class="nav-link">{{ t('nav.add') }}</router-link>
       <router-link to="/locations" class="nav-link">{{ t('nav.manage') }}</router-link>
       <router-link to="/types" class="nav-link">{{ t('nav.types') }}</router-link>
+      <router-link to="/stats" class="nav-link">{{ t('nav.stats') }}</router-link>
       <router-link to="/import" class="nav-link">{{ t('nav.import') }}</router-link>
     </nav>
 
@@ -43,6 +44,7 @@
         <router-link to="/add" class="drawer-link" @click="drawerOpen = false">{{ t('nav.add') }}</router-link>
         <router-link to="/locations" class="drawer-link" @click="drawerOpen = false">{{ t('nav.manage') }}</router-link>
         <router-link to="/types" class="drawer-link" @click="drawerOpen = false">{{ t('nav.types') }}</router-link>
+        <router-link to="/stats" class="drawer-link" @click="drawerOpen = false">{{ t('nav.stats') }}</router-link>
         <router-link to="/import" class="drawer-link" @click="drawerOpen = false">{{ t('nav.import') }}</router-link>
         <hr />
         <router-link to="/profile" class="drawer-link" @click="drawerOpen = false">{{ t('nav.profile') }}</router-link>

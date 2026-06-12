@@ -9,6 +9,7 @@
         "types": "Types",
         "import": "Importeren",
         "manage": "Beheren",
+        "stats": "Statistieken",
         "profile": "Profiel",
         "logout": "Uitloggen",
         "login": "Inloggen",
@@ -219,5 +220,17 @@
         "loading": "Laden...",
         "error": "Er is een fout opgetreden",
         "success": "Succesvol"
+    },
+    "stats": {
+        "title": "Statistieken",
+        "totalLocations": "Totaal Locaties",
+        "totalVisited": "Bezocht",
+        "totalUnvisited": "Niet Bezocht",
+        "totalCountries": "Landen",
+        "visitsPerYear": "Bezoeken per Jaar",
+        "locationsByType": "Locaties per Type",
+        "locationsByCountry": "Locaties per Land",
+        "visits": "Bezoeken",
+        "locations": "Locaties"
     }
 }

@@ -9,6 +9,7 @@
         "types": "Types",
         "import": "Import",
         "manage": "Manage",
+        "stats": "Stats",
         "profile": "Profile",
         "logout": "Logout",
         "login": "Login",
@@ -219,5 +220,17 @@
         "loading": "Loading...",
         "error": "An error occurred",
         "success": "Success"
+    },
+    "stats": {
+        "title": "Statistics",
+        "totalLocations": "Total Locations",
+        "totalVisited": "Visited",
+        "totalUnvisited": "Not Visited",
+        "totalCountries": "Countries",
+        "visitsPerYear": "Visits per Year",
+        "locationsByType": "Locations by Type",
+        "locationsByCountry": "Locations by Country",
+        "visits": "Visits",
+        "locations": "Locations"
     }
 }
