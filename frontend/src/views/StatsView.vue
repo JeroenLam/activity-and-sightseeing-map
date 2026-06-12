@@ -326,13 +326,22 @@ const countryYearChartData = computed(() => {
   if (!stats) return { labels: [], datasets: [] };
 
   const years = Array.from(new Set(stats.visited_locations_per_year_by_country.map((item) => item.year))).sort((a, b) => a - b);
-  const topCountries = stats.visited_locations_per_country.slice(0, 6).map((item) => item.country);
+
+  // Aggregate totals per country from the yearly breakdown so every country in any year is included.
+  const countryTotals = new Map<string, number>();
+  for (const item of stats.visited_locations_per_year_by_country) {
+    countryTotals.set(item.country, (countryTotals.get(item.country) ?? 0) + item.count);
+  }
+  const allCountries = Array.from(countryTotals.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([country]) => country);
+
   const series = new Map(stats.visited_locations_per_year_by_country.map((item) => [`${item.year}:${item.country}`, item.count]));
   const colors = ['#0f766e', '#0891b2', '#2563eb', '#4f46e5', '#7c3aed', '#db2777'];
 
   return {
     labels: years.map(String),
-    datasets: topCountries.map((country, index) => ({
+    datasets: allCountries.map((country, index) => ({
       label: country,
       data: years.map((year) => series.get(`${year}:${country}`) ?? 0),
       backgroundColor: colors[index % colors.length],
@@ -346,16 +355,23 @@ const typeYearChartData = computed(() => {
   if (!stats) return { labels: [], datasets: [] };
 
   const years = Array.from(new Set(stats.visited_locations_per_year_by_type.map((item) => item.year))).sort((a, b) => a - b);
-  const topTypes = stats.visited_locations_per_type.slice(0, 6).map((item) => ({
-    key: item.type_id ?? item.type_name,
-    label: item.type_name,
-    color: item.color,
-  }));
+
+  // Aggregate totals per type from the yearly breakdown so every type present in any year is included.
+  const typeMap = new Map<string, { label: string; color: string; total: number }>();
+  for (const item of stats.visited_locations_per_year_by_type) {
+    const key = item.type_id ?? item.type_name;
+    const existing = typeMap.get(key);
+    typeMap.set(key, { label: item.type_name, color: item.color, total: (existing?.total ?? 0) + item.count });
+  }
+  const allTypes = Array.from(typeMap.entries())
+    .sort((a, b) => b[1].total - a[1].total)
+    .map(([key, val]) => ({ key, label: val.label, color: val.color }));
+
   const series = new Map(stats.visited_locations_per_year_by_type.map((item) => [`${item.year}:${item.type_id ?? item.type_name}`, item.count]));
 
   return {
     labels: years.map(String),
-    datasets: topTypes.map((type) => ({
+    datasets: allTypes.map((type) => ({
       label: type.label,
       data: years.map((year) => series.get(`${year}:${type.key}`) ?? 0),
       backgroundColor: type.color,
