@@ -163,7 +163,7 @@ function loadFilterState() {
 
 const saved = loadFilterState();
 
-const sidebarOpen = ref(true);
+const sidebarOpen = ref(window.innerWidth > 768);
 const yearFrom = ref<number | undefined>(saved?.yearFrom ?? undefined);
 const yearTo = ref<number | undefined>(saved?.yearTo ?? undefined);
 const viewMode = ref<'all' | 'visited' | 'unvisited'>(saved?.viewMode ?? 'all');
@@ -584,12 +584,23 @@ onMounted(async () => {
     position: absolute;
     z-index: 50;
     height: 100%;
-    width: 260px;
-    min-width: 260px;
+    width: 280px;
+    min-width: 280px;
   }
   .sidebar.collapsed {
     width: 0;
     min-width: 0;
+  }
+  .sidebar-toggle {
+    right: -28px;
+    padding: 0.75rem 6px;
+    font-size: 0.85rem;
+  }
+  .sidebar-content {
+    padding: 0.75rem;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

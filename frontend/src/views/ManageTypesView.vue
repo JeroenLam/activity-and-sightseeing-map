@@ -218,5 +218,13 @@ tr:hover td {
 
 @media (max-width: 768px) {
   .hide-mobile { display: none; }
+  .page-container { padding: 1rem; }
+  .add-type-form {
+    flex-wrap: wrap;
+  }
+  .add-type-form input[type="text"] {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
 }
 </style>

@@ -338,5 +338,10 @@ async function onSubmit() {
   .profile-field { flex-direction: column; gap: 0.15rem; }
   .profile-field label { min-width: unset; }
   .danger-row { flex-direction: column; align-items: flex-start; }
+  .setting-row { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+  .setting-row select { max-width: 100%; }
+  .share-link-row { flex-direction: column; align-items: stretch; }
+  .map-picker { height: 200px; }
+  .map-coords { flex-wrap: wrap; }
 }
 </style>

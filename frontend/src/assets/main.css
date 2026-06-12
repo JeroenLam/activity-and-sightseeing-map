@@ -48,6 +48,8 @@ body {
     color: var(--color-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-text-size-adjust: 100%;
 }
 
 #app {
@@ -70,6 +72,7 @@ input,
 select,
 textarea {
     font: inherit;
+    font-size: 16px;
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--color-border);
     border-radius: 6px;
@@ -77,6 +80,7 @@ textarea {
     color: var(--color-text);
     transition: border-color 0.15s;
     width: 100%;
+    min-height: 44px;
 }
 
 input:focus,
@@ -113,6 +117,7 @@ select {
     transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
     white-space: nowrap;
     text-decoration: none;
+    min-height: 44px;
 }
 
 .btn:hover {
@@ -284,5 +289,39 @@ tr:hover td {
 @media (max-width: 768px) {
     .hide-mobile {
         display: none !important;
+    }
+
+    .dialog {
+        max-width: calc(100vw - 2rem) !important;
+        padding: 1.25rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    table {
+        font-size: 0.8rem;
+    }
+
+    th,
+    td {
+        padding: 0.4rem 0.5rem;
+    }
+
+    .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .overlay {
+        padding: 0.5rem;
+    }
+
+    .dialog {
+        border-radius: 8px;
+        padding: 1rem;
     }
 }

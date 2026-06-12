@@ -220,6 +220,14 @@ function onCsvDone() {
   margin-bottom: 0.5rem;
 }
 
-.subsection-actions { display: flex; gap: 0.4rem; }
+.subsection-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .msg { margin-top: 0.5rem; }
+
+@media (max-width: 768px) {
+  .page-container { padding: 1rem; }
+  .import-section { padding: 1rem; }
+  .subsection-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .subsection-actions { width: 100%; }
+  .subsection-actions .btn { flex: 1; text-align: center; }
+}
 </style>
