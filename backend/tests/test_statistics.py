@@ -113,8 +113,7 @@ async def test_statistics_with_locations(authenticated_client):
     assert countries["DE"] == 1
 
     visited_countries = {
-        item["country"]: item["count"]
-        for item in data["visited_locations_per_country"]
+        item["country"]: item["count"] for item in data["visited_locations_per_country"]
     }
     assert visited_countries["NL"] == 1
     assert visited_countries["FR"] == 1
