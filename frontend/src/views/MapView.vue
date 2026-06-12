@@ -62,6 +62,9 @@
         :marker-size="markerSize"
         :visited-opacity="visitedOpacity"
         :unvisited-opacity="unvisitedOpacity"
+        :initial-lat="settingsStore.settings.default_map_lat ?? undefined"
+        :initial-lng="settingsStore.settings.default_map_lng ?? undefined"
+        :initial-zoom="settingsStore.settings.default_map_zoom ?? undefined"
         @bounds-change="onBoundsChange"
         @edit="openEdit"
         @add-year="onAddYear"
@@ -138,6 +141,7 @@ import { ref, computed, onMounted, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useLocationsStore } from '@/stores/locations';
 import { useTypesStore } from '@/stores/types';
+import { useSettingsStore } from '@/stores/settings';
 import FilterPanel from '@/components/map/FilterPanel.vue';
 import MapContainer from '@/components/map/MapContainer.vue';
 import type { LocationFeature } from '@/types';
@@ -145,6 +149,7 @@ import type { LocationFeature } from '@/types';
 const { t } = useI18n();
 const locationsStore = useLocationsStore();
 const typesStore = useTypesStore();
+const settingsStore = useSettingsStore();
 
 const sidebarOpen = ref(true);
 const yearFrom = ref<number | undefined>(undefined);
@@ -290,7 +295,7 @@ async function onAddYear(f: LocationFeature) {
 }
 
 onMounted(async () => {
-  await Promise.all([locationsStore.fetchLocations(), typesStore.fetchTypes()]);
+  await Promise.all([locationsStore.fetchLocations(), typesStore.fetchTypes(), settingsStore.fetchSettings()]);
 });
 </script>
 
