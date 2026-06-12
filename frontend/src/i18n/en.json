@@ -208,7 +208,7 @@
         "cannotBeUndone": "This action cannot be undone."
     },
     "progress": {
-        "visited": "{pct}% visited"
+        "visited": "{pct}{'%'} visited"
     },
     "common": {
         "save": "Save",

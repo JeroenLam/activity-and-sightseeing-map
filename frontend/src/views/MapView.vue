@@ -182,20 +182,21 @@ const editForm = reactive({
   visited_unknown_year: false,
 });
 
-const features = computed(() => locationsStore.collection.features);
+const features = computed(() => locationsStore.collection?.features ?? []);
 
 const filteredFeatures = computed(() => {
   return features.value.filter((f) => {
     const props = f.properties;
-    const visited = props.years_visited.length > 0 || props.visited_unknown_year;
+    const yearsVisited = props.years_visited ?? [];
+    const visited = yearsVisited.length > 0 || props.visited_unknown_year;
     if (viewMode.value === 'visited' && !visited) return false;
     if (viewMode.value === 'unvisited' && visited) return false;
     if (props.type && disabledTypes.value.has(props.type.id)) return false;
-    if (yearFrom.value && props.years_visited.length) {
-      if (Math.max(...props.years_visited) < yearFrom.value) return false;
+    if (yearFrom.value && yearsVisited.length) {
+      if (Math.max(...yearsVisited) < yearFrom.value) return false;
     }
-    if (yearTo.value && props.years_visited.length) {
-      if (Math.min(...props.years_visited) > yearTo.value) return false;
+    if (yearTo.value && yearsVisited.length) {
+      if (Math.min(...yearsVisited) > yearTo.value) return false;
     }
     return true;
   });
@@ -205,7 +206,7 @@ const visitedPct = computed(() => {
   const total = features.value.length;
   if (!total) return 0;
   const visited = features.value.filter(
-    (f) => f.properties.years_visited.length > 0 || f.properties.visited_unknown_year
+    (f) => (f.properties.years_visited ?? []).length > 0 || f.properties.visited_unknown_year
   ).length;
   return Math.round((visited / total) * 100);
 });
@@ -277,7 +278,7 @@ async function saveEdit() {
 
 async function onAddYear(f: LocationFeature) {
   if (!f.id) return;
-  const years = [...f.properties.years_visited];
+  const years = [...(f.properties.years_visited ?? [])];
   if (!years.includes(currentYear)) {
     years.push(currentYear);
     years.sort((a, b) => a - b);

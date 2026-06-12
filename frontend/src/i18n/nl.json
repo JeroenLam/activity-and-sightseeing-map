@@ -208,7 +208,7 @@
         "cannotBeUndone": "Deze actie kan niet ongedaan worden gemaakt."
     },
     "progress": {
-        "visited": "{pct}% bezocht"
+        "visited": "{pct}{'%'} bezocht"
     },
     "common": {
         "save": "Opslaan",

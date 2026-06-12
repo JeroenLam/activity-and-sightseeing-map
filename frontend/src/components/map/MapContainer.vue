@@ -30,7 +30,7 @@ let map: L.Map | null = null;
 let markersLayer: L.LayerGroup | null = null;
 
 function isVisited(f: LocationFeature): boolean {
-  return f.properties.years_visited.length > 0 || f.properties.visited_unknown_year;
+  return (f.properties.years_visited ?? []).length > 0 || f.properties.visited_unknown_year;
 }
 
 function getIconPath(icon: string | undefined): string {
@@ -64,7 +64,7 @@ function buildPopup(f: LocationFeature): string {
   const visited = isVisited(f);
   const yearsStr = p.visited_unknown_year
     ? t('map.unknownYear')
-    : p.years_visited.join(', ');
+    : (p.years_visited ?? []).join(', ');
   const statusLabel = visited ? t('map.visited') : t('map.notVisited');
   const ratingStr = p.rating ? '★'.repeat(p.rating) + '☆'.repeat(5 - p.rating) : '';
 
