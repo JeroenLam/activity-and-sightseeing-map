@@ -11,10 +11,10 @@ from app.routers import (
     geocoding,
     locations,
     public,
-    statistics,
 )
 from app.routers import settings as settings_router
 from app.routers import (
+    statistics,
     types,
 )
 

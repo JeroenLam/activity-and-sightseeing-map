@@ -14,7 +14,9 @@ from app.schemas.location_type import (
 
 async def get_types(db: AsyncSession, user_id: str) -> list[LocationTypeResponse]:
     result = await db.execute(
-        select(LocationType).where(LocationType.user_id == user_id)
+        select(LocationType)
+        .where(LocationType.user_id == user_id)
+        .order_by(func.lower(LocationType.name))
     )
     types = result.scalars().all()
     return [LocationTypeResponse.model_validate(t) for t in types]

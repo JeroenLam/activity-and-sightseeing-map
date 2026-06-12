@@ -6,8 +6,8 @@ from sqlalchemy.orm import selectinload
 
 from app.models.location import Location
 from app.schemas.statistics import (
-    CountryYearStat,
     CountryStat,
+    CountryYearStat,
     StatisticsResponse,
     TypeStat,
     TypeYearStat,
@@ -72,7 +72,7 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
                 loc.location_type.color,
             )
         else:
-            type_key = (None, "Uncategorized", "#9E9E9E")
+            type_key = (None, "Uncategorized", "#9E9E9E")  # type: ignore[assignment]
 
         for visit in loc.visits:
             type_year_counter[(visit.year, *type_key)] += 1
@@ -94,6 +94,7 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
     # Locations per type
     type_counter: Counter[tuple[str | None, str, str]] = Counter()
     for loc in locations:
+        key: tuple[str | None, str, str]
         if loc.location_type:
             key = (
                 loc.location_type.id,
@@ -122,7 +123,7 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
                 loc.location_type.color,
             )
         else:
-            key = (None, "Uncategorized", "#9E9E9E")
+            key = (None, "Uncategorized", "#9E9E9E")  # type: ignore[assignment]
         visited_type_counter[key] += 1
 
     visited_locations_per_type = sorted(
