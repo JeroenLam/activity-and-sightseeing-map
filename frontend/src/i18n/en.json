@@ -237,42 +237,69 @@
     "stats": {
         "title": "Statistics",
         "achievementsTitle": "Achievements",
-        "achievementsSubtitle": "Unlock badges as you log more places and explore more countries.",
-        "achievementProgressSingle": "{current} / {goal}",
-        "achievementProgressDual": "{current} / {goal} locations, {secondaryCurrent} / {secondaryGoal} countries",
+        "achievementsSubtitle": "Unlock badge levels as you explore more places and countries.",
+        "badgeEmptyTitle": "Hover over a badge",
+        "badgeEmptyBody": "The details for that badge will appear here, including the progress levels and whether it tracks added or visited locations.",
+        "badgeProgressLabel": "Progress to Next Level",
+        "badgeLevelOf": "Level {current} of {max}",
+        "badgeLevelThresholds": "Level Thresholds",
+        "badgeTracksAdded": "Tracks added locations",
+        "badgeTracksVisited": "Tracks visited locations",
         "totalLocations": "Total Locations",
         "totalVisited": "Visited",
         "totalUnvisited": "Not Visited",
         "totalCountries": "Countries",
+        "addedLocations": "Added",
+        "visitedLocations": "Visited",
         "visitsPerYear": "Visits per Year",
+        "visitedLocationsPerYearByCountry": "Visited Locations Per Year by Country",
+        "visitedLocationsPerYearByType": "Visited Locations Per Year by Type",
         "locationsByType": "Locations by Type",
         "locationsByCountry": "Locations by Country",
+        "locationsByTypeComparison": "Added vs Visited by Type",
+        "locationsByCountryComparison": "Added vs Visited by Country",
         "visits": "Visits",
         "locations": "Locations",
         "achievements": {
-            "firstPin": {
-                "title": "First Pin",
-                "description": "Log your very first location."
+            "locationLogger": {
+                "title": "📝 Location Logger",
+                "description": "Track your location adding journey. Reach level 5 to maximize this badge."
             },
-            "locationCollector": {
-                "title": "Location Collector",
-                "description": "Log 10 total locations."
+            "locationVisitor": {
+                "title": "🌐 Location Visitor",
+                "description": "Visit more and more locations. Levels increase with each 10x milestone."
             },
-            "centurion": {
-                "title": "Centurion",
-                "description": "Log 100 total locations."
+            "countryExplorer": {
+                "title": "🏳️ Country Explorer",
+                "description": "Visit locations across different countries. Each level unlocks new geography."
             },
-            "borderBreaker": {
-                "title": "Border Breaker",
-                "description": "Visit locations in 2 different countries."
+            "globalCollector10": {
+                "title": "🎯 Global Collector I",
+                "description": "Visit at least 10 unique locations in each country; progress is the number of countries meeting that minimum."
             },
-            "globeTrotter": {
-                "title": "Globe Trotter",
-                "description": "Visit locations in 10 different countries."
+            "globalCollector50": {
+                "title": "🎯 Global Collector II",
+                "description": "Visit at least 50 unique locations in each country; progress is the number of countries meeting that minimum."
             },
-            "crossCountryExplorer": {
-                "title": "Cross-Country Explorer",
-                "description": "Visit 10 different locations across at least 2 countries."
+            "globalCollector100": {
+                "title": "🎯 Global Collector III",
+                "description": "Visit at least 100 unique locations in each country; progress is the number of countries meeting that minimum."
+            },
+            "annualAdventurer": {
+                "title": "📅 Annual Adventurer",
+                "description": "Visit 5 locations in a single year. Up to 100 visits for max level."
+            },
+            "yearRoundExplorer": {
+                "title": "📅 Year-Round Explorer",
+                "description": "Explore across different years. Visit in multiple calendar years."
+            },
+            "countryHopper": {
+                "title": "✈️ Country Hopper",
+                "description": "Visit different countries within a single year. Maximum 10 countries per year."
+            },
+            "typeTrailblazer": {
+                "title": "🧩 Type Trailblazer",
+                "description": "Explore varied location types in a single year. Reach 16 different types for max level."
             }
         }
     }

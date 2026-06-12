@@ -237,42 +237,69 @@
     "stats": {
         "title": "Statistieken",
         "achievementsTitle": "Prestaties",
-        "achievementsSubtitle": "Speel badges vrij terwijl je meer plekken opslaat en meer landen verkent.",
-        "achievementProgressSingle": "{current} / {goal}",
-        "achievementProgressDual": "{current} / {goal} locaties, {secondaryCurrent} / {secondaryGoal} landen",
+        "achievementsSubtitle": "Speel badgeniveaus vrij terwijl je meer plekken verkent en meer landen bezoekt.",
+        "badgeEmptyTitle": "Beweeg over een badge",
+        "badgeEmptyBody": "De details van die badge verschijnen hier, inclusief de voortgangsniveaus en of deze kijkt naar opgeslagen of bezochte locaties.",
+        "badgeProgressLabel": "Voortgang naar Volgende Niveau",
+        "badgeLevelOf": "Niveau {current} van {max}",
+        "badgeLevelThresholds": "Niveaudrempels",
+        "badgeTracksAdded": "Kijkt naar opgeslagen locaties",
+        "badgeTracksVisited": "Kijkt naar bezochte locaties",
         "totalLocations": "Totaal Locaties",
         "totalVisited": "Bezocht",
         "totalUnvisited": "Niet Bezocht",
         "totalCountries": "Landen",
+        "addedLocations": "Opgeslagen",
+        "visitedLocations": "Bezocht",
         "visitsPerYear": "Bezoeken per Jaar",
+        "visitedLocationsPerYearByCountry": "Bezochte locaties per jaar per land",
+        "visitedLocationsPerYearByType": "Bezochte locaties per jaar per type",
         "locationsByType": "Locaties per Type",
         "locationsByCountry": "Locaties per Land",
+        "locationsByTypeComparison": "Opgeslagen vs bezocht per type",
+        "locationsByCountryComparison": "Opgeslagen vs bezocht per land",
         "visits": "Bezoeken",
         "locations": "Locaties",
         "achievements": {
-            "firstPin": {
-                "title": "Eerste Pin",
-                "description": "Sla je allereerste locatie op."
+            "locationLogger": {
+                "title": "📝 Locatieschrijver",
+                "description": "Volg je reis van het toevoegen van locaties. Bereik niveau 5 voor maximaal deze badge."
             },
-            "locationCollector": {
-                "title": "Locatieverzamelaar",
-                "description": "Sla in totaal 10 locaties op."
+            "locationVisitor": {
+                "title": "🌐 Locatiebezoekeraar",
+                "description": "Bezoek steeds meer locaties. Elk niveau verhoogt met elke 10x milestone."
             },
-            "centurion": {
-                "title": "Centurion",
-                "description": "Sla in totaal 100 locaties op."
+            "countryExplorer": {
+                "title": "🏳️ Landenverkenner",
+                "description": "Bezoek locaties in verschillende landen. Elk niveau ontsluit nieuwe geografie."
             },
-            "borderBreaker": {
-                "title": "Grensverlegger",
-                "description": "Bezoek locaties in 2 verschillende landen."
+            "globalCollector10": {
+                "title": "🎯 Mondiale Verzamelaar I",
+                "description": "Bezoek per land minimaal 10 unieke locaties; je voortgang is het aantal landen dat deze ondergrens haalt."
             },
-            "globeTrotter": {
-                "title": "Wereldreiziger",
-                "description": "Bezoek locaties in 10 verschillende landen."
+            "globalCollector50": {
+                "title": "🎯 Mondiale Verzamelaar II",
+                "description": "Bezoek per land minimaal 50 unieke locaties; je voortgang is het aantal landen dat deze ondergrens haalt."
             },
-            "crossCountryExplorer": {
-                "title": "Meerlandenverkenner",
-                "description": "Bezoek 10 verschillende locaties verspreid over minstens 2 landen."
+            "globalCollector100": {
+                "title": "🎯 Mondiale Verzamelaar III",
+                "description": "Bezoek per land minimaal 100 unieke locaties; je voortgang is het aantal landen dat deze ondergrens haalt."
+            },
+            "annualAdventurer": {
+                "title": "📅 Jaaravonturier",
+                "description": "Bezoek 5 locaties in een enkel jaar. Tot 100 bezoeken voor maximaal niveau."
+            },
+            "yearRoundExplorer": {
+                "title": "📅 Meerjarenverkenner",
+                "description": "Verken over verschillende jaren. Bezoek in meerdere kalenderjaren."
+            },
+            "countryHopper": {
+                "title": "✈️ Landensprinter",
+                "description": "Bezoek verschillende landen binnen een enkel jaar. Maximaal 10 landen per jaar."
+            },
+            "typeTrailblazer": {
+                "title": "🧩 Typepionier",
+                "description": "Verken gevarieerde locatietypen in een enkel jaar. Bereik 16 verschillende typen voor maximaal niveau."
             }
         }
     }

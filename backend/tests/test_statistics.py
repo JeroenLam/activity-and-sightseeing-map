@@ -13,7 +13,11 @@ async def test_statistics_empty(authenticated_client):
     assert data["total_countries"] == 0
     assert data["visits_per_year"] == []
     assert data["locations_per_type"] == []
+    assert data["visited_locations_per_type"] == []
     assert data["locations_per_country"] == []
+    assert data["visited_locations_per_country"] == []
+    assert data["visited_locations_per_year_by_country"] == []
+    assert data["visited_locations_per_year_by_type"] == []
 
 
 @pytest.mark.asyncio
@@ -94,6 +98,12 @@ async def test_statistics_with_locations(authenticated_client):
     assert types["Museum"] == 2
     assert types["Uncategorized"] == 1
 
+    visited_types = {
+        item["type_name"]: item["count"] for item in data["visited_locations_per_type"]
+    }
+    assert visited_types["Museum"] == 2
+    assert "Uncategorized" not in visited_types
+
     # Locations per country
     countries = {
         item["country"]: item["count"] for item in data["locations_per_country"]
@@ -101,6 +111,29 @@ async def test_statistics_with_locations(authenticated_client):
     assert countries["NL"] == 1
     assert countries["FR"] == 1
     assert countries["DE"] == 1
+
+    visited_countries = {
+        item["country"]: item["count"]
+        for item in data["visited_locations_per_country"]
+    }
+    assert visited_countries["NL"] == 1
+    assert visited_countries["FR"] == 1
+    assert "DE" not in visited_countries
+
+    visited_by_country = {
+        (item["year"], item["country"]): item["count"]
+        for item in data["visited_locations_per_year_by_country"]
+    }
+    assert visited_by_country[(2022, "NL")] == 1
+    assert visited_by_country[(2023, "NL")] == 1
+    assert visited_by_country[(2023, "FR")] == 1
+
+    visited_by_type = {
+        (item["year"], item["type_name"]): item["count"]
+        for item in data["visited_locations_per_year_by_type"]
+    }
+    assert visited_by_type[(2022, "Museum")] == 1
+    assert visited_by_type[(2023, "Museum")] == 2
 
 
 @pytest.mark.asyncio

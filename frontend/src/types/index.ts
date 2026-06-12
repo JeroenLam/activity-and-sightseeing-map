@@ -165,6 +165,20 @@ export interface CountryStat {
     count: number;
 }
 
+export interface CountryYearStat {
+    year: number;
+    country: string;
+    count: number;
+}
+
+export interface TypeYearStat {
+    year: number;
+    type_id: string | null;
+    type_name: string;
+    color: string;
+    count: number;
+}
+
 export interface Statistics {
     total_locations: number;
     total_visited: number;
@@ -172,5 +186,9 @@ export interface Statistics {
     total_countries: number;
     visits_per_year: YearStat[];
     locations_per_type: TypeStat[];
+    visited_locations_per_type: TypeStat[];
     locations_per_country: CountryStat[];
+    visited_locations_per_country: CountryStat[];
+    visited_locations_per_year_by_country: CountryYearStat[];
+    visited_locations_per_year_by_type: TypeYearStat[];
 }

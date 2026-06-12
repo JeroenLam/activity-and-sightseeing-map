@@ -38,9 +38,24 @@ describe('Statistics Store', () => {
                 { type_id: '1', type_name: 'Museum', color: '#FF0000', count: 5 },
                 { type_id: null, type_name: 'Uncategorized', color: '#9E9E9E', count: 2 },
             ],
+            visited_locations_per_type: [
+                { type_id: '1', type_name: 'Museum', color: '#FF0000', count: 3 },
+            ],
             locations_per_country: [
                 { country: 'NL', count: 4 },
                 { country: 'FR', count: 3 },
+            ],
+            visited_locations_per_country: [
+                { country: 'NL', count: 2 },
+                { country: 'FR', count: 1 },
+            ],
+            visited_locations_per_year_by_country: [
+                { year: 2022, country: 'NL', count: 2 },
+                { year: 2023, country: 'FR', count: 3 },
+            ],
+            visited_locations_per_year_by_type: [
+                { year: 2022, type_id: '1', type_name: 'Museum', color: '#FF0000', count: 2 },
+                { year: 2023, type_id: null, type_name: 'Uncategorized', color: '#9E9E9E', count: 1 },
             ],
         };
 
@@ -64,7 +79,7 @@ describe('Statistics Store', () => {
 
         expect(store.loading).toBe(true);
 
-        resolvePromise!({ data: { total_locations: 0, total_visited: 0, total_unvisited: 0, total_countries: 0, visits_per_year: [], locations_per_type: [], locations_per_country: [] } });
+        resolvePromise!({ data: { total_locations: 0, total_visited: 0, total_unvisited: 0, total_countries: 0, visits_per_year: [], locations_per_type: [], visited_locations_per_type: [], locations_per_country: [], visited_locations_per_country: [], visited_locations_per_year_by_country: [], visited_locations_per_year_by_type: [] } });
         await fetchPromise;
 
         expect(store.loading).toBe(false);
