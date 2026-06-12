@@ -302,6 +302,26 @@
             "typeTrailblazer": {
                 "title": "🧩 Typepionier",
                 "description": "Verken gevarieerde locatietypen in een enkel jaar. Bereik 16 verschillende typen voor maximaal niveau."
+            },
+            "cityScout": {
+                "title": "🏙️ Stadverkenner",
+                "description": "Bezoek locaties in unieke steden en vergroot je stedelijke bereik."
+            },
+            "ratingCritic": {
+                "title": "⭐ Beoordelingscriticus",
+                "description": "Geef beoordelingen aan bezochte locaties en bouw een rijkere reisgeschiedenis op."
+            },
+            "storyteller": {
+                "title": "💬 Verhalenverteller",
+                "description": "Schrijf opmerkingen bij bezochte locaties om herinneringen en context vast te leggen."
+            },
+            "timeTraveler": {
+                "title": "⏳ Tijdreiziger",
+                "description": "Bezoek dezelfde locatie in meerdere verschillende jaren."
+            },
+            "continentalExplorer": {
+                "title": "🌍 Continentenverkenner",
+                "description": "Bezoek locaties op unieke continenten en verbreed je wereldkaart."
             }
         }
     }

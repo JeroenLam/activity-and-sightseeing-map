@@ -302,6 +302,26 @@
             "typeTrailblazer": {
                 "title": "🧩 Type Trailblazer",
                 "description": "Explore varied location types in a single year. Reach 16 different types for max level."
+            },
+            "cityScout": {
+                "title": "🏙️ City Scout",
+                "description": "Visit locations across unique cities and expand your urban footprint over time."
+            },
+            "ratingCritic": {
+                "title": "⭐ Rating Critic",
+                "description": "Provide ratings for visited locations and build a richer travel history."
+            },
+            "storyteller": {
+                "title": "💬 Storyteller",
+                "description": "Write comments on visited locations to capture memories and context."
+            },
+            "timeTraveler": {
+                "title": "⏳ Time Traveler",
+                "description": "Visit the same location in multiple different years."
+            },
+            "continentalExplorer": {
+                "title": "🌍 Continental Explorer",
+                "description": "Visit locations on unique continents and broaden your global map."
             }
         }
     }

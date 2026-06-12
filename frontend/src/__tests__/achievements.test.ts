@@ -9,6 +9,11 @@ describe('buildAchievements', () => {
             total_visited: 10,
             total_unvisited: 2,
             total_countries: 3,
+            total_cities: 8,
+            total_ratings_provided: 4,
+            total_comments_provided: 3,
+            total_locations_visited_multiple_years: 2,
+            total_visited_continents: 1,
             visits_per_year: [{ year: 2022, count: 1 }, { year: 2023, count: 9 }],
             locations_per_type: [],
             visited_locations_per_type: [],
@@ -41,6 +46,11 @@ describe('buildAchievements', () => {
             total_visited: 10,
             total_unvisited: 45,
             total_countries: 1,
+            total_cities: 40,
+            total_ratings_provided: 12,
+            total_comments_provided: 11,
+            total_locations_visited_multiple_years: 1,
+            total_visited_continents: 2,
             visits_per_year: [{ year: 2024, count: 35 }],
             locations_per_type: [],
             visited_locations_per_type: [],
@@ -65,6 +75,11 @@ describe('buildAchievements', () => {
             total_visited: 0,
             total_unvisited: 0,
             total_countries: 0,
+            total_cities: 0,
+            total_ratings_provided: 0,
+            total_comments_provided: 0,
+            total_locations_visited_multiple_years: 0,
+            total_visited_continents: 0,
             visits_per_year: [],
             locations_per_type: [],
             visited_locations_per_type: [],
@@ -76,7 +91,7 @@ describe('buildAchievements', () => {
 
         const achievements = buildAchievements(statistics);
 
-        expect(achievements.length).toBe(10);
+        expect(achievements.length).toBe(15);
         expect(achievements.map((a) => a.id)).toEqual([
             'location-logger',
             'location-visitor',
@@ -88,6 +103,11 @@ describe('buildAchievements', () => {
             'year-round-explorer',
             'country-hopper',
             'type-trailblazer',
+            'city-scout',
+            'rating-critic',
+            'storyteller',
+            'time-traveler',
+            'continental-explorer',
         ]);
     });
 
@@ -97,6 +117,11 @@ describe('buildAchievements', () => {
             total_visited: 300,
             total_unvisited: 100,
             total_countries: 5,
+            total_cities: 120,
+            total_ratings_provided: 42,
+            total_comments_provided: 35,
+            total_locations_visited_multiple_years: 9,
+            total_visited_continents: 3,
             visits_per_year: [],
             locations_per_type: [],
             visited_locations_per_type: [],

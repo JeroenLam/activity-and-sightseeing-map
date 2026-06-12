@@ -15,6 +15,32 @@ from app.schemas.statistics import (
 )
 
 
+def estimate_continent(latitude: float, longitude: float) -> str:
+    """Estimate continent from coordinates using broad geographic bounds."""
+    if latitude <= -60:
+        return "Antarctica"
+
+    if -35 <= latitude <= 38 and -20 <= longitude <= 52:
+        return "Africa"
+
+    if 35 <= latitude <= 72 and -25 <= longitude <= 45:
+        return "Europe"
+
+    if 1 <= latitude <= 81 and 26 <= longitude <= 180:
+        return "Asia"
+
+    if -50 <= latitude <= 0 and 110 <= longitude <= 180:
+        return "Oceania"
+
+    if 7 <= latitude <= 83 and -170 <= longitude <= -52:
+        return "North America"
+
+    if -56 <= latitude <= 13 and -81 <= longitude <= -34:
+        return "South America"
+
+    return "Unknown"
+
+
 async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
     query = (
         select(Location)
@@ -33,6 +59,27 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
     visited = [loc for loc in locations if loc.visits or loc.visited_unknown_year]
     total_visited = len(visited)
     total_unvisited = total_locations - total_visited
+
+    city_counter: Counter[str] = Counter()
+    ratings_provided = 0
+    comments_provided = 0
+    locations_visited_multiple_years = 0
+
+    for loc in visited:
+        city = loc.city.strip() if loc.city else ""
+        if city:
+            city_counter[city.casefold()] += 1
+
+        if loc.rating is not None:
+            ratings_provided += 1
+
+        if loc.comments and loc.comments.strip():
+            comments_provided += 1
+
+        if len({visit.year for visit in loc.visits}) >= 2:
+            locations_visited_multiple_years += 1
+
+    total_cities = len(city_counter)
 
     # Visits per year
     year_counter: Counter[int] = Counter()
@@ -168,11 +215,22 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
         reverse=True,
     )
 
+    visited_continents = {
+        estimate_continent(loc.latitude, loc.longitude) for loc in visited
+    }
+    visited_continents.discard("Unknown")
+    total_visited_continents = len(visited_continents)
+
     return StatisticsResponse(
         total_locations=total_locations,
         total_visited=total_visited,
         total_unvisited=total_unvisited,
         total_countries=total_countries,
+        total_cities=total_cities,
+        total_ratings_provided=ratings_provided,
+        total_comments_provided=comments_provided,
+        total_locations_visited_multiple_years=locations_visited_multiple_years,
+        total_visited_continents=total_visited_continents,
         visits_per_year=visits_per_year,
         locations_per_type=locations_per_type,
         visited_locations_per_type=visited_locations_per_type,

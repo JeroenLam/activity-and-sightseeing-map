@@ -216,5 +216,60 @@ export function buildAchievements(statistics: Statistics): AchievementProgress[]
             current: maxTypesVisitedInYear,
             levels: [2, 4, 8, 16],
         }),
+
+        // Unique visited cities
+        buildMultiLevelAchievement({
+            id: 'city-scout',
+            icon: '🏙️',
+            titleKey: 'stats.achievements.cityScout.title',
+            descriptionKey: 'stats.achievements.cityScout.description',
+            trackingKey: 'stats.badgeTracksVisited',
+            current: statistics.total_cities,
+            levels: [2, 10, 50, 200, 1000],
+        }),
+
+        // Number of ratings provided on visited locations
+        buildMultiLevelAchievement({
+            id: 'rating-critic',
+            icon: '⭐',
+            titleKey: 'stats.achievements.ratingCritic.title',
+            descriptionKey: 'stats.achievements.ratingCritic.description',
+            trackingKey: 'stats.badgeTracksVisited',
+            current: statistics.total_ratings_provided,
+            levels: [1, 10, 50, 250, 1000],
+        }),
+
+        // Number of comments provided on visited locations
+        buildMultiLevelAchievement({
+            id: 'storyteller',
+            icon: '💬',
+            titleKey: 'stats.achievements.storyteller.title',
+            descriptionKey: 'stats.achievements.storyteller.description',
+            trackingKey: 'stats.badgeTracksVisited',
+            current: statistics.total_comments_provided,
+            levels: [1, 10, 50, 250, 1000],
+        }),
+
+        // Locations visited in multiple years
+        buildMultiLevelAchievement({
+            id: 'time-traveler',
+            icon: '⏳',
+            titleKey: 'stats.achievements.timeTraveler.title',
+            descriptionKey: 'stats.achievements.timeTraveler.description',
+            trackingKey: 'stats.badgeTracksVisited',
+            current: statistics.total_locations_visited_multiple_years,
+            levels: [1, 5, 25, 100, 500],
+        }),
+
+        // Unique continents visited
+        buildMultiLevelAchievement({
+            id: 'continental-explorer',
+            icon: '🌍',
+            titleKey: 'stats.achievements.continentalExplorer.title',
+            descriptionKey: 'stats.achievements.continentalExplorer.description',
+            trackingKey: 'stats.badgeTracksVisited',
+            current: statistics.total_visited_continents,
+            levels: [2, 3, 5, 7],
+        }),
     ];
 }
