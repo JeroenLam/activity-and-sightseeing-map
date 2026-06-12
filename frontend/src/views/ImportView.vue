@@ -108,7 +108,7 @@ function exportLocationsCsv() {
   const rows = features.map((f) => {
     const p = f.properties;
     const [lng, lat] = f.geometry.coordinates;
-    const visited = p.visited_unknown_year ? '-' : p.years_visited.join(', ');
+    const visited = p.visited_unknown_year ? '-' : (p.years_visited ?? []).join(', ');
     return [p.name, p.type?.name || '', p.city, p.country, p.link || '', visited, String(lat), String(lng), p.rating != null ? String(p.rating) : '', p.comments || '']
       .map((v) => `"${v.replace(/"/g, '""')}"`)
       .join(',');

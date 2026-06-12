@@ -51,7 +51,7 @@
               <td class="hide-mobile">{{ f.properties.country }}</td>
               <td>
                 <span v-if="f.properties.visited_unknown_year">?</span>
-                <span v-else>{{ f.properties.years_visited.join(', ') }}</span>
+                <span v-else>{{ (f.properties.years_visited ?? []).join(', ') }}</span>
               </td>
               <td class="hide-mobile">
                 <span v-if="f.properties.rating" style="color: #f5a623">{{ '★'.repeat(f.properties.rating) }}</span>
@@ -187,7 +187,7 @@ const filteredLocations = computed(() => {
       p.city.toLowerCase().includes(q) ||
       p.country.toLowerCase().includes(q) ||
       (p.type?.name || '').toLowerCase().includes(q) ||
-      p.years_visited.some((y) => String(y).includes(q))
+      p.years_visited?.some((y) => String(y).includes(q))
     );
   });
 });
@@ -203,8 +203,8 @@ const sortedLocations = computed(() => {
       case 'city': cmp = ap.city.localeCompare(bp.city); break;
       case 'country': cmp = ap.country.localeCompare(bp.country); break;
       case 'years': {
-        const aY = ap.years_visited.length ? Math.min(...ap.years_visited) : ap.visited_unknown_year ? 0 : Infinity;
-        const bY = bp.years_visited.length ? Math.min(...bp.years_visited) : bp.visited_unknown_year ? 0 : Infinity;
+        const aY = (ap.years_visited ?? []).length ? Math.min(...ap.years_visited) : ap.visited_unknown_year ? 0 : Infinity;
+        const bY = (bp.years_visited ?? []).length ? Math.min(...bp.years_visited) : bp.visited_unknown_year ? 0 : Infinity;
         cmp = aY - bY; break;
       }
       case 'rating': cmp = (ap.rating ?? 0) - (bp.rating ?? 0); break;
@@ -228,7 +228,7 @@ function exportCsv() {
   const rows = sortedLocations.value.map((f) => {
     const p = f.properties;
     const [lng, lat] = f.geometry.coordinates;
-    const visited = p.visited_unknown_year ? '-' : p.years_visited.join(', ');
+    const visited = p.visited_unknown_year ? '-' : (p.years_visited ?? []).join(', ');
     return [p.name, p.type?.name || '', p.city, p.country, p.link || '', visited, String(lat), String(lng), p.rating != null ? String(p.rating) : '', p.comments || '']
       .map((v) => `"${v.replace(/"/g, '""')}"`)
       .join(',');
