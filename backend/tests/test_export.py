@@ -174,4 +174,3 @@ async def test_export_gpx_empty(authenticated_client):
 async def test_export_gpx_unauthenticated(client: AsyncClient):
     response = await client.get("/api/locations/export/gpx")
     assert response.status_code == 401
-

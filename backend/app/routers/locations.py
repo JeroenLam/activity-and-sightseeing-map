@@ -14,7 +14,12 @@ from app.schemas.location import (
     LocationFeatureCollection,
     LocationUpdateFeature,
 )
-from app.services import csv_service, export_service, geocoding_service, location_service
+from app.services import (
+    csv_service,
+    export_service,
+    geocoding_service,
+    location_service,
+)
 
 router = APIRouter(prefix="/api/locations", tags=["locations"])
 

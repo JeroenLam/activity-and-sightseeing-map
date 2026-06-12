@@ -1,4 +1,5 @@
 """KML and GPX export utilities."""
+
 from xml.etree import ElementTree as ET
 
 from app.schemas.location import LocationFeatureCollection
@@ -46,7 +47,9 @@ def locations_to_kml(collection: LocationFeatureCollection) -> str:
         if props.type:
             desc_parts.append(f"Type: {props.type.name}")
         if props.years_visited:
-            desc_parts.append(f"Visited: {', '.join(str(y) for y in props.years_visited)}")
+            desc_parts.append(
+                f"Visited: {', '.join(str(y) for y in props.years_visited)}"
+            )
         if props.visited_unknown_year and not props.years_visited:
             desc_parts.append("Visited: (year unknown)")
         if props.rating is not None:
@@ -65,7 +68,9 @@ def locations_to_kml(collection: LocationFeatureCollection) -> str:
         coords.text = f"{lon},{lat},0"
 
     _indent(kml)
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(kml, encoding="unicode")
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(
+        kml, encoding="unicode"
+    )
 
 
 def locations_to_gpx(collection: LocationFeatureCollection) -> str:
@@ -99,7 +104,9 @@ def locations_to_gpx(collection: LocationFeatureCollection) -> str:
         if props.country:
             desc_parts.append(f"Country: {props.country}")
         if props.years_visited:
-            desc_parts.append(f"Visited: {', '.join(str(y) for y in props.years_visited)}")
+            desc_parts.append(
+                f"Visited: {', '.join(str(y) for y in props.years_visited)}"
+            )
         if props.visited_unknown_year and not props.years_visited:
             desc_parts.append("Visited: (year unknown)")
         if props.rating is not None:
@@ -123,4 +130,6 @@ def locations_to_gpx(collection: LocationFeatureCollection) -> str:
             wpt_type.text = props.type.name
 
     _indent(gpx)
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(gpx, encoding="unicode")
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(
+        gpx, encoding="unicode"
+    )
