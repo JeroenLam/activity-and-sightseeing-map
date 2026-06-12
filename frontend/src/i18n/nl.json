@@ -83,6 +83,8 @@
         "pinOnMap": "Plaats een pin op de kaart voor coördinaten",
         "locating": "Locatie bepalen...",
         "locationError": "Kon locatie niet bepalen"
+        ,"duplicateWarningTitle": "Mogelijk duplicaat in de buurt",
+        "duplicateWarningBody": "Er zijn {count} bestaande locaties binnen ongeveer {distance} meter van deze coördinaten."
     },
     "types": {
         "title": "Locatietypes beheren",
@@ -166,7 +168,16 @@
         "retryAll": "Alles opnieuw",
         "retrying": "Bezig...",
         "export": "Exporteren",
-        "import": "Importeren"
+        "import": "Importeren",
+        "selectedCount": "{count} geselecteerd",
+        "clearSelection": "Selectie wissen",
+        "bulkEdit": "Meerdere bewerken",
+        "bulkEditTitle": "Locaties in bulk bewerken",
+        "bulkType": "Type instellen",
+        "bulkRating": "Beoordeling instellen",
+        "bulkAddYear": "Bezoekjaar toevoegen",
+        "bulkApply": "Wijzigingen toepassen",
+        "noChange": "Geen wijziging"
     },
     "language": {
         "nl": "Nederlands",

@@ -86,6 +86,17 @@ export interface LocationUpdateFeature {
     properties: LocationUpdateProperties;
 }
 
+export interface BulkLocationUpdateProperties {
+    type_id?: string | null;
+    rating?: number | null;
+    year_to_add?: number | null;
+}
+
+export interface BulkLocationUpdateRequest {
+    location_ids: string[];
+    properties: BulkLocationUpdateProperties;
+}
+
 export interface UserSettings {
     preferred_language: string;
     default_map_lat: number | null;

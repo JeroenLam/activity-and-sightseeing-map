@@ -95,6 +95,19 @@
       </label>
     </div>
 
+    <div v-if="nearbyDuplicates.length" class="duplicate-warning">
+      <strong>{{ t('location.duplicateWarningTitle') }}</strong>
+      <p>
+        {{ t('location.duplicateWarningBody', { count: nearbyDuplicates.length, distance: DUPLICATE_THRESHOLD_METERS }) }}
+      </p>
+      <ul>
+        <li v-for="match in nearbyDuplicates" :key="match.feature.id ?? match.feature.properties.name">
+          {{ match.feature.properties.name }}
+          <span class="duplicate-distance">({{ Math.round(match.distanceMeters) }}m)</span>
+        </li>
+      </ul>
+    </div>
+
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" :disabled="saving">{{ t('location.save') }}</button>
     </div>
@@ -104,11 +117,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
+import { computed, ref, reactive, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTypesStore } from '@/stores/types';
 import { useLocationsStore } from '@/stores/locations';
 import { useGeocoding } from '@/composables/useGeocoding';
+import { findNearbyLocations } from '@/utils/locationProximity';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -127,6 +141,7 @@ const locationError = ref('');
 const pinMapEl = ref<HTMLDivElement>();
 let pinMap: L.Map | null = null;
 let pinMarker: L.Marker | null = null;
+const DUPLICATE_THRESHOLD_METERS = 200;
 
 const form = reactive({
   name: '',
@@ -142,7 +157,20 @@ const form = reactive({
   note: '',
 });
 
+const nearbyDuplicates = computed(() => {
+  if (!form.latitude || !form.longitude) return [];
+  return findNearbyLocations({
+    latitude: form.latitude,
+    longitude: form.longitude,
+    features: locationsStore.collection.features,
+    thresholdMeters: DUPLICATE_THRESHOLD_METERS,
+  });
+});
+
 onMounted(() => {
+  if (!locationsStore.collection.features.length) {
+    void locationsStore.fetchLocations();
+  }
   if (!pinMapEl.value) return;
   pinMap = L.map(pinMapEl.value).setView([52.1, 5.3], 7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -298,6 +326,28 @@ async function onSubmit() {
 .pin-map-container { display: flex; flex-direction: column; gap: 0.5rem; }
 .pin-map { height: 250px; border-radius: 8px; border: 1px solid var(--color-border); z-index: 0; }
 .pin-map :deep(.pin-icon) { width: 24px; height: 36px; background: var(--color-primary); border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+
+.duplicate-warning {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.duplicate-warning p {
+  margin: 0.25rem 0 0.5rem;
+}
+
+.duplicate-warning ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.duplicate-distance {
+  color: var(--color-text-secondary);
+}
 
 @media (max-width: 768px) {
   .form-grid { grid-template-columns: 1fr; }

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from app.middleware.auth import DB, CurrentUserId
 from app.schemas.location import (
+    BulkLocationUpdateRequest,
     CsvImportRequest,
     CsvPreviewRequest,
     CsvPreviewResponse,
@@ -39,6 +40,18 @@ async def list_locations(
 @router.post("", response_model=LocationFeature, status_code=201)
 async def create_location(data: LocationCreateFeature, user_id: CurrentUserId, db: DB):
     return await location_service.create_location(db, user_id, data)
+
+
+@router.post("/bulk-update", response_model=list[LocationFeature])
+async def bulk_update_locations(
+    data: BulkLocationUpdateRequest, user_id: CurrentUserId, db: DB
+):
+    return await location_service.bulk_update_locations(
+        db,
+        user_id,
+        data.location_ids,
+        data.properties,
+    )
 
 
 @router.get("/export/geojson", response_model=LocationFeatureCollection)

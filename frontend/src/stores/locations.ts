@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import api from '@/lib/api';
 import type {
+    BulkLocationUpdateProperties,
     LocationFeature,
     LocationFeatureCollection,
     LocationCreateFeature,
@@ -39,6 +40,19 @@ export const useLocationsStore = defineStore('locations', () => {
         const { data } = await api.put<LocationFeature>(`/api/locations/${id}`, feature);
         const idx = collection.value.features.findIndex((f) => f.id === id);
         if (idx !== -1) collection.value.features[idx] = data;
+        return data;
+    }
+
+    async function bulkUpdateLocations(ids: string[], properties: BulkLocationUpdateProperties): Promise<LocationFeature[]> {
+        const { data } = await api.post<LocationFeature[]>('/api/locations/bulk-update', {
+            location_ids: ids,
+            properties,
+        });
+        const updatedById = new Map(data.map((feature) => [feature.id, feature]));
+        collection.value.features = collection.value.features.map((feature) => {
+            if (!feature.id) return feature;
+            return updatedById.get(feature.id) ?? feature;
+        });
         return data;
     }
 
@@ -88,6 +102,7 @@ export const useLocationsStore = defineStore('locations', () => {
         fetchLocations,
         createLocation,
         updateLocation,
+        bulkUpdateLocations,
         deleteLocation,
         geocodeLocation,
         previewCsv,

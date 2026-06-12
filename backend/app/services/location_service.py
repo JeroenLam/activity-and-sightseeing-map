@@ -7,6 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models.location import Location, LocationTag, LocationVisit
 from app.schemas.location import (
+    BulkLocationUpdateProperties,
     LocationCreateFeature,
     LocationFeature,
     LocationFeatureCollection,
@@ -244,3 +245,57 @@ async def bulk_create_locations(
         feature = await create_location(db, user_id, item)
         created.append(feature)
     return created
+
+
+async def bulk_update_locations(
+    db: AsyncSession,
+    user_id: str,
+    location_ids: list[str],
+    properties: BulkLocationUpdateProperties,
+) -> list[LocationFeature]:
+    query = (
+        select(Location)
+        .options(
+            selectinload(Location.location_type),
+            selectinload(Location.visits),
+            selectinload(Location.tags),
+        )
+        .where(Location.user_id == user_id, Location.id.in_(location_ids))
+    )
+    result = await db.execute(query)
+    locations = list(result.scalars().all())
+
+    if not locations:
+        return []
+
+    for location in locations:
+        if properties.type_id is not None:
+            location.type_id = properties.type_id
+        if properties.rating is not None:
+            location.rating = properties.rating
+        if properties.year_to_add is not None:
+            existing_years = {visit.year for visit in location.visits}
+            if properties.year_to_add not in existing_years:
+                db.add(
+                    LocationVisit(
+                        id=str(uuid.uuid4()),
+                        location_id=location.id,
+                        year=properties.year_to_add,
+                    )
+                )
+            location.visited_unknown_year = False
+
+        location.updated_at = datetime.now(UTC)
+
+    await db.commit()
+    db.expire_all()
+
+    reloaded = await db.execute(
+        (await _get_location_query(db, user_id)).where(Location.id.in_(location_ids))
+    )
+    locations_by_id = {location.id: location for location in reloaded.scalars().all()}
+    return [
+        _location_to_feature(locations_by_id[location_id])
+        for location_id in location_ids
+        if location_id in locations_by_id
+    ]

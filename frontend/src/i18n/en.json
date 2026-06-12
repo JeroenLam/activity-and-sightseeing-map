@@ -83,6 +83,8 @@
         "pinOnMap": "Place a pin on the map to set coordinates",
         "locating": "Locating...",
         "locationError": "Could not get your location"
+        ,"duplicateWarningTitle": "Possible duplicate nearby",
+        "duplicateWarningBody": "There are {count} existing locations within about {distance} meters of these coordinates."
     },
     "types": {
         "title": "Manage Location Types",
@@ -166,7 +168,16 @@
         "retryAll": "Retry all",
         "retrying": "Retrying...",
         "export": "Export",
-        "import": "Import"
+        "import": "Import",
+        "selectedCount": "{count} selected",
+        "clearSelection": "Clear selection",
+        "bulkEdit": "Bulk edit",
+        "bulkEditTitle": "Bulk edit locations",
+        "bulkType": "Set type",
+        "bulkRating": "Set rating",
+        "bulkAddYear": "Add visited year",
+        "bulkApply": "Apply changes",
+        "noChange": "No change"
     },
     "language": {
         "nl": "Nederlands",
