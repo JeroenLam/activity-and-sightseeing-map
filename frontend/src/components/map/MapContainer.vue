@@ -3,14 +3,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import * as mdiIcons from '@mdi/js';
 import type { LocationFeature } from '@/types';
 import { useI18n } from 'vue-i18n';
+import { useThemeStore } from '@/stores/theme';
+import { useSettingsStore } from '@/stores/settings';
+import { getMapTileDefinition } from '@/lib/mapTiles';
 
 const { t } = useI18n();
+const themeStore = useThemeStore();
+const settingsStore = useSettingsStore();
 
 const props = withDefaults(defineProps<{
   features: LocationFeature[];
@@ -35,6 +40,8 @@ const emit = defineEmits<{
 const mapEl = ref<HTMLDivElement>();
 let map: L.Map | null = null;
 let markersLayer: L.LayerGroup | null = null;
+let tileLayer: L.TileLayer | null = null;
+const tileDefinition = computed(() => getMapTileDefinition(settingsStore.settings.map_tile_set, themeStore.dark));
 
 function isVisited(f: LocationFeature): boolean {
   return (f.properties.years_visited ?? []).length > 0 || f.properties.visited_unknown_year;
@@ -139,16 +146,21 @@ function panTo(f: LocationFeature) {
   map.setView([lat, lng], 14);
 }
 
+function syncTileLayer() {
+  if (!map) return;
+  if (tileLayer) {
+    map.removeLayer(tileLayer);
+  }
+  tileLayer = L.tileLayer(tileDefinition.value.url, tileDefinition.value.options).addTo(map);
+}
+
 defineExpose({ panTo });
 
 onMounted(() => {
   if (!mapEl.value) return;
   map = L.map(mapEl.value, { zoomControl: false }).setView([props.initialLat, props.initialLng], props.initialZoom);
   L.control.zoom({ position: 'topright' }).addTo(map);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap',
-    maxZoom: 19,
-  }).addTo(map);
+  syncTileLayer();
   markersLayer = L.layerGroup().addTo(map);
 
   map.on('moveend', emitVisibleLocations);
@@ -179,6 +191,11 @@ watch(
   () => [props.features, props.markerSize, props.visitedOpacity, props.unvisitedOpacity],
   () => renderMarkers(),
   { deep: true }
+);
+
+watch(
+  () => tileDefinition.value.id,
+  () => syncTileLayer(),
 );
 </script>
 

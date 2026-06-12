@@ -10,6 +10,7 @@ async def test_get_settings(authenticated_client):
     data = response.json()
     assert data["preferred_language"] == "en"
     assert data["default_map_lat"] is None
+    assert data["map_tile_set"] == "auto"
     assert data["profile_public"] is False
 
 
@@ -23,6 +24,7 @@ async def test_update_settings(authenticated_client):
             "default_map_lat": 52.1,
             "default_map_lng": 5.3,
             "default_map_zoom": 7,
+            "map_tile_set": "carto-dark",
             "profile_public": True,
             "show_ratings": False,
         },
@@ -33,6 +35,7 @@ async def test_update_settings(authenticated_client):
     assert data["default_map_lat"] == 52.1
     assert data["default_map_lng"] == 5.3
     assert data["default_map_zoom"] == 7
+    assert data["map_tile_set"] == "carto-dark"
     assert data["profile_public"] is True
     assert data["show_ratings"] is False
 
@@ -43,6 +46,16 @@ async def test_update_settings_invalid_language(authenticated_client):
     response = await client.put(
         "/api/settings",
         json={"preferred_language": "fr"},
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_settings_invalid_map_tile_set(authenticated_client):
+    client, _ = authenticated_client
+    response = await client.put(
+        "/api/settings",
+        json={"map_tile_set": "not-a-real-tile-set"},
     )
     assert response.status_code == 422
 

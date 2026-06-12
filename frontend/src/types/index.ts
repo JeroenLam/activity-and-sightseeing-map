@@ -86,11 +86,31 @@ export interface LocationUpdateFeature {
     properties: LocationUpdateProperties;
 }
 
+export interface BulkLocationUpdateProperties {
+    type_id?: string | null;
+    rating?: number | null;
+    year_to_add?: number | null;
+}
+
+export interface BulkLocationUpdateRequest {
+    location_ids: string[];
+    properties: BulkLocationUpdateProperties;
+}
+
+export type MapTileSet =
+    | 'auto'
+    | 'openstreetmap'
+    | 'carto-light'
+    | 'carto-dark'
+    | 'esri-world-imagery'
+    | 'opentopomap';
+
 export interface UserSettings {
     preferred_language: string;
     default_map_lat: number | null;
     default_map_lng: number | null;
     default_map_zoom: number | null;
+    map_tile_set: MapTileSet;
     profile_public: boolean;
     location_filter: string;
     show_ratings: boolean;
@@ -126,4 +146,49 @@ export interface ImportResult {
     imported: number;
     skipped: number;
     errors: string[];
+}
+
+export interface YearStat {
+    year: number;
+    count: number;
+}
+
+export interface TypeStat {
+    type_id: string | null;
+    type_name: string;
+    color: string;
+    count: number;
+}
+
+export interface CountryStat {
+    country: string;
+    count: number;
+}
+
+export interface CountryYearStat {
+    year: number;
+    country: string;
+    count: number;
+}
+
+export interface TypeYearStat {
+    year: number;
+    type_id: string | null;
+    type_name: string;
+    color: string;
+    count: number;
+}
+
+export interface Statistics {
+    total_locations: number;
+    total_visited: number;
+    total_unvisited: number;
+    total_countries: number;
+    visits_per_year: YearStat[];
+    locations_per_type: TypeStat[];
+    visited_locations_per_type: TypeStat[];
+    locations_per_country: CountryStat[];
+    visited_locations_per_country: CountryStat[];
+    visited_locations_per_year_by_country: CountryYearStat[];
+    visited_locations_per_year_by_type: TypeYearStat[];
 }

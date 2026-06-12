@@ -9,6 +9,7 @@
         "types": "Types",
         "import": "Import",
         "manage": "Manage",
+        "stats": "Stats",
         "profile": "Profile",
         "logout": "Logout",
         "login": "Login",
@@ -81,7 +82,9 @@
         "useDeviceLocation": "Use my location",
         "pinOnMap": "Place a pin on the map to set coordinates",
         "locating": "Locating...",
-        "locationError": "Could not get your location"
+        "locationError": "Could not get your location",
+        "duplicateWarningTitle": "Possible duplicate nearby",
+        "duplicateWarningBody": "There are {count} existing locations within about {distance} meters of these coordinates."
     },
     "types": {
         "title": "Manage Location Types",
@@ -135,6 +138,8 @@
         "selectGeojson": "Select GeoJSON file",
         "geojsonSuccess": "GeoJSON imported successfully",
         "exportAll": "Export All",
+        "kmlHint": "For Google Earth & compatible apps",
+        "gpxHint": "For GPS devices & navigation apps",
         "fields": {
             "name": "Name",
             "type": "Type",
@@ -165,7 +170,16 @@
         "retryAll": "Retry all",
         "retrying": "Retrying...",
         "export": "Export",
-        "import": "Import"
+        "import": "Import",
+        "selectedCount": "{count} selected",
+        "clearSelection": "Clear selection",
+        "bulkEdit": "Bulk edit",
+        "bulkEditTitle": "Bulk edit locations",
+        "bulkType": "Set type",
+        "bulkRating": "Set rating",
+        "bulkAddYear": "Add visited year",
+        "bulkApply": "Apply changes",
+        "noChange": "No change"
     },
     "language": {
         "nl": "Nederlands",
@@ -183,6 +197,8 @@
         "passwordError": "Failed to change password",
         "defaultMapPosition": "Default Map Position",
         "defaultMapHint": "Pan and zoom the map to your preferred default view, then save.",
+        "mapTileSet": "Map style",
+        "mapTileAuto": "Auto (follow theme)",
         "lat": "Lat",
         "lng": "Lng",
         "zoom": "Zoom",
@@ -219,5 +235,74 @@
         "loading": "Loading...",
         "error": "An error occurred",
         "success": "Success"
+    },
+    "stats": {
+        "title": "Statistics",
+        "achievementsTitle": "Achievements",
+        "achievementsSubtitle": "Unlock badge levels as you explore more places and countries.",
+        "badgeEmptyTitle": "Hover over a badge",
+        "badgeEmptyBody": "The details for that badge will appear here, including the progress levels and whether it tracks added or visited locations.",
+        "badgeProgressLabel": "Progress to Next Level",
+        "badgeLevelOf": "Level {current} of {max}",
+        "badgeLevelThresholds": "Level Thresholds",
+        "badgeTracksAdded": "Tracks added locations",
+        "badgeTracksVisited": "Tracks visited locations",
+        "totalLocations": "Total Locations",
+        "totalVisited": "Visited",
+        "totalUnvisited": "Not Visited",
+        "totalCountries": "Countries",
+        "addedLocations": "Added",
+        "visitedLocations": "Visited",
+        "visitsPerYear": "Visits per Year",
+        "visitedLocationsPerYearByCountry": "Visited Locations Per Year by Country",
+        "visitedLocationsPerYearByType": "Visited Locations Per Year by Type",
+        "locationsByType": "Locations by Type",
+        "locationsByCountry": "Locations by Country",
+        "locationsByTypeComparison": "Added vs Visited by Type",
+        "locationsByCountryComparison": "Added vs Visited by Country",
+        "visits": "Visits",
+        "locations": "Locations",
+        "achievements": {
+            "locationLogger": {
+                "title": "📝 Location Logger",
+                "description": "Track your location adding journey. Reach level 5 to maximize this badge."
+            },
+            "locationVisitor": {
+                "title": "🌐 Location Visitor",
+                "description": "Visit more and more locations. Levels increase with each 10x milestone."
+            },
+            "countryExplorer": {
+                "title": "🏳️ Country Explorer",
+                "description": "Visit locations across different countries. Each level unlocks new geography."
+            },
+            "globalCollector10": {
+                "title": "🎯 Global Collector I",
+                "description": "Visit at least 10 unique locations in each country; progress is the number of countries meeting that minimum."
+            },
+            "globalCollector50": {
+                "title": "🎯 Global Collector II",
+                "description": "Visit at least 50 unique locations in each country; progress is the number of countries meeting that minimum."
+            },
+            "globalCollector100": {
+                "title": "🎯 Global Collector III",
+                "description": "Visit at least 100 unique locations in each country; progress is the number of countries meeting that minimum."
+            },
+            "annualAdventurer": {
+                "title": "📅 Annual Adventurer",
+                "description": "Visit 5 locations in a single year. Up to 100 visits for max level."
+            },
+            "yearRoundExplorer": {
+                "title": "📅 Year-Round Explorer",
+                "description": "Explore across different years. Visit in multiple calendar years."
+            },
+            "countryHopper": {
+                "title": "✈️ Country Hopper",
+                "description": "Visit different countries within a single year. Maximum 10 countries per year."
+            },
+            "typeTrailblazer": {
+                "title": "🧩 Type Trailblazer",
+                "description": "Explore varied location types in a single year. Reach 16 different types for max level."
+            }
+        }
     }
 }

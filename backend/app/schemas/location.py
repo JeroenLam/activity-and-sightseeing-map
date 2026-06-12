@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class PointGeometry(BaseModel):
@@ -94,6 +94,23 @@ class LocationUpdateFeature(BaseModel):
     type: str = "Feature"
     geometry: PointGeometry | None = None
     properties: LocationUpdateProperties
+
+
+class BulkLocationUpdateProperties(BaseModel):
+    type_id: str | None = None
+    rating: int | None = Field(None, ge=1, le=5)
+    year_to_add: int | None = Field(None, ge=1900, le=3000)
+
+    @model_validator(mode="after")
+    def validate_has_changes(self) -> "BulkLocationUpdateProperties":
+        if self.type_id is None and self.rating is None and self.year_to_add is None:
+            raise ValueError("At least one bulk edit change must be provided")
+        return self
+
+
+class BulkLocationUpdateRequest(BaseModel):
+    location_ids: list[str] = Field(..., min_length=1)
+    properties: BulkLocationUpdateProperties
 
 
 class CsvPreviewRequest(BaseModel):

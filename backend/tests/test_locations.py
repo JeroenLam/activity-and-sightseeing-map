@@ -170,3 +170,64 @@ async def test_invalid_coordinates(authenticated_client):
         },
     )
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_bulk_update_locations(authenticated_client):
+    client, _ = authenticated_client
+
+    type_response = await client.post(
+        "/api/types",
+        json={"name": "Museum", "color": "#FF0000", "icon": ""},
+    )
+    assert type_response.status_code == 201
+    type_id = type_response.json()["id"]
+
+    first = await client.post(
+        "/api/locations",
+        json={
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [5.0, 52.0]},
+            "properties": {"name": "First Place", "years_visited": [2021]},
+        },
+    )
+    second = await client.post(
+        "/api/locations",
+        json={
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [5.1, 52.1]},
+            "properties": {
+                "name": "Second Place",
+                "visited_unknown_year": True,
+            },
+        },
+    )
+    assert first.status_code == 201
+    assert second.status_code == 201
+
+    response = await client.post(
+        "/api/locations/bulk-update",
+        json={
+            "location_ids": [first.json()["id"], second.json()["id"]],
+            "properties": {"type_id": type_id, "rating": 4, "year_to_add": 2024},
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    for feature in data:
+        assert feature["properties"]["type"]["id"] == type_id
+        assert feature["properties"]["rating"] == 4
+        assert 2024 in feature["properties"]["years_visited"]
+        assert feature["properties"]["visited_unknown_year"] is False
+
+
+@pytest.mark.asyncio
+async def test_bulk_update_requires_changes(authenticated_client):
+    client, _ = authenticated_client
+    response = await client.post(
+        "/api/locations/bulk-update",
+        json={"location_ids": ["some-id"], "properties": {}},
+    )
+    assert response.status_code == 422

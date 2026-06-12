@@ -25,11 +25,27 @@
         <span class="search-count">{{ t('manage.showing', { shown: sortedLocations.length, total: features.length }) }}</span>
       </div>
 
+      <div v-if="selectedCount" class="bulk-toolbar">
+        <span>{{ t('manage.selectedCount', { count: selectedCount }) }}</span>
+        <div class="bulk-toolbar-actions">
+          <button class="btn btn-small" @click="bulkEditing = true">{{ t('manage.bulkEdit') }}</button>
+          <button class="btn btn-small" @click="clearSelection">{{ t('manage.clearSelection') }}</button>
+        </div>
+      </div>
+
       <!-- Table -->
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
+              <th>
+                <input
+                  type="checkbox"
+                  :checked="allVisibleSelected"
+                  :disabled="!visibleSelectableIds.length"
+                  @change="toggleSelectAllVisible"
+                />
+              </th>
               <th @click="setSort('name')">{{ t('location.name') }} {{ sortIcon('name') }}</th>
               <th @click="setSort('type')">{{ t('location.type') }} {{ sortIcon('type') }}</th>
               <th @click="setSort('city')" class="hide-mobile">{{ t('location.city') }} {{ sortIcon('city') }}</th>
@@ -41,6 +57,14 @@
           </thead>
           <tbody>
             <tr v-for="(f, idx) in sortedLocations" :key="f.id ?? idx" :class="{ 'row-failed': isGeocodeFailed(f) }">
+              <td>
+                <input
+                  type="checkbox"
+                  :checked="isSelected(f.id)"
+                  :disabled="!f.id"
+                  @change="toggleSelected(f.id)"
+                />
+              </td>
               <td>{{ f.properties.name }}</td>
               <td>
                 <span v-if="f.properties.type" class="type-badge" :style="{ background: f.properties.type.color + '22', color: f.properties.type.color }">
@@ -130,6 +154,39 @@
         </div>
       </div>
     </div>
+
+    <div v-if="bulkEditing" class="overlay" @click.self="bulkEditing = false">
+      <div class="dialog" style="max-width: 520px">
+        <h3>{{ t('manage.bulkEditTitle') }}</h3>
+        <p class="text-secondary">{{ t('manage.selectedCount', { count: selectedCount }) }}</p>
+        <div class="form-grid single-column">
+          <div class="field">
+            <label>{{ t('manage.bulkType') }}</label>
+            <select v-model="bulkForm.type_id">
+              <option value="">{{ t('manage.noChange') }}</option>
+              <option v-for="lt in typesStore.types" :key="lt.id" :value="lt.id">{{ lt.name }}</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>{{ t('manage.bulkRating') }}</label>
+            <select v-model="bulkForm.rating">
+              <option value="">{{ t('manage.noChange') }}</option>
+              <option v-for="value in [1, 2, 3, 4, 5]" :key="value" :value="String(value)">{{ value }}</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>{{ t('manage.bulkAddYear') }}</label>
+            <input v-model.number="bulkForm.year_to_add" type="number" min="1900" :max="currentYear" />
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button class="btn" @click="bulkEditing = false">{{ t('manage.cancel') }}</button>
+          <button class="btn btn-primary" :disabled="bulkSaving || !canApplyBulkEdit" @click="saveBulkEdit">
+            {{ t('manage.bulkApply') }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -149,6 +206,14 @@ const sortKey = ref<string>('name');
 const sortAsc = ref(true);
 const currentYear = new Date().getFullYear();
 const newYear = ref(currentYear);
+const selectedIds = ref<Set<string>>(new Set());
+const bulkEditing = ref(false);
+const bulkSaving = ref(false);
+const bulkForm = reactive({
+  type_id: '',
+  rating: '',
+  year_to_add: undefined as number | undefined,
+});
 
 // Edit
 const editing = ref<LocationFeature | null>(null);
@@ -176,6 +241,21 @@ function isGeocodeFailed(f: LocationFeature): boolean {
 }
 
 const failedLocations = computed(() => features.value.filter(isGeocodeFailed));
+const visibleSelectableIds = computed(() =>
+  sortedLocations.value
+    .map((feature) => feature.id)
+    .filter((id): id is string => Boolean(id))
+);
+const selectedCount = computed(() => selectedIds.value.size);
+const allVisibleSelected = computed(() =>
+  visibleSelectableIds.value.length > 0
+  && visibleSelectableIds.value.every((id) => selectedIds.value.has(id))
+);
+const canApplyBulkEdit = computed(() =>
+  Boolean(bulkForm.type_id)
+  || bulkForm.rating !== ''
+  || Boolean(bulkForm.year_to_add)
+);
 
 const filteredLocations = computed(() => {
   const q = search.value.toLowerCase();
@@ -221,6 +301,32 @@ function setSort(key: string) {
 function sortIcon(key: string): string {
   if (sortKey.value !== key) return '';
   return sortAsc.value ? '▲' : '▼';
+}
+
+function isSelected(id: string | null): boolean {
+  return id !== null && selectedIds.value.has(id);
+}
+
+function toggleSelected(id: string | null) {
+  if (!id) return;
+  const next = new Set(selectedIds.value);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  selectedIds.value = next;
+}
+
+function toggleSelectAllVisible() {
+  const next = new Set(selectedIds.value);
+  if (allVisibleSelected.value) {
+    for (const id of visibleSelectableIds.value) next.delete(id);
+  } else {
+    for (const id of visibleSelectableIds.value) next.add(id);
+  }
+  selectedIds.value = next;
+}
+
+function clearSelection() {
+  selectedIds.value = new Set();
 }
 
 function exportCsv() {
@@ -288,6 +394,25 @@ async function saveEdit() {
   } finally { saving.value = false; }
 }
 
+async function saveBulkEdit() {
+  if (!canApplyBulkEdit.value || !selectedIds.value.size) return;
+  bulkSaving.value = true;
+  try {
+    await locationsStore.bulkUpdateLocations([...selectedIds.value], {
+      type_id: bulkForm.type_id || undefined,
+      rating: bulkForm.rating === '' ? undefined : Number(bulkForm.rating),
+      year_to_add: bulkForm.year_to_add || undefined,
+    });
+    bulkEditing.value = false;
+    bulkForm.type_id = '';
+    bulkForm.rating = '';
+    bulkForm.year_to_add = undefined;
+    clearSelection();
+  } finally {
+    bulkSaving.value = false;
+  }
+}
+
 function confirmDelete(f: LocationFeature) { toDelete.value = f; }
 
 async function doDelete() {
@@ -295,6 +420,9 @@ async function doDelete() {
   deleting.value = toDelete.value.id;
   try {
     await locationsStore.deleteLocation(toDelete.value.id);
+    const next = new Set(selectedIds.value);
+    next.delete(toDelete.value.id);
+    selectedIds.value = next;
   } finally { deleting.value = null; toDelete.value = null; }
 }
 
@@ -365,6 +493,23 @@ onMounted(async () => {
   color: var(--color-text-secondary);
 }
 
+.bulk-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.bulk-toolbar-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .table-wrap { overflow-x: auto; }
 
 .row-failed { background: #fef3c7 !important; }
@@ -388,6 +533,10 @@ onMounted(async () => {
   gap: 0.75rem;
 }
 
+.single-column {
+  grid-template-columns: 1fr;
+}
+
 .star-rating { display: flex; align-items: center; gap: 0.2rem; }
 .star-btn { background: none; border: none; font-size: 1.4rem; color: #ccc; cursor: pointer; padding: 0; }
 .star-btn.active { color: #f5a623; }
@@ -404,6 +553,7 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .page-container { padding: 1rem; }
   .page-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .bulk-toolbar { flex-direction: column; align-items: flex-start; }
   .form-grid { grid-template-columns: 1fr; }
 }
 </style>

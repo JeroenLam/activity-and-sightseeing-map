@@ -9,6 +9,7 @@
         "types": "Types",
         "import": "Importeren",
         "manage": "Beheren",
+        "stats": "Statistieken",
         "profile": "Profiel",
         "logout": "Uitloggen",
         "login": "Inloggen",
@@ -81,7 +82,9 @@
         "useDeviceLocation": "Gebruik mijn locatie",
         "pinOnMap": "Plaats een pin op de kaart voor coördinaten",
         "locating": "Locatie bepalen...",
-        "locationError": "Kon locatie niet bepalen"
+        "locationError": "Kon locatie niet bepalen",
+        "duplicateWarningTitle": "Mogelijk duplicaat in de buurt",
+        "duplicateWarningBody": "Er zijn {count} bestaande locaties binnen ongeveer {distance} meter van deze coördinaten."
     },
     "types": {
         "title": "Locatietypes beheren",
@@ -135,6 +138,8 @@
         "selectGeojson": "Selecteer GeoJSON-bestand",
         "geojsonSuccess": "GeoJSON succesvol geïmporteerd",
         "exportAll": "Alles exporteren",
+        "kmlHint": "Voor Google Earth & compatibele apps",
+        "gpxHint": "Voor GPS-apparaten & navigatie-apps",
         "fields": {
             "name": "Naam",
             "type": "Type",
@@ -165,7 +170,16 @@
         "retryAll": "Alles opnieuw",
         "retrying": "Bezig...",
         "export": "Exporteren",
-        "import": "Importeren"
+        "import": "Importeren",
+        "selectedCount": "{count} geselecteerd",
+        "clearSelection": "Selectie wissen",
+        "bulkEdit": "Meerdere bewerken",
+        "bulkEditTitle": "Locaties in bulk bewerken",
+        "bulkType": "Type instellen",
+        "bulkRating": "Beoordeling instellen",
+        "bulkAddYear": "Bezoekjaar toevoegen",
+        "bulkApply": "Wijzigingen toepassen",
+        "noChange": "Geen wijziging"
     },
     "language": {
         "nl": "Nederlands",
@@ -183,6 +197,8 @@
         "passwordError": "Wachtwoord wijzigen mislukt",
         "defaultMapPosition": "Standaard kaartpositie",
         "defaultMapHint": "Verschuif en zoom de kaart naar je gewenste standaardweergave en sla op.",
+        "mapTileSet": "Kaartstijl",
+        "mapTileAuto": "Automatisch (volg thema)",
         "lat": "Lat",
         "lng": "Lng",
         "zoom": "Zoom",
@@ -219,5 +235,74 @@
         "loading": "Laden...",
         "error": "Er is een fout opgetreden",
         "success": "Succesvol"
+    },
+    "stats": {
+        "title": "Statistieken",
+        "achievementsTitle": "Prestaties",
+        "achievementsSubtitle": "Speel badgeniveaus vrij terwijl je meer plekken verkent en meer landen bezoekt.",
+        "badgeEmptyTitle": "Beweeg over een badge",
+        "badgeEmptyBody": "De details van die badge verschijnen hier, inclusief de voortgangsniveaus en of deze kijkt naar opgeslagen of bezochte locaties.",
+        "badgeProgressLabel": "Voortgang naar Volgende Niveau",
+        "badgeLevelOf": "Niveau {current} van {max}",
+        "badgeLevelThresholds": "Niveaudrempels",
+        "badgeTracksAdded": "Kijkt naar opgeslagen locaties",
+        "badgeTracksVisited": "Kijkt naar bezochte locaties",
+        "totalLocations": "Totaal Locaties",
+        "totalVisited": "Bezocht",
+        "totalUnvisited": "Niet Bezocht",
+        "totalCountries": "Landen",
+        "addedLocations": "Opgeslagen",
+        "visitedLocations": "Bezocht",
+        "visitsPerYear": "Bezoeken per Jaar",
+        "visitedLocationsPerYearByCountry": "Bezochte locaties per jaar per land",
+        "visitedLocationsPerYearByType": "Bezochte locaties per jaar per type",
+        "locationsByType": "Locaties per Type",
+        "locationsByCountry": "Locaties per Land",
+        "locationsByTypeComparison": "Opgeslagen vs bezocht per type",
+        "locationsByCountryComparison": "Opgeslagen vs bezocht per land",
+        "visits": "Bezoeken",
+        "locations": "Locaties",
+        "achievements": {
+            "locationLogger": {
+                "title": "📝 Locatieschrijver",
+                "description": "Volg je reis van het toevoegen van locaties. Bereik niveau 5 voor maximaal deze badge."
+            },
+            "locationVisitor": {
+                "title": "🌐 Locatiebezoekeraar",
+                "description": "Bezoek steeds meer locaties. Elk niveau verhoogt met elke 10x milestone."
+            },
+            "countryExplorer": {
+                "title": "🏳️ Landenverkenner",
+                "description": "Bezoek locaties in verschillende landen. Elk niveau ontsluit nieuwe geografie."
+            },
+            "globalCollector10": {
+                "title": "🎯 Mondiale Verzamelaar I",
+                "description": "Bezoek per land minimaal 10 unieke locaties; je voortgang is het aantal landen dat deze ondergrens haalt."
+            },
+            "globalCollector50": {
+                "title": "🎯 Mondiale Verzamelaar II",
+                "description": "Bezoek per land minimaal 50 unieke locaties; je voortgang is het aantal landen dat deze ondergrens haalt."
+            },
+            "globalCollector100": {
+                "title": "🎯 Mondiale Verzamelaar III",
+                "description": "Bezoek per land minimaal 100 unieke locaties; je voortgang is het aantal landen dat deze ondergrens haalt."
+            },
+            "annualAdventurer": {
+                "title": "📅 Jaaravonturier",
+                "description": "Bezoek 5 locaties in een enkel jaar. Tot 100 bezoeken voor maximaal niveau."
+            },
+            "yearRoundExplorer": {
+                "title": "📅 Meerjarenverkenner",
+                "description": "Verken over verschillende jaren. Bezoek in meerdere kalenderjaren."
+            },
+            "countryHopper": {
+                "title": "✈️ Landensprinter",
+                "description": "Bezoek verschillende landen binnen een enkel jaar. Maximaal 10 landen per jaar."
+            },
+            "typeTrailblazer": {
+                "title": "🧩 Typepionier",
+                "description": "Verken gevarieerde locatietypen in een enkel jaar. Bereik 16 verschillende typen voor maximaal niveau."
+            }
+        }
     }
 }
