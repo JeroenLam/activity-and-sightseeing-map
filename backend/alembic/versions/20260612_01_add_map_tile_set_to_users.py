@@ -16,14 +16,29 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "users",
-        sa.Column(
-            "map_tile_set", sa.String(length=40), nullable=False, server_default="auto"
-        ),
-    )
-    op.alter_column("users", "map_tile_set", server_default=None)
+    # Check if the column already exists before adding
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    columns = [col["name"] for col in inspector.get_columns("users")]
+
+    if "map_tile_set" not in columns:
+        op.add_column(
+            "users",
+            sa.Column(
+                "map_tile_set",
+                sa.String(length=40),
+                nullable=False,
+                server_default="auto",
+            ),
+        )
+        op.alter_column("users", "map_tile_set", server_default=None)
 
 
 def downgrade() -> None:
-    op.drop_column("users", "map_tile_set")
+    # Check if the column exists before dropping
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    columns = [col["name"] for col in inspector.get_columns("users")]
+
+    if "map_tile_set" in columns:
+        op.drop_column("users", "map_tile_set")
