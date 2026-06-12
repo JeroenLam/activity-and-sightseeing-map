@@ -138,6 +138,8 @@
         "selectGeojson": "Selecteer GeoJSON-bestand",
         "geojsonSuccess": "GeoJSON succesvol geïmporteerd",
         "exportAll": "Alles exporteren",
+        "kmlHint": "Voor Google Earth & compatibele apps",
+        "gpxHint": "Voor GPS-apparaten & navigatie-apps",
         "fields": {
             "name": "Naam",
             "type": "Type",

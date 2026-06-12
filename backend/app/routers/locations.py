@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import Response
 from pydantic import BaseModel
 
 from app.middleware.auth import DB, CurrentUserId
@@ -13,7 +14,7 @@ from app.schemas.location import (
     LocationFeatureCollection,
     LocationUpdateFeature,
 )
-from app.services import csv_service, geocoding_service, location_service
+from app.services import csv_service, export_service, geocoding_service, location_service
 
 router = APIRouter(prefix="/api/locations", tags=["locations"])
 
@@ -57,6 +58,28 @@ async def bulk_update_locations(
 @router.get("/export/geojson", response_model=LocationFeatureCollection)
 async def export_geojson(user_id: CurrentUserId, db: DB):
     return await location_service.get_locations(db, user_id)
+
+
+@router.get("/export/kml")
+async def export_kml(user_id: CurrentUserId, db: DB):
+    collection = await location_service.get_locations(db, user_id)
+    content = export_service.locations_to_kml(collection)
+    return Response(
+        content=content,
+        media_type="application/vnd.google-earth.kml+xml",
+        headers={"Content-Disposition": 'attachment; filename="locations.kml"'},
+    )
+
+
+@router.get("/export/gpx")
+async def export_gpx(user_id: CurrentUserId, db: DB):
+    collection = await location_service.get_locations(db, user_id)
+    content = export_service.locations_to_gpx(collection)
+    return Response(
+        content=content,
+        media_type="application/gpx+xml",
+        headers={"Content-Disposition": 'attachment; filename="locations.gpx"'},
+    )
 
 
 @router.post("/import/preview", response_model=CsvPreviewResponse)

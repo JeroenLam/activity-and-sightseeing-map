@@ -31,6 +31,24 @@
         </div>
         <CsvImport ref="csvImportRef" @done="onCsvDone" />
       </div>
+
+      <div class="subsection">
+        <div class="subsection-header">
+          <h4>KML <span class="subsection-hint">{{ t('import.kmlHint') }}</span></h4>
+          <div class="subsection-actions">
+            <button class="btn btn-small" @click="exportKml">{{ t('import.exportAll') }}</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-header">
+          <h4>GPX <span class="subsection-hint">{{ t('import.gpxHint') }}</span></h4>
+          <div class="subsection-actions">
+            <button class="btn btn-small" @click="exportGpx">{{ t('import.exportAll') }}</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Types section -->
@@ -61,6 +79,7 @@ import { useI18n } from 'vue-i18n';
 import { useLocationsStore } from '@/stores/locations';
 import { useTypesStore } from '@/stores/types';
 import CsvImport from '@/components/locations/CsvImport.vue';
+import { featuresToKml, featuresToGpx } from '@/lib/locationExport';
 
 const { t } = useI18n();
 const locationsStore = useLocationsStore();
@@ -124,12 +143,26 @@ function exportTypesCsv() {
   downloadCsv([header.join(','), ...rows].join('\n'), 'types.csv');
 }
 
-function downloadCsv(csv: string, filename: string) {
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+function downloadFile(content: string, filename: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
+}
+
+function downloadCsv(csv: string, filename: string) {
+  downloadFile(csv, filename, 'text/csv;charset=utf-8;');
+}
+
+function exportKml() {
+  const content = featuresToKml(locationsStore.collection.features);
+  downloadFile(content, 'locations.kml', 'application/vnd.google-earth.kml+xml');
+}
+
+function exportGpx() {
+  const content = featuresToGpx(locationsStore.collection.features);
+  downloadFile(content, 'locations.gpx', 'application/gpx+xml');
 }
 
 async function onTypeCsvFile(e: Event) {
@@ -212,6 +245,7 @@ function onCsvDone() {
 }
 .subsection:first-of-type { border-top: none; padding-top: 0; }
 .subsection h4 { margin: 0; font-size: 0.9rem; color: var(--color-text-secondary); }
+.subsection-hint { font-size: 0.75rem; font-weight: 400; color: var(--color-text-secondary); opacity: 0.75; }
 
 .subsection-header {
   display: flex;

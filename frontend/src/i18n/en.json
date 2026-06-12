@@ -138,6 +138,8 @@
         "selectGeojson": "Select GeoJSON file",
         "geojsonSuccess": "GeoJSON imported successfully",
         "exportAll": "Export All",
+        "kmlHint": "For Google Earth & compatible apps",
+        "gpxHint": "For GPS devices & navigation apps",
         "fields": {
             "name": "Name",
             "type": "Type",
