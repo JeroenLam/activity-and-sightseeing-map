@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, withDefaults } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import * as mdiIcons from '@mdi/js';
@@ -143,7 +143,8 @@ defineExpose({ panTo });
 
 onMounted(() => {
   if (!mapEl.value) return;
-  map = L.map(mapEl.value).setView([props.initialLat, props.initialLng], props.initialZoom);
+  map = L.map(mapEl.value, { zoomControl: false }).setView([props.initialLat, props.initialLng], props.initialZoom);
+  L.control.zoom({ position: 'topright' }).addTo(map);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap',
     maxZoom: 19,
@@ -160,6 +161,19 @@ onUnmounted(() => {
   map?.remove();
   map = null;
 });
+
+let initialViewApplied = false;
+
+watch(
+  () => [props.initialLat, props.initialLng, props.initialZoom],
+  ([lat, lng, zoom]) => {
+    if (!map || initialViewApplied) return;
+    if (lat !== 52.1 || lng !== 5.3 || zoom !== 7) {
+      map.setView([lat as number, lng as number], zoom as number);
+      initialViewApplied = true;
+    }
+  }
+);
 
 watch(
   () => [props.features, props.markerSize, props.visitedOpacity, props.unvisitedOpacity],
