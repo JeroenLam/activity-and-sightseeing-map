@@ -68,7 +68,11 @@ function select(name: string) {
 }
 
 function onClickOutside(e: MouseEvent) {
-  if (pickerRef.value && !pickerRef.value.contains(e.target as Node)) {
+  const target = e.target;
+  if (!(target instanceof Node)) {
+    return;
+  }
+  if (pickerRef.value && !pickerRef.value.contains(target)) {
     open.value = false;
   }
 }
