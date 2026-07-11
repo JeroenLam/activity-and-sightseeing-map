@@ -20,6 +20,7 @@ from app.services import (
     geocoding_service,
     location_service,
 )
+from app.services.sync_service import SyncConflictError
 
 router = APIRouter(prefix="/api/locations", tags=["locations"])
 
@@ -294,7 +295,19 @@ async def get_location(location_id: str, user_id: CurrentUserId, db: DB):
 async def update_location(
     location_id: str, data: LocationUpdateFeature, user_id: CurrentUserId, db: DB
 ):
-    feature = await location_service.update_location(db, user_id, location_id, data)
+    try:
+        feature = await location_service.update_location(db, user_id, location_id, data)
+    except SyncConflictError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "sync_conflict",
+                "entity_type": exc.entity_type,
+                "entity_id": exc.entity_id,
+                "client_version": exc.client_version,
+                "server_version": exc.server_version,
+            },
+        ) from exc
     if not feature:
         raise HTTPException(status_code=404, detail="Location not found")
     return feature

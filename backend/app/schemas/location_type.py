@@ -11,6 +11,7 @@ class LocationTypeUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=255)
     color: str | None = Field(None, pattern=r"^#[0-9a-fA-F]{6}$")
     icon: str | None = None
+    base_sync_version: int | None = None
 
 
 class LocationTypeResponse(BaseModel):
@@ -18,5 +19,6 @@ class LocationTypeResponse(BaseModel):
     name: str
     color: str
     icon: str
+    sync_version: int = 1
 
     model_config = {"from_attributes": True}

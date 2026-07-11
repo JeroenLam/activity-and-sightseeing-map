@@ -40,6 +40,7 @@ class LocationProperties(BaseModel):
     rating: int | None = Field(None, ge=1, le=5)
     comments: str | None = None
     tags: list[str] = []
+    sync_version: int = 1
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
@@ -88,6 +89,7 @@ class LocationUpdateProperties(BaseModel):
     rating: int | None = Field(None, ge=1, le=5)
     comments: str | None = None
     tags: list[str] | None = None
+    base_sync_version: int | None = None
 
 
 class LocationUpdateFeature(BaseModel):
