@@ -10,7 +10,11 @@ from app.models.sync_conflict import SyncConflict
 from app.models.sync_event import SyncEvent
 from app.schemas.location import LocationFeatureCollection
 from app.schemas.location import LocationCreateFeature, LocationUpdateFeature
-from app.schemas.location_type import LocationTypeCreate, LocationTypeResponse, LocationTypeUpdate
+from app.schemas.location_type import (
+    LocationTypeCreate,
+    LocationTypeResponse,
+    LocationTypeUpdate,
+)
 from app.schemas.settings import SettingsResponse, SettingsUpdate
 
 
@@ -63,7 +67,9 @@ async def get_cursor(db: AsyncSession, user_id: str) -> int:
 
 async def build_bootstrap(
     db: AsyncSession, user_id: str
-) -> tuple[LocationFeatureCollection, list[LocationTypeResponse], SettingsResponse, int]:
+) -> tuple[
+    LocationFeatureCollection, list[LocationTypeResponse], SettingsResponse, int
+]:
     from app.routers.settings import get_settings
     from app.services.location_service import get_locations
     from app.services.type_service import get_types
@@ -84,7 +90,9 @@ async def list_changes(db: AsyncSession, user_id: str, cursor: int) -> list[Sync
     return list(result.scalars().all())
 
 
-async def _load_location(db: AsyncSession, user_id: str, location_id: str) -> Location | None:
+async def _load_location(
+    db: AsyncSession, user_id: str, location_id: str
+) -> Location | None:
     result = await db.execute(
         select(Location)
         .options(
@@ -97,7 +105,9 @@ async def _load_location(db: AsyncSession, user_id: str, location_id: str) -> Lo
     return result.scalar_one_or_none()
 
 
-async def _load_type(db: AsyncSession, user_id: str, type_id: str) -> LocationType | None:
+async def _load_type(
+    db: AsyncSession, user_id: str, type_id: str
+) -> LocationType | None:
     result = await db.execute(
         select(LocationType).where(
             LocationType.user_id == user_id, LocationType.id == type_id
@@ -146,7 +156,9 @@ async def list_conflicts(db: AsyncSession, user_id: str) -> list[SyncConflict]:
     return list(result.scalars().all())
 
 
-async def get_conflict(db: AsyncSession, user_id: str, conflict_id: int) -> SyncConflict | None:
+async def get_conflict(
+    db: AsyncSession, user_id: str, conflict_id: int
+) -> SyncConflict | None:
     result = await db.execute(
         select(SyncConflict).where(
             SyncConflict.user_id == user_id, SyncConflict.id == conflict_id
@@ -166,7 +178,9 @@ async def get_current_location_payload(
     return _location_to_feature(location).model_dump(mode="json")
 
 
-async def get_current_type_payload(db: AsyncSession, user_id: str, type_id: str) -> dict | None:
+async def get_current_type_payload(
+    db: AsyncSession, user_id: str, type_id: str
+) -> dict | None:
     type_obj = await _load_type(db, user_id, type_id)
     if not type_obj or type_obj.deleted_at is not None:
         return None
@@ -209,7 +223,9 @@ async def resolve_conflict(
                 created = await create_location(
                     db,
                     user_id,
-                    LocationCreateFeature.model_validate(payload or conflict.client_payload or {}),
+                    LocationCreateFeature.model_validate(
+                        payload or conflict.client_payload or {}
+                    ),
                 )
                 applied_payload = created.model_dump(mode="json")
         elif conflict.operation == "delete":
@@ -232,7 +248,9 @@ async def resolve_conflict(
                 created = await create_type(
                     db,
                     user_id,
-                    LocationTypeCreate.model_validate(payload or conflict.client_payload or {}),
+                    LocationTypeCreate.model_validate(
+                        payload or conflict.client_payload or {}
+                    ),
                 )
                 applied_payload = created.model_dump(mode="json")
         elif conflict.operation == "delete":

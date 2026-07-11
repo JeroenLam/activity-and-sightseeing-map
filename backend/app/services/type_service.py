@@ -45,7 +45,9 @@ async def create_type(
         operation="create",
         entity_version=location_type.sync_version,
         changed_fields=["name", "color", "icon"],
-        payload=LocationTypeResponse.model_validate(location_type).model_dump(mode="json"),
+        payload=LocationTypeResponse.model_validate(location_type).model_dump(
+            mode="json"
+        ),
     )
     await db.commit()
     await db.refresh(location_type)
@@ -101,7 +103,9 @@ async def update_type(
             }.items()
             if value
         ],
-        payload=LocationTypeResponse.model_validate(location_type).model_dump(mode="json"),
+        payload=LocationTypeResponse.model_validate(location_type).model_dump(
+            mode="json"
+        ),
     )
     await db.commit()
     await db.refresh(location_type)

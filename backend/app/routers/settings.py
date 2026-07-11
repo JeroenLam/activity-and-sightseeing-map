@@ -42,7 +42,10 @@ async def update_settings(data: SettingsUpdate, user_id: CurrentUserId, db: DB):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if data.base_sync_version is not None and data.base_sync_version != user.sync_version:
+    if (
+        data.base_sync_version is not None
+        and data.base_sync_version != user.sync_version
+    ):
         raise SyncConflictError(
             entity_type="settings",
             entity_id=user.id,

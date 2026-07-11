@@ -191,7 +191,10 @@ async def update_location(
 
     # Update properties
     props = data.properties
-    if props.base_sync_version is not None and props.base_sync_version != location.sync_version:
+    if (
+        props.base_sync_version is not None
+        and props.base_sync_version != location.sync_version
+    ):
         raise SyncConflictError(
             entity_type="location",
             entity_id=location.id,

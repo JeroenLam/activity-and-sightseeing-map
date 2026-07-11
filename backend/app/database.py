@@ -38,7 +38,9 @@ def ensure_schema_compatibility(connection: Connection) -> None:
         )
 
     if "locations" in inspector.get_table_names():
-        location_columns = {column["name"] for column in inspector.get_columns("locations")}
+        location_columns = {
+            column["name"] for column in inspector.get_columns("locations")
+        }
         if "sync_version" not in location_columns:
             connection.execute(
                 text(
@@ -48,14 +50,13 @@ def ensure_schema_compatibility(connection: Connection) -> None:
             )
         if "deleted_at" not in location_columns:
             connection.execute(
-                text(
-                    "ALTER TABLE locations "
-                    "ADD COLUMN deleted_at DATETIME NULL"
-                )
+                text("ALTER TABLE locations " "ADD COLUMN deleted_at DATETIME NULL")
             )
 
     if "location_types" in inspector.get_table_names():
-        type_columns = {column["name"] for column in inspector.get_columns("location_types")}
+        type_columns = {
+            column["name"] for column in inspector.get_columns("location_types")
+        }
         if "sync_version" not in type_columns:
             connection.execute(
                 text(
@@ -66,8 +67,7 @@ def ensure_schema_compatibility(connection: Connection) -> None:
         if "deleted_at" not in type_columns:
             connection.execute(
                 text(
-                    "ALTER TABLE location_types "
-                    "ADD COLUMN deleted_at DATETIME NULL"
+                    "ALTER TABLE location_types " "ADD COLUMN deleted_at DATETIME NULL"
                 )
             )
 

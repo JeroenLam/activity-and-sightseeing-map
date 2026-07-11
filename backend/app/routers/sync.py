@@ -61,7 +61,9 @@ def _conflict_to_response(conflict) -> SyncConflictResponse:
 @router.get("/status", response_model=SyncStatusResponse)
 async def get_status(user_id: CurrentUserId, db: DB):
     cursor = await sync_service.get_cursor(db, user_id)
-    return SyncStatusResponse(cursor=cursor, entities=["locations", "types", "settings"])
+    return SyncStatusResponse(
+        cursor=cursor, entities=["locations", "types", "settings"]
+    )
 
 
 @router.get("/bootstrap", response_model=SyncBootstrapResponse)
@@ -162,10 +164,14 @@ async def _current_payload(
 ) -> dict | None:
     if mutation.entity_type == "location":
         if mutation.entity_id:
-            return await sync_service.get_current_location_payload(db, user_id, mutation.entity_id)
+            return await sync_service.get_current_location_payload(
+                db, user_id, mutation.entity_id
+            )
     elif mutation.entity_type == "type":
         if mutation.entity_id:
-            return await sync_service.get_current_type_payload(db, user_id, mutation.entity_id)
+            return await sync_service.get_current_type_payload(
+                db, user_id, mutation.entity_id
+            )
     elif mutation.entity_type == "settings":
         return await sync_service.get_current_settings_payload(db, user_id)
     return None
@@ -197,7 +203,10 @@ async def _apply_mutation(
                     "base_sync_version": mutation.base_sync_version,
                 }
             updated = await location_service.update_location(
-                db, user_id, mutation.entity_id or "", LocationUpdateFeature.model_validate(mutation.payload)
+                db,
+                user_id,
+                mutation.entity_id or "",
+                LocationUpdateFeature.model_validate(mutation.payload),
             )
             if not updated:
                 raise HTTPException(status_code=404, detail="Location not found")
@@ -210,7 +219,9 @@ async def _apply_mutation(
                 payload=updated.model_dump(mode="json"),
             )
         if operation == "delete":
-            deleted = await location_service.delete_location(db, user_id, mutation.entity_id or "")
+            deleted = await location_service.delete_location(
+                db, user_id, mutation.entity_id or ""
+            )
             if not deleted:
                 raise HTTPException(status_code=404, detail="Location not found")
             return SyncMutationResult(
@@ -234,7 +245,9 @@ async def _apply_mutation(
                 payload=created.model_dump(mode="json"),
             )
         if operation == "update":
-            update_payload = mutation.payload | {"base_sync_version": mutation.base_sync_version}
+            update_payload = mutation.payload | {
+                "base_sync_version": mutation.base_sync_version
+            }
             updated = await type_service.update_type(
                 db,
                 user_id,
@@ -252,7 +265,9 @@ async def _apply_mutation(
                 payload=updated.model_dump(mode="json"),
             )
         if operation == "delete":
-            deleted = await type_service.delete_type(db, user_id, mutation.entity_id or "")
+            deleted = await type_service.delete_type(
+                db, user_id, mutation.entity_id or ""
+            )
             if not deleted:
                 raise HTTPException(status_code=404, detail="Type not found")
             return SyncMutationResult(
@@ -263,7 +278,9 @@ async def _apply_mutation(
             )
 
     if entity_type == "settings" and operation == "update":
-        update_payload = mutation.payload | {"base_sync_version": mutation.base_sync_version}
+        update_payload = mutation.payload | {
+            "base_sync_version": mutation.base_sync_version
+        }
         updated = await update_settings(
             SettingsUpdate.model_validate(update_payload), user_id=user_id, db=db
         )
