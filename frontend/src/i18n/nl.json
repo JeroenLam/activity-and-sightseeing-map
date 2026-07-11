@@ -15,7 +15,9 @@
         "logout": "Uitloggen",
         "login": "Inloggen",
         "darkMode": "Donkere modus",
-        "lightMode": "Lichte modus"
+        "lightMode": "Lichte modus",
+        "switchToMobile": "Schakel naar mobiele interface",
+        "switchToDesktop": "Schakel naar desktopinterface"
     },
     "sync": {
         "title": "Offline synchronisatie",

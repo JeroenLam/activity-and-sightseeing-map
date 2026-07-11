@@ -18,6 +18,13 @@
     </nav>
 
     <div class="header-right">
+      <button
+        class="btn-icon"
+        @click="themeStore.toggleLayoutMode()"
+        :title="themeStore.layoutMode === 'desktop' ? t('nav.switchToMobile') : t('nav.switchToDesktop')"
+      >
+        {{ themeStore.layoutMode === 'desktop' ? '📱' : '🖥️' }}
+      </button>
       <button class="btn-icon" @click="themeStore.toggle()" :title="themeStore.dark ? t('nav.lightMode') : t('nav.darkMode')">
         {{ themeStore.dark ? '☀️' : '🌙' }}
       </button>
@@ -298,5 +305,21 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside));
   .nav-desktop {
     display: none;
   }
+}
+
+:global(html.layout-mobile) .hamburger {
+  display: flex;
+}
+
+:global(html.layout-mobile) .nav-desktop {
+  display: none;
+}
+
+:global(html.layout-desktop) .hamburger {
+  display: none;
+}
+
+:global(html.layout-desktop) .nav-desktop {
+  display: flex;
 }
 </style>

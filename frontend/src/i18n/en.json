@@ -15,7 +15,9 @@
         "logout": "Logout",
         "login": "Login",
         "darkMode": "Dark mode",
-        "lightMode": "Light mode"
+        "lightMode": "Light mode",
+        "switchToMobile": "Switch to mobile interface",
+        "switchToDesktop": "Switch to desktop interface"
     },
     "sync": {
         "title": "Offline Sync",
