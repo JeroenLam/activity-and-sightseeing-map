@@ -1,10 +1,8 @@
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Boolean, ForeignKey, String
-from sqlalchemy import Integer
-from sqlalchemy import DateTime
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import UTC, datetime
 
 from app.models.user import Base
 

@@ -8,8 +8,11 @@ from app.models.location import Location
 from app.models.location_type import LocationType
 from app.models.sync_conflict import SyncConflict
 from app.models.sync_event import SyncEvent
-from app.schemas.location import LocationFeatureCollection
-from app.schemas.location import LocationCreateFeature, LocationUpdateFeature
+from app.schemas.location import (
+    LocationCreateFeature,
+    LocationFeatureCollection,
+    LocationUpdateFeature,
+)
 from app.schemas.location_type import (
     LocationTypeCreate,
     LocationTypeResponse,
@@ -245,28 +248,28 @@ async def resolve_conflict(
     elif conflict.entity_type == "type":
         if conflict.operation == "create":
             if resolution_mode in {"use_client", "merge"}:
-                created = await create_type(
+                created_type = await create_type(
                     db,
                     user_id,
                     LocationTypeCreate.model_validate(
                         payload or conflict.client_payload or {}
                     ),
                 )
-                applied_payload = created.model_dump(mode="json")
+                applied_payload = created_type.model_dump(mode="json")
         elif conflict.operation == "delete":
             if resolution_mode in {"use_client", "merge"}:
                 await delete_type(db, user_id, conflict.entity_id)
                 applied_payload = {"id": conflict.entity_id, "deleted": True}
         else:
             update_payload = payload or conflict.client_payload or {}
-            applied = await update_type(
+            applied_type = await update_type(
                 db,
                 user_id,
                 conflict.entity_id,
                 LocationTypeUpdate.model_validate(update_payload),
             )
-            if applied:
-                applied_payload = applied.model_dump(mode="json")
+            if applied_type:
+                applied_payload = applied_type.model_dump(mode="json")
     elif conflict.entity_type == "settings":
         from app.routers.settings import update_settings
 

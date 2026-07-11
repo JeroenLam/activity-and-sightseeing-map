@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 
 from app.middleware.auth import DB, CurrentUserId
+from app.routers.settings import get_settings, update_settings
 from app.schemas.location import (
     LocationCreateFeature,
     LocationUpdateFeature,
@@ -22,7 +23,6 @@ from app.schemas.sync import (
     SyncStatusResponse,
 )
 from app.services import location_service, sync_service, type_service
-from app.routers.settings import get_settings, update_settings
 from app.services.sync_service import SyncConflictError
 
 router = APIRouter(prefix="/api/sync", tags=["sync"])
@@ -185,16 +185,16 @@ async def _apply_mutation(
 
     if entity_type == "location":
         if operation == "create":
-            created = await location_service.create_location(
+            created_location = await location_service.create_location(
                 db, user_id, LocationCreateFeature.model_validate(mutation.payload)
             )
             return SyncMutationResult(
                 mutation_id=mutation.mutation_id,
                 status="applied",
                 entity_type=entity_type,
-                entity_id=created.id,
-                entity_version=created.properties.sync_version,
-                payload=created.model_dump(mode="json"),
+                entity_id=created_location.id,
+                entity_version=created_location.properties.sync_version,
+                payload=created_location.model_dump(mode="json"),
             )
         if operation == "update":
             if mutation.base_sync_version is not None:
@@ -202,21 +202,21 @@ async def _apply_mutation(
                     **mutation.payload.get("properties", {}),
                     "base_sync_version": mutation.base_sync_version,
                 }
-            updated = await location_service.update_location(
+            updated_location = await location_service.update_location(
                 db,
                 user_id,
                 mutation.entity_id or "",
                 LocationUpdateFeature.model_validate(mutation.payload),
             )
-            if not updated:
+            if not updated_location:
                 raise HTTPException(status_code=404, detail="Location not found")
             return SyncMutationResult(
                 mutation_id=mutation.mutation_id,
                 status="applied",
                 entity_type=entity_type,
-                entity_id=updated.id,
-                entity_version=updated.properties.sync_version,
-                payload=updated.model_dump(mode="json"),
+                entity_id=updated_location.id,
+                entity_version=updated_location.properties.sync_version,
+                payload=updated_location.model_dump(mode="json"),
             )
         if operation == "delete":
             deleted = await location_service.delete_location(
@@ -233,36 +233,36 @@ async def _apply_mutation(
 
     if entity_type == "type":
         if operation == "create":
-            created = await type_service.create_type(
+            created_type = await type_service.create_type(
                 db, user_id, LocationTypeCreate.model_validate(mutation.payload)
             )
             return SyncMutationResult(
                 mutation_id=mutation.mutation_id,
                 status="applied",
                 entity_type=entity_type,
-                entity_id=created.id,
-                entity_version=created.sync_version,
-                payload=created.model_dump(mode="json"),
+                entity_id=created_type.id,
+                entity_version=created_type.sync_version,
+                payload=created_type.model_dump(mode="json"),
             )
         if operation == "update":
             update_payload = mutation.payload | {
                 "base_sync_version": mutation.base_sync_version
             }
-            updated = await type_service.update_type(
+            updated_type = await type_service.update_type(
                 db,
                 user_id,
                 mutation.entity_id or "",
                 LocationTypeUpdate.model_validate(update_payload),
             )
-            if not updated:
+            if not updated_type:
                 raise HTTPException(status_code=404, detail="Type not found")
             return SyncMutationResult(
                 mutation_id=mutation.mutation_id,
                 status="applied",
                 entity_type=entity_type,
-                entity_id=updated.id,
-                entity_version=updated.sync_version,
-                payload=updated.model_dump(mode="json"),
+                entity_id=updated_type.id,
+                entity_version=updated_type.sync_version,
+                payload=updated_type.model_dump(mode="json"),
             )
         if operation == "delete":
             deleted = await type_service.delete_type(

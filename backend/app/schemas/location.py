@@ -102,6 +102,7 @@ class BulkLocationUpdateProperties(BaseModel):
     type_id: str | None = None
     rating: int | None = Field(None, ge=1, le=5)
     year_to_add: int | None = Field(None, ge=1900, le=3000)
+    base_sync_version: int | None = None
 
     @model_validator(mode="after")
     def validate_has_changes(self) -> "BulkLocationUpdateProperties":
