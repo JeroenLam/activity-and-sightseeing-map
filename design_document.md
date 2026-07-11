@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-A complete rewrite of the Activiteiten & Bezienswaardigheden Tracker, splitting the monolithic Node.js application into two independent services: a **Python/FastAPI backend** and a **Vue 3 frontend**. Data is stored in SQLite instead of JSON files, and the API communicates location data using the GeoJSON standard.
+A complete rewrite of the Activiteiten & Bezienswaardigheden Tracker, splitting the monolithic Node.js application into two independent services: a **Python/FastAPI backend** and two client experiences: the existing **Vue 3 web frontend** and a new **Vue 3 mobile/offline frontend**. Data is stored in SQLite instead of JSON files, and the API communicates location data using the GeoJSON standard.
 
 ---
 
@@ -18,6 +18,7 @@ A complete rewrite of the Activiteiten & Bezienswaardigheden Tracker, splitting 
 ```
 
 - **Frontend**: Vue 3 + Vite, served by Nginx in production, Vite dev server in development
+- **Mobile frontend**: Vue 3 + Vite in `frontend_mobile/`, optimized for offline-first editing, queued mutations, and sync conflict resolution
 - **Backend**: FastAPI (Python 3.12+), served by Uvicorn
 - **Database**: SQLite file on a Docker volume
 - **Communication**: REST API with GeoJSON payloads for location data, JSON for auth/types/settings
@@ -29,6 +30,7 @@ A complete rewrite of the Activiteiten & Bezienswaardigheden Tracker, splitting 
 | Component       | Technology                                    |
 | --------------- | --------------------------------------------- |
 | **Frontend**    | Vue 3 (Composition API) + TypeScript + Vite   |
+| **Mobile UI**   | Vue 3 + TypeScript + Vite + Pinia             |
 | **State**       | Pinia                                         |
 | **Routing**     | Vue Router                                    |
 | **i18n**        | vue-i18n (Nederlands + Engels)                |
@@ -103,6 +105,36 @@ activiteiten-tracker/
 │           ├── ProfileView.vue
 │           └── AuthView.vue
 │
+├── frontend_mobile/                 # Mobile/offline Vue 3 application
+│   ├── public/
+│   │   ├── icon.svg
+│   │   ├── manifest.webmanifest
+│   │   └── sw.js
+│   └── src/
+│       ├── App.vue
+│       ├── assets/
+│       │   └── mobile.css
+│       ├── components/
+│       │   ├── LocationCard.vue
+│       │   └── OfflineBanner.vue
+│       ├── lib/
+│       │   ├── api.ts
+│       │   ├── storage.ts
+│       │   └── sync.ts
+│       ├── router/
+│       │   └── index.ts
+│       ├── stores/
+│       │   ├── app.ts
+│       │   └── auth.ts
+│       ├── types/
+│       │   └── index.ts
+│       └── views/
+│           ├── DashboardView.vue
+│           ├── LocationsView.vue
+│           ├── LoginView.vue
+│           ├── SettingsView.vue
+│           └── SyncView.vue
+
 ├── backend/                         # FastAPI application
 │   ├── Dockerfile
 │   ├── Dockerfile.dev
