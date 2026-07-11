@@ -3,49 +3,45 @@ import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 import { useThemeStore } from '@/stores/theme';
 
-describe('theme store layout mode', () => {
+describe('theme store', () => {
     beforeEach(() => {
         setActivePinia(createPinia());
         localStorage.clear();
         document.documentElement.className = '';
     });
 
-    it('defaults to desktop layout and applies classes/storage', () => {
+    it('defaults to light mode and stores theme', () => {
         const store = useThemeStore();
 
-        expect(store.layoutMode).toBe('desktop');
-        expect(document.documentElement.classList.contains('layout-desktop')).toBe(true);
-        expect(document.documentElement.classList.contains('layout-mobile')).toBe(false);
-        expect(localStorage.getItem('layoutMode')).toBe('desktop');
+        expect(store.dark).toBe(false);
+        expect(document.documentElement.classList.contains('dark')).toBe(false);
+        expect(localStorage.getItem('theme')).toBe('light');
     });
 
-    it('restores saved mobile layout mode from localStorage', () => {
-        localStorage.setItem('layoutMode', 'mobile');
+    it('restores saved dark mode from localStorage', () => {
+        localStorage.setItem('theme', 'dark');
 
         const store = useThemeStore();
 
-        expect(store.layoutMode).toBe('mobile');
-        expect(document.documentElement.classList.contains('layout-mobile')).toBe(true);
-        expect(document.documentElement.classList.contains('layout-desktop')).toBe(false);
+        expect(store.dark).toBe(true);
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
     });
 
-    it('toggles layout mode and updates html classes + localStorage', async () => {
+    it('toggles dark mode and updates html classes + localStorage', async () => {
         const store = useThemeStore();
 
-        store.toggleLayoutMode();
+        store.toggle();
         await nextTick();
 
-        expect(store.layoutMode).toBe('mobile');
-        expect(document.documentElement.classList.contains('layout-mobile')).toBe(true);
-        expect(document.documentElement.classList.contains('layout-desktop')).toBe(false);
-        expect(localStorage.getItem('layoutMode')).toBe('mobile');
+        expect(store.dark).toBe(true);
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
+        expect(localStorage.getItem('theme')).toBe('dark');
 
-        store.toggleLayoutMode();
+        store.toggle();
         await nextTick();
 
-        expect(store.layoutMode).toBe('desktop');
-        expect(document.documentElement.classList.contains('layout-desktop')).toBe(true);
-        expect(document.documentElement.classList.contains('layout-mobile')).toBe(false);
-        expect(localStorage.getItem('layoutMode')).toBe('desktop');
+        expect(store.dark).toBe(false);
+        expect(document.documentElement.classList.contains('dark')).toBe(false);
+        expect(localStorage.getItem('theme')).toBe('light');
     });
 });
