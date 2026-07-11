@@ -19,18 +19,5 @@ services:
     depends_on:
       - backend
 
-  frontend_mobile:
-    image: ghcr.io/jeroenlam/activity-and-sightseeing-map-mobile-frontend:latest
-    build:
-      context: ./frontend_mobile
-      dockerfile: Dockerfile
-    environment:
-      - VITE_API_URL=${VITE_API_URL:-}
-      - CORS_ORIGINS=${CORS_ORIGINS:-}
-    ports:
-      - "81:80"
-    depends_on:
-      - backend
-
 volumes:
   db-data:

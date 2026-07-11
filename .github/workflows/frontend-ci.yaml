@@ -3,9 +3,9 @@ name: Frontend CI
 on:
   push:
     branches: [main, beta]
-    paths: ['frontend/**', 'frontend_mobile/**']
+    paths: ['frontend/**']
   pull_request:
-    paths: ['frontend/**', 'frontend_mobile/**']
+    paths: ['frontend/**']
 
 jobs:
   lint-and-test:
@@ -24,22 +24,6 @@ jobs:
       - run: npm run type-check
       - run: npm run lint
       - run: npm run test -- --run
-
-  lint-and-test-mobile:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend_mobile
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend_mobile/package-lock.json
-      - run: npm ci
-      - run: npm run type-check
-      - run: npm run build
 
   build:
     name: Build & Push Docker
@@ -73,36 +57,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-  build-mobile:
-    name: Build & Push Mobile Docker
-    runs-on: ubuntu-latest
-    needs: [lint-and-test-mobile]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta')
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Docker meta
-        id: meta-mobile
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/jeroenlam/activity-and-sightseeing-map-mobile-frontend
-          tags: |
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/beta' }}
-      - name: Build and push mobile
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend_mobile
-          push: true
-          tags: ${{ steps.meta-mobile.outputs.tags }}
-          labels: ${{ steps.meta-mobile.outputs.labels }}

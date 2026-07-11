@@ -29,6 +29,11 @@ export interface ApiConnectionError {
     status?: number;
 }
 
+export function isOfflineErrorLike(error: unknown): boolean {
+    const axiosErr = error as AxiosError;
+    return axiosErr?.code === 'ERR_NETWORK' || axiosErr?.message === 'Network Error';
+}
+
 /**
  * Classify an axios error into a specific error code.
  */
