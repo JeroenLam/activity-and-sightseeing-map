@@ -13,22 +13,22 @@ app.use(pinia);
 app.use(router);
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    void navigator.serviceWorker.register('/sw.js');
-  });
+    window.addEventListener('load', () => {
+        void navigator.serviceWorker.register('/sw.js');
+    });
 }
 
 const auth = useAuthStore(pinia);
 const store = useAppStore(pinia);
 store.hydrate();
 void auth.restoreSession().then(() => {
-  if (auth.user) {
-    store.setUser(auth.user);
-    if (!store.locations.length) {
-      void store.bootstrapFromServer();
+    if (auth.user) {
+        store.setUser(auth.user);
+        if (!store.locations.length) {
+            void store.bootstrapFromServer();
+        }
+        void store.loadConflicts();
     }
-    void store.loadConflicts();
-  }
 });
 
 app.mount('#app');
