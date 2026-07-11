@@ -7,6 +7,7 @@ from app.schemas.location_type import (
     LocationTypeUpdate,
 )
 from app.services import type_service
+from app.services.sync_service import SyncConflictError
 
 router = APIRouter(prefix="/api/types", tags=["types"])
 
@@ -69,7 +70,19 @@ async def update_type(
 
     Returns 404 if the type does not exist or does not belong to the user.
     """
-    result = await type_service.update_type(db, user_id, type_id, data)
+    try:
+        result = await type_service.update_type(db, user_id, type_id, data)
+    except SyncConflictError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "sync_conflict",
+                "entity_type": exc.entity_type,
+                "entity_id": exc.entity_id,
+                "client_version": exc.client_version,
+                "server_version": exc.server_version,
+            },
+        ) from exc
     if not result:
         raise HTTPException(status_code=404, detail="Type not found")
     return result

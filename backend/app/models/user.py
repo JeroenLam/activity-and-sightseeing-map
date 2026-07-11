@@ -23,6 +23,7 @@ class User(Base):
     default_map_lng: Mapped[float | None] = mapped_column(nullable=True)
     default_map_zoom: Mapped[int | None] = mapped_column(Integer, nullable=True)
     map_tile_set: Mapped[str] = mapped_column(String(40), default="auto")
+    sync_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(UTC)
     )

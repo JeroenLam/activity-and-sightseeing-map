@@ -1,6 +1,7 @@
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Boolean, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.user import Base
@@ -18,6 +19,8 @@ class LocationType(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     color: Mapped[str] = mapped_column(String(7), nullable=False)
     icon: Mapped[str] = mapped_column(String(100), default="")
+    sync_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     locations: Mapped[list["Location"]] = relationship(  # noqa: F821
         back_populates="location_type"

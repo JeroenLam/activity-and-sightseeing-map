@@ -40,6 +40,7 @@ class LocationProperties(BaseModel):
     rating: int | None = Field(None, ge=1, le=5)
     comments: str | None = None
     tags: list[str] = []
+    sync_version: int = 1
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
@@ -88,6 +89,7 @@ class LocationUpdateProperties(BaseModel):
     rating: int | None = Field(None, ge=1, le=5)
     comments: str | None = None
     tags: list[str] | None = None
+    base_sync_version: int | None = None
 
 
 class LocationUpdateFeature(BaseModel):
@@ -100,6 +102,7 @@ class BulkLocationUpdateProperties(BaseModel):
     type_id: str | None = None
     rating: int | None = Field(None, ge=1, le=5)
     year_to_add: int | None = Field(None, ge=1900, le=3000)
+    base_sync_version: int | None = None
 
     @model_validator(mode="after")
     def validate_has_changes(self) -> "BulkLocationUpdateProperties":

@@ -11,6 +11,7 @@ class SettingsResponse(BaseModel):
     location_filter: str = "show-all"
     show_ratings: bool = True
     show_comments: bool = True
+    sync_version: int = 1
 
 
 class SettingsUpdate(BaseModel):
@@ -28,3 +29,4 @@ class SettingsUpdate(BaseModel):
     )
     show_ratings: bool | None = None
     show_comments: bool | None = None
+    base_sync_version: int | None = None

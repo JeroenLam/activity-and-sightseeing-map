@@ -43,7 +43,9 @@ async def get_public_profile(user_id: str, db: DB):
 
     # Get public types
     result = await db.execute(
-        select(LocationType).where(LocationType.user_id == user_id)
+        select(LocationType).where(
+            LocationType.user_id == user_id, LocationType.deleted_at.is_(None)
+        )
     )
     all_types = result.scalars().all()
 
@@ -108,7 +110,7 @@ async def get_public_locations(user_id: str, db: DB):
             selectinload(Location.visits),
             selectinload(Location.tags),
         )
-        .where(Location.user_id == user_id)
+        .where(Location.user_id == user_id, Location.deleted_at.is_(None))
     )
     result = await db.execute(query)
     locations = list(result.scalars().all())
@@ -148,6 +150,7 @@ async def get_public_locations(user_id: str, db: DB):
             rating=loc.rating if visibility.show_ratings else None,
             comments=loc.comments if visibility.show_comments else None,
             tags=[t.tag for t in loc.tags],
+            sync_version=loc.sync_version,
             created_at=loc.created_at,
             updated_at=loc.updated_at,
         )

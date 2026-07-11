@@ -13,10 +13,18 @@
       <router-link to="/locations" class="nav-link">{{ t('nav.manage') }}</router-link>
       <router-link to="/types" class="nav-link">{{ t('nav.types') }}</router-link>
       <router-link to="/stats" class="nav-link">{{ t('nav.stats') }}</router-link>
+      <router-link to="/sync" class="nav-link">{{ t('nav.sync') }}</router-link>
       <router-link to="/import" class="nav-link">{{ t('nav.import') }}</router-link>
     </nav>
 
     <div class="header-right">
+      <button
+        class="btn-icon"
+        @click="themeStore.toggleLayoutMode()"
+        :title="themeStore.layoutMode === 'desktop' ? t('nav.switchToMobile') : t('nav.switchToDesktop')"
+      >
+        {{ themeStore.layoutMode === 'desktop' ? '📱' : '🖥️' }}
+      </button>
       <button class="btn-icon" @click="themeStore.toggle()" :title="themeStore.dark ? t('nav.lightMode') : t('nav.darkMode')">
         {{ themeStore.dark ? '☀️' : '🌙' }}
       </button>
@@ -45,6 +53,7 @@
         <router-link to="/locations" class="drawer-link" @click="drawerOpen = false">{{ t('nav.manage') }}</router-link>
         <router-link to="/types" class="drawer-link" @click="drawerOpen = false">{{ t('nav.types') }}</router-link>
         <router-link to="/stats" class="drawer-link" @click="drawerOpen = false">{{ t('nav.stats') }}</router-link>
+        <router-link to="/sync" class="drawer-link" @click="drawerOpen = false">{{ t('nav.sync') }}</router-link>
         <router-link to="/import" class="drawer-link" @click="drawerOpen = false">{{ t('nav.import') }}</router-link>
         <hr />
         <router-link to="/profile" class="drawer-link" @click="drawerOpen = false">{{ t('nav.profile') }}</router-link>
@@ -296,5 +305,21 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside));
   .nav-desktop {
     display: none;
   }
+}
+
+:global(html.layout-mobile) .hamburger {
+  display: flex;
+}
+
+:global(html.layout-mobile) .nav-desktop {
+  display: none;
+}
+
+:global(html.layout-desktop) .hamburger {
+  display: none;
+}
+
+:global(html.layout-desktop) .nav-desktop {
+  display: flex;
 }
 </style>

@@ -16,6 +16,7 @@ from app.schemas.location import (
     LocationUpdateFeature,
     PointGeometry,
 )
+from app.services.sync_service import SyncConflictError, record_event
 
 
 def _location_to_feature(location: Location) -> LocationFeature:
@@ -43,6 +44,7 @@ def _location_to_feature(location: Location) -> LocationFeature:
             rating=location.rating,
             comments=location.comments,
             tags=[t.tag for t in location.tags],
+            sync_version=location.sync_version,
             created_at=location.created_at,
             updated_at=location.updated_at,
         ),
@@ -57,7 +59,7 @@ async def _get_location_query(db: AsyncSession, user_id: str):  # noqa: ANN202
             selectinload(Location.visits),
             selectinload(Location.tags),
         )
-        .where(Location.user_id == user_id)
+        .where(Location.user_id == user_id, Location.deleted_at.is_(None))
     )
 
 
@@ -107,6 +109,8 @@ async def get_location(
     location = result.scalar_one_or_none()
     if not location:
         return None
+    if location.deleted_at is not None:
+        return None
     return _location_to_feature(location)
 
 
@@ -130,6 +134,8 @@ async def create_location(
         rating=props.rating,
         comments=props.comments,
         visited_unknown_year=props.visited_unknown_year,
+        sync_version=1,
+        deleted_at=None,
     )
     db.add(location)
 
@@ -139,12 +145,23 @@ async def create_location(
     for tag in props.tags:
         db.add(LocationTag(id=str(uuid.uuid4()), location_id=location.id, tag=tag))
 
-    await db.commit()
+    await db.flush()
 
     # Reload with relationships
     query = (await _get_location_query(db, user_id)).where(Location.id == location.id)
     result = await db.execute(query)
     location = result.scalar_one()
+    await record_event(
+        db,
+        user_id=user_id,
+        entity_type="location",
+        entity_id=location.id,
+        operation="create",
+        entity_version=location.sync_version,
+        changed_fields=["geometry", "properties"],
+        payload=_location_to_feature(location).model_dump(mode="json"),
+    )
+    await db.commit()
     return _location_to_feature(location)
 
 
@@ -159,6 +176,7 @@ async def update_location(
             selectinload(Location.tags),
         )
         .where(Location.id == location_id, Location.user_id == user_id)
+        .where(Location.deleted_at.is_(None))
     )
     result = await db.execute(query)
     location = result.scalar_one_or_none()
@@ -173,6 +191,16 @@ async def update_location(
 
     # Update properties
     props = data.properties
+    if (
+        props.base_sync_version is not None
+        and props.base_sync_version != location.sync_version
+    ):
+        raise SyncConflictError(
+            entity_type="location",
+            entity_id=location.id,
+            client_version=props.base_sync_version,
+            server_version=location.sync_version,
+        )
     if props.name is not None:
         location.name = props.name
     if props.type_id is not None:
@@ -192,7 +220,31 @@ async def update_location(
     if props.visited_unknown_year is not None:
         location.visited_unknown_year = props.visited_unknown_year
 
+    changed_fields = []
+    if data.geometry is not None:
+        changed_fields.append("geometry")
+    changed_fields.extend(
+        [
+            field
+            for field, value in {
+                "name": props.name is not None,
+                "type_id": props.type_id is not None,
+                "city": props.city is not None,
+                "country": props.country is not None,
+                "address": props.address is not None,
+                "link": props.link is not None,
+                "rating": props.rating is not None,
+                "comments": props.comments is not None,
+                "visited_unknown_year": props.visited_unknown_year is not None,
+                "years_visited": props.years_visited is not None,
+                "tags": props.tags is not None,
+            }.items()
+            if value
+        ]
+    )
+
     location.updated_at = datetime.now(UTC)
+    location.sync_version += 1
 
     # Update visits if provided
     if props.years_visited is not None:
@@ -214,12 +266,23 @@ async def update_location(
                 LocationTag(id=str(uuid.uuid4()), location_id=location.id, tag=tag_name)
             )
 
-    await db.commit()
+    await db.flush()
 
-    # Reload
     query2 = (await _get_location_query(db, user_id)).where(Location.id == location.id)
     result2 = await db.execute(query2)
     location = result2.scalar_one()
+
+    await record_event(
+        db,
+        user_id=user_id,
+        entity_type="location",
+        entity_id=location.id,
+        operation="update",
+        entity_version=location.sync_version,
+        changed_fields=changed_fields,
+        payload=_location_to_feature(location).model_dump(mode="json"),
+    )
+    await db.commit()
     return _location_to_feature(location)
 
 
@@ -230,7 +293,18 @@ async def delete_location(db: AsyncSession, user_id: str, location_id: str) -> b
     location = result.scalar_one_or_none()
     if not location:
         return False
-    await db.delete(location)
+    location.deleted_at = datetime.now(UTC)
+    location.sync_version += 1
+    await record_event(
+        db,
+        user_id=user_id,
+        entity_type="location",
+        entity_id=location.id,
+        operation="delete",
+        entity_version=location.sync_version,
+        changed_fields=["deleted"],
+        payload={"id": location.id, "deleted": True},
+    )
     await db.commit()
     return True
 
@@ -261,6 +335,7 @@ async def bulk_update_locations(
             selectinload(Location.tags),
         )
         .where(Location.user_id == user_id, Location.id.in_(location_ids))
+        .where(Location.deleted_at.is_(None))
     )
     result = await db.execute(query)
     locations = list(result.scalars().all())
@@ -269,6 +344,16 @@ async def bulk_update_locations(
         return []
 
     for location in locations:
+        if (
+            getattr(properties, "base_sync_version", None) is not None
+            and properties.base_sync_version != location.sync_version
+        ):
+            raise SyncConflictError(
+                entity_type="location",
+                entity_id=location.id,
+                client_version=properties.base_sync_version,
+                server_version=location.sync_version,
+            )
         if properties.type_id is not None:
             location.type_id = properties.type_id
         if properties.rating is not None:
@@ -286,6 +371,26 @@ async def bulk_update_locations(
             location.visited_unknown_year = False
 
         location.updated_at = datetime.now(UTC)
+        location.sync_version += 1
+
+        await record_event(
+            db,
+            user_id=user_id,
+            entity_type="location",
+            entity_id=location.id,
+            operation="update",
+            entity_version=location.sync_version,
+            changed_fields=[
+                field
+                for field, value in {
+                    "type_id": properties.type_id is not None,
+                    "rating": properties.rating is not None,
+                    "year_to_add": properties.year_to_add is not None,
+                }.items()
+                if value
+            ],
+            payload=_location_to_feature(location).model_dump(mode="json"),
+        )
 
     await db.commit()
     db.expire_all()

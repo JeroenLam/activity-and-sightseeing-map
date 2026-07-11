@@ -11,6 +11,7 @@ export interface LocationType {
     name: string;
     color: string;
     icon: string;
+    sync_version?: number;
 }
 
 export interface PointGeometry {
@@ -30,6 +31,7 @@ export interface LocationProperties {
     rating: number | null;
     comments: string | null;
     tags: string[];
+    sync_version?: number;
     created_at: string | null;
     updated_at: string | null;
 }
@@ -78,6 +80,7 @@ export interface LocationUpdateProperties {
     rating?: number | null;
     comments?: string | null;
     tags?: string[] | null;
+    base_sync_version?: number | null;
 }
 
 export interface LocationUpdateFeature {
@@ -115,6 +118,67 @@ export interface UserSettings {
     location_filter: string;
     show_ratings: boolean;
     show_comments: boolean;
+    sync_version?: number;
+}
+
+export interface SyncStatus {
+    cursor: number;
+    entities: string[];
+}
+
+export interface SyncChange {
+    id: number;
+    entity_type: 'location' | 'type' | 'settings';
+    entity_id: string;
+    operation: 'create' | 'update' | 'delete';
+    entity_version: number;
+    changed_fields?: string[] | null;
+    payload?: Record<string, unknown> | null;
+    created_at: string;
+}
+
+export interface SyncMutationRequest {
+    mutation_id: string;
+    entity_type: 'location' | 'type' | 'settings';
+    operation: 'create' | 'update' | 'delete' | 'read';
+    entity_id?: string | null;
+    base_sync_version?: number | null;
+    payload: Record<string, unknown>;
+}
+
+export interface SyncMutationResult {
+    mutation_id: string;
+    status: 'applied' | 'conflict' | 'error';
+    entity_type: 'location' | 'type' | 'settings';
+    entity_id?: string | null;
+    entity_version?: number | null;
+    conflict_id?: number | null;
+    error?: string | null;
+    payload?: Record<string, unknown> | null;
+}
+
+export interface SyncConflict {
+    id: number;
+    entity_type: 'location' | 'type' | 'settings';
+    entity_id: string;
+    operation: 'create' | 'update' | 'delete';
+    base_sync_version?: number | null;
+    client_version?: number | null;
+    server_version: number;
+    client_payload?: Record<string, unknown> | null;
+    server_payload?: Record<string, unknown> | null;
+    status: 'open' | 'resolved';
+    created_at: string;
+    resolved_at?: string | null;
+    resolution_mode?: 'use_client' | 'use_server' | 'merge' | null;
+    resolution_payload?: Record<string, unknown> | null;
+}
+
+export interface SyncBootstrapResponse {
+    cursor: number;
+    locations: { type: 'FeatureCollection'; features: LocationFeature[] };
+    types: LocationType[];
+    settings: UserSettings;
 }
 
 export interface OAuthConfig {

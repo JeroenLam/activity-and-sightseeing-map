@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-A complete rewrite of the Activiteiten & Bezienswaardigheden Tracker, splitting the monolithic Node.js application into two independent services: a **Python/FastAPI backend** and a **Vue 3 frontend**. Data is stored in SQLite instead of JSON files, and the API communicates location data using the GeoJSON standard.
+A complete rewrite of the Activiteiten & Bezienswaardigheden Tracker, splitting the monolithic Node.js application into two independent services: a **Python/FastAPI backend** and a **Vue 3 web frontend**. Data is stored in SQLite instead of JSON files, and the API communicates location data using the GeoJSON standard.
 
 ---
 
