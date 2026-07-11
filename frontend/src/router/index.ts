@@ -70,7 +70,12 @@ router.beforeEach(async (to) => {
 
     // Always attempt to fetch user if not yet loaded
     if (!authStore.user) {
-        await authStore.fetchUser();
+        try {
+            await authStore.fetchUser();
+        } catch {
+            // Keep navigation functional when backend is temporarily unreachable.
+            // App-level error handling will show the connection banner.
+        }
     }
 
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {

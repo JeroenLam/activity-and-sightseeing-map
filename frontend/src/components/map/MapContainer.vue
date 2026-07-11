@@ -41,7 +41,13 @@ const mapEl = ref<HTMLDivElement>();
 let map: L.Map | null = null;
 let markersLayer: L.LayerGroup | null = null;
 let tileLayer: L.TileLayer | null = null;
+let resizeObserver: ResizeObserver | null = null;
 const tileDefinition = computed(() => getMapTileDefinition(settingsStore.settings.map_tile_set, themeStore.dark));
+
+function invalidateMapSize() {
+  if (!map) return;
+  map.invalidateSize({ pan: false, animate: false });
+}
 
 function isVisited(f: LocationFeature): boolean {
   return (f.properties.years_visited ?? []).length > 0 || f.properties.visited_unknown_year;
@@ -167,9 +173,18 @@ onMounted(() => {
   map.on('zoomend', emitVisibleLocations);
 
   renderMarkers();
+
+  // Keep Leaflet dimensions in sync when layout mode or breakpoints change.
+  window.addEventListener('resize', invalidateMapSize);
+  resizeObserver = new ResizeObserver(() => invalidateMapSize());
+  resizeObserver.observe(mapEl.value);
+  requestAnimationFrame(() => invalidateMapSize());
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', invalidateMapSize);
+  resizeObserver?.disconnect();
+  resizeObserver = null;
   map?.remove();
   map = null;
 });

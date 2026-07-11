@@ -39,7 +39,31 @@ describe('AppHeader layout mode toggle', () => {
         document.documentElement.className = '';
     });
 
-    it('shows mobile switch icon/title in desktop mode and toggles to desktop icon/title after click', async () => {
+    it('renders desktop top navigation links', async () => {
+        const router = makeRouter();
+        await router.push('/');
+        await router.isReady();
+
+        const authStore = useAuthStore();
+        authStore.user = {
+            id: 'u1',
+            email: 'test@example.com',
+            display_name: 'Tester',
+            preferred_language: 'en',
+            oauth_providers: [],
+        };
+
+        const wrapper = mount(AppHeader, {
+            global: {
+                plugins: [createPinia(), router, i18n],
+            },
+        });
+
+        const navLinks = wrapper.findAll('nav.nav-main .nav-link');
+        expect(navLinks.length).toBeGreaterThanOrEqual(7);
+    });
+
+    it('toggles dark mode class from header control', async () => {
         const router = makeRouter();
         await router.push('/');
         await router.isReady();
@@ -60,45 +84,16 @@ describe('AppHeader layout mode toggle', () => {
         });
 
         const themeStore = useThemeStore();
-        expect(themeStore.layoutMode).toBe('desktop');
-
         const iconButtons = wrapper.findAll('button.btn-icon');
-        const layoutButton = iconButtons[0];
+        const themeToggleButton = iconButtons[0];
 
-        expect(layoutButton.attributes('title')).toBe('Switch to mobile interface');
-        expect(layoutButton.text()).toContain('📱');
+        expect(themeStore.dark).toBe(false);
+        expect(themeToggleButton.attributes('title')).toBe('Dark mode');
+        expect(document.documentElement.classList.contains('dark')).toBe(false);
 
-        await layoutButton.trigger('click');
+        await themeToggleButton.trigger('click');
 
-        expect(themeStore.layoutMode).toBe('mobile');
-        expect(layoutButton.attributes('title')).toBe('Switch to desktop interface');
-        expect(layoutButton.text()).toContain('🖥️');
-    });
-
-    it('applies layout-mobile class to root when toggled', async () => {
-        const router = makeRouter();
-        await router.push('/');
-        await router.isReady();
-
-        const authStore = useAuthStore();
-        authStore.user = {
-            id: 'u1',
-            email: 'test@example.com',
-            display_name: 'Tester',
-            preferred_language: 'en',
-            oauth_providers: [],
-        };
-
-        const wrapper = mount(AppHeader, {
-            global: {
-                plugins: [createPinia(), router, i18n],
-            },
-        });
-
-        const layoutButton = wrapper.findAll('button.btn-icon')[0];
-        await layoutButton.trigger('click');
-
-        expect(document.documentElement.classList.contains('layout-mobile')).toBe(true);
-        expect(document.documentElement.classList.contains('layout-desktop')).toBe(false);
+        expect(themeStore.dark).toBe(true);
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
     });
 });
