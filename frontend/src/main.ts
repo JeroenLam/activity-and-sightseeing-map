@@ -12,9 +12,9 @@ app.use(router);
 app.use(i18n);
 
 if ('serviceWorker' in navigator) {
-	window.addEventListener('load', () => {
-		void navigator.serviceWorker.register('/sw.js');
-	});
+    window.addEventListener('load', () => {
+        void navigator.serviceWorker.register('/sw.js');
+    });
 }
 
 app.mount('#app');

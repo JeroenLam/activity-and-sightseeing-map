@@ -1,17 +1,17 @@
 {
-  "name": "Activiteiten & Bezienswaardigheden",
-  "short_name": "Activiteiten",
-  "description": "Track activities and sightseeing spots with offline sync support.",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#0b3c5d",
-  "icons": [
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    }
-  ]
+    "name": "Activiteiten & Bezienswaardigheden",
+    "short_name": "Activiteiten",
+    "description": "Track activities and sightseeing spots with offline sync support.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f8fafc",
+    "theme_color": "#0b3c5d",
+    "icons": [
+        {
+            "src": "/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ]
 }
