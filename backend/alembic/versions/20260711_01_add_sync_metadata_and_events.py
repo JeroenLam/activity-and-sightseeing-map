@@ -17,6 +17,7 @@ depends_on = None
 
 def upgrade() -> None:
     bind = op.get_bind()
+    is_sqlite = bind.dialect.name == "sqlite"
     inspector = sa.inspect(bind)
 
     if "locations" in inspector.get_table_names():
@@ -31,7 +32,8 @@ def upgrade() -> None:
                     server_default="1",
                 ),
             )
-            op.alter_column("locations", "sync_version", server_default=None)
+            if not is_sqlite:
+                op.alter_column("locations", "sync_version", server_default=None)
         if "deleted_at" not in location_columns:
             op.add_column(
                 "locations",
@@ -50,7 +52,8 @@ def upgrade() -> None:
                     server_default="1",
                 ),
             )
-            op.alter_column("location_types", "sync_version", server_default=None)
+            if not is_sqlite:
+                op.alter_column("location_types", "sync_version", server_default=None)
         if "deleted_at" not in type_columns:
             op.add_column(
                 "location_types",

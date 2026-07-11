@@ -18,6 +18,7 @@ depends_on = None
 def upgrade() -> None:
     # Check if the column already exists before adding
     bind = op.get_bind()
+    is_sqlite = bind.dialect.name == "sqlite"
     inspector = sa.inspect(bind)
     columns = [col["name"] for col in inspector.get_columns("users")]
 
@@ -31,7 +32,8 @@ def upgrade() -> None:
                 server_default="auto",
             ),
         )
-        op.alter_column("users", "map_tile_set", server_default=None)
+        if not is_sqlite:
+            op.alter_column("users", "map_tile_set", server_default=None)
 
 
 def downgrade() -> None:
