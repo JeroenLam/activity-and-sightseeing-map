@@ -87,7 +87,11 @@ async function onLogout() {
 }
 
 function onClickOutside(e: MouseEvent) {
-  if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
+  const target = e.target;
+  if (!(target instanceof Node)) {
+    return;
+  }
+  if (dropdownRef.value && !dropdownRef.value.contains(target)) {
     dropdownOpen.value = false;
   }
 }
