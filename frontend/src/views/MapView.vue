@@ -292,6 +292,13 @@ async function saveEdit() {
   }
 }
 
+/**
+ * Handler for the popup's quick "📅 <current year>" button on unvisited
+ * locations. Sends a minimal update containing only `years_visited`; the
+ * store replaces the cached feature with the server response, which (since
+ * the backend now refreshes relationships before responding) already
+ * contains the new year, so the marker flips to "visited" after one click.
+ */
 async function onAddYear(f: LocationFeature) {
   if (!f.id) return;
   const years = [...(f.properties.years_visited ?? [])];

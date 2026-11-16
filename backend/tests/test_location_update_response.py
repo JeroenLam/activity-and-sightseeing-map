@@ -184,3 +184,28 @@ async def test_omitted_nullable_fields_are_left_unchanged(authenticated_client):
     assert props["link"] == "https://example.com"
     assert props["comments"] == "Keep me"
     assert props["years_visited"] == [2026]
+
+
+@pytest.mark.asyncio
+async def test_popup_add_current_year_marks_location_visited_after_one_click(
+    authenticated_client,
+):
+    """The map popup's "📅 <year>" button on an unvisited location.
+
+    It sends a minimal payload (no geometry, only ``years_visited``). The
+    response must already contain the new year, otherwise the marker keeps
+    showing "Not visited" and the button has to be pressed a second time.
+    """
+    client, _ = authenticated_client
+    location_id = await _create_location(client, rating=4)
+
+    response = await client.put(
+        f"/api/locations/{location_id}",
+        json={"type": "Feature", "properties": {"years_visited": [2026]}},
+    )
+
+    assert response.status_code == 200
+    props = response.json()["properties"]
+    assert props["years_visited"] == [2026]
+    assert props["rating"] == 4
+    assert response.json()["geometry"]["coordinates"] == POINT["coordinates"]
