@@ -268,7 +268,22 @@ async def update_location(
 
     await db.flush()
 
-    query2 = (await _get_location_query(db, user_id)).where(Location.id == location.id)
+    # Reload the location so the response reflects what was just written.
+    #
+    # ``populate_existing`` is essential here: the ``Location`` instance is
+    # already in the session's identity map with its ``visits``, ``tags`` and
+    # ``location_type`` relationships loaded from *before* the update. The new
+    # ``LocationVisit``/``LocationTag`` rows were added via ``db.add`` (not by
+    # appending to the collections) and the old ones were deleted, so without
+    # forcing a refresh SQLAlchemy would hand back the stale collections. The
+    # API would then respond with the old ``years_visited`` (and old type),
+    # the frontend would store that stale feature, and the user had to save a
+    # second time before the change appeared to "stick".
+    query2 = (
+        (await _get_location_query(db, user_id))
+        .where(Location.id == location.id)
+        .execution_options(populate_existing=True)
+    )
     result2 = await db.execute(query2)
     location = result2.scalar_one()
 
