@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import api, { isOfflineErrorLike } from '@/lib/api';
 import { loadCachedLocations, saveCachedLocations } from '@/lib/offlineStorage';
+import { applyLocationUpdate } from '@/lib/locationUpdate';
 import { useOfflineSyncStore } from '@/stores/offlineSync';
 import type {
     BulkLocationUpdateProperties,
@@ -103,6 +104,8 @@ export const useLocationsStore = defineStore('locations', () => {
         const idx = collection.value.features.findIndex((f) => f.id === id);
         try {
             const { data } = await api.put<LocationFeature>(`/api/locations/${id}`, feature);
+            // The server response is the source of truth for the saved state
+            // (it includes the refreshed visit years, type and sync_version).
             if (idx !== -1) collection.value.features[idx] = data;
             persistCollection();
             return data;
@@ -115,24 +118,9 @@ export const useLocationsStore = defineStore('locations', () => {
             }
 
             const current = collection.value.features[idx];
-            const optimistic: LocationFeature = {
-                ...current,
-                geometry: feature.geometry ?? current.geometry,
-                properties: {
-                    ...current.properties,
-                    name: feature.properties.name ?? current.properties.name,
-                    city: feature.properties.city ?? current.properties.city,
-                    country: feature.properties.country ?? current.properties.country,
-                    address: feature.properties.address ?? current.properties.address,
-                    link: feature.properties.link ?? current.properties.link,
-                    years_visited: feature.properties.years_visited ?? current.properties.years_visited,
-                    visited_unknown_year:
-                        feature.properties.visited_unknown_year ?? current.properties.visited_unknown_year,
-                    rating: feature.properties.rating ?? current.properties.rating,
-                    comments: feature.properties.comments ?? current.properties.comments,
-                    tags: feature.properties.tags ?? current.properties.tags,
-                },
-            };
+            // Offline: apply the edit locally so the map updates immediately;
+            // the queued mutation is replayed against the server later.
+            const optimistic = applyLocationUpdate(current, feature);
             collection.value.features[idx] = optimistic;
             persistCollection();
 
