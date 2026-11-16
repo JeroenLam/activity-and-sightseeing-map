@@ -14,6 +14,7 @@ from app.schemas.location import (
     LocationProperties,
     LocationTypeInline,
     LocationUpdateFeature,
+    LocationUpdateProperties,
     PointGeometry,
 )
 from app.services.sync_service import SyncConflictError, record_event
@@ -165,6 +166,22 @@ async def create_location(
     return _location_to_feature(location)
 
 
+#: Nullable location properties that can be cleared by sending an explicit
+#: ``null`` in an update request.
+NULLABLE_UPDATE_FIELDS = frozenset({"type_id", "address", "link", "rating", "comments"})
+
+
+def _provided_nullable_fields(props: LocationUpdateProperties) -> set[str]:
+    """Return the nullable fields that were explicitly present in the request.
+
+    Pydantic records which fields were actually supplied in
+    ``model_fields_set``. This lets an update distinguish between a field that
+    was omitted (keep the stored value) and one that was sent as ``null``
+    (clear the stored value), which a plain ``is not None`` check cannot.
+    """
+    return set(props.model_fields_set) & NULLABLE_UPDATE_FIELDS
+
+
 async def update_location(
     db: AsyncSession, user_id: str, location_id: str, data: LocationUpdateFeature
 ) -> LocationFeature | None:
@@ -201,24 +218,30 @@ async def update_location(
             client_version=props.base_sync_version,
             server_version=location.sync_version,
         )
+    # Required (non-nullable) columns: ``None`` means "leave unchanged".
     if props.name is not None:
         location.name = props.name
-    if props.type_id is not None:
-        location.type_id = props.type_id
     if props.city is not None:
         location.city = props.city
     if props.country is not None:
         location.country = props.country
-    if props.address is not None:
-        location.address = props.address
-    if props.link is not None:
-        location.link = props.link
-    if props.rating is not None:
-        location.rating = props.rating
-    if props.comments is not None:
-        location.comments = props.comments
     if props.visited_unknown_year is not None:
         location.visited_unknown_year = props.visited_unknown_year
+
+    # Nullable columns: a field omitted from the request is left unchanged,
+    # but an explicit ``null`` clears it (e.g. removing a rating with the
+    # "×" button in the edit dialog).
+    provided = _provided_nullable_fields(props)
+    if "type_id" in provided:
+        location.type_id = props.type_id
+    if "address" in provided:
+        location.address = props.address
+    if "link" in provided:
+        location.link = props.link
+    if "rating" in provided:
+        location.rating = props.rating
+    if "comments" in provided:
+        location.comments = props.comments
 
     changed_fields = []
     if data.geometry is not None:
@@ -228,13 +251,13 @@ async def update_location(
             field
             for field, value in {
                 "name": props.name is not None,
-                "type_id": props.type_id is not None,
+                "type_id": "type_id" in provided,
                 "city": props.city is not None,
                 "country": props.country is not None,
-                "address": props.address is not None,
-                "link": props.link is not None,
-                "rating": props.rating is not None,
-                "comments": props.comments is not None,
+                "address": "address" in provided,
+                "link": "link" in provided,
+                "rating": "rating" in provided,
+                "comments": "comments" in provided,
                 "visited_unknown_year": props.visited_unknown_year is not None,
                 "years_visited": props.years_visited is not None,
                 "tags": props.tags is not None,

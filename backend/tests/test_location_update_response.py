@@ -7,7 +7,7 @@ relationship collections loaded *before* the update, so the response (which
 the frontend writes straight into its store) still held the old values.
 
 These tests make sure a single update returns, persists and records the
-new state.
+new state, and that nullable fields such as ``rating`` can be cleared.
 """
 
 import pytest
@@ -142,3 +142,45 @@ async def test_sync_event_payload_contains_new_visit_years(authenticated_client)
     latest = events[-1]
     assert latest["entity_version"] == data["properties"]["sync_version"]
     assert latest["payload"]["properties"]["years_visited"] == [2020, 2024]
+
+
+@pytest.mark.asyncio
+async def test_explicit_null_clears_rating(authenticated_client):
+    client, _ = authenticated_client
+    location_id = await _create_location(client, rating=3)
+
+    data = await _update_location(client, location_id, rating=None)
+
+    assert data["properties"]["rating"] is None
+    response = await client.get(f"/api/locations/{location_id}")
+    assert response.json()["properties"]["rating"] is None
+
+
+@pytest.mark.asyncio
+async def test_explicit_null_clears_link_and_comments(authenticated_client):
+    client, _ = authenticated_client
+    location_id = await _create_location(
+        client, link="https://example.com", comments="Nice"
+    )
+
+    data = await _update_location(client, location_id, link=None, comments=None)
+
+    assert data["properties"]["link"] is None
+    assert data["properties"]["comments"] is None
+
+
+@pytest.mark.asyncio
+async def test_omitted_nullable_fields_are_left_unchanged(authenticated_client):
+    """Partial updates (e.g. the popup's "add current year" button) keep data."""
+    client, _ = authenticated_client
+    location_id = await _create_location(
+        client, rating=4, link="https://example.com", comments="Keep me"
+    )
+
+    data = await _update_location(client, location_id, years_visited=[2026])
+
+    props = data["properties"]
+    assert props["rating"] == 4
+    assert props["link"] == "https://example.com"
+    assert props["comments"] == "Keep me"
+    assert props["years_visited"] == [2026]
