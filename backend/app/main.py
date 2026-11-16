@@ -13,11 +13,7 @@ from app.routers import (
     public,
 )
 from app.routers import settings as settings_router
-from app.routers import (
-    statistics,
-    sync,
-    types,
-)
+from app.routers import statistics, sync, types
 
 
 @asynccontextmanager
