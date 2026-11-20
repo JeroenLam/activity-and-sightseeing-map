@@ -119,3 +119,77 @@ async def test_small_responses_are_not_compressed(authenticated_client):
     client, _ = authenticated_client
     response = await client.get("/api/health", headers={"Accept-Encoding": "gzip"})
     assert "content-encoding" not in response.headers
+
+
+@pytest.mark.asyncio
+async def test_list_returns_type_years_and_tags(authenticated_client):
+    client, _ = authenticated_client
+    museum = (
+        await client.post(
+            "/api/types", json={"name": "Museum", "color": "#FF0000", "icon": "bank"}
+        )
+    ).json()
+    created = await _create(
+        client,
+        type_id=museum["id"],
+        years_visited=[2024, 2019],
+        tags=["art", "indoor"],
+        rating=4,
+        link="https://example.com",
+    )
+    await _create(client, name="Untyped")
+
+    response = await client.get("/api/locations")
+    features = {f["id"]: f for f in response.json()["features"]}
+
+    props = features[created["id"]]["properties"]
+    assert props["type"] == {
+        "id": museum["id"],
+        "name": "Museum",
+        "color": "#FF0000",
+        "icon": "bank",
+    }
+    assert props["years_visited"] == [2019, 2024]
+    assert sorted(props["tags"]) == ["art", "indoor"]
+    assert props["rating"] == 4
+    assert props["link"] == "https://example.com"
+    assert features[created["id"]]["geometry"]["coordinates"] == POINT["coordinates"]
+
+    untyped = next(f for f in features.values() if f["properties"]["name"] == "Untyped")
+    assert untyped["properties"]["type"] is None
+    assert untyped["properties"]["years_visited"] == []
+    assert untyped["properties"]["tags"] == []
+
+
+@pytest.mark.asyncio
+async def test_list_filters(authenticated_client):
+    client, _ = authenticated_client
+    museum = (
+        await client.post("/api/types", json={"name": "M", "color": "#FF0000"})
+    ).json()
+    old = await _create(client, name="Old", years_visited=[2001], type_id=museum["id"])
+    new = await _create(client, name="New", years_visited=[2023])
+    unknown = await _create(client, name="Unknown", visited_unknown_year=True)
+    never = await _create(client, name="Never")
+
+    async def ids(**params) -> set[str]:
+        response = await client.get("/api/locations", params=params)
+        return {f["id"] for f in response.json()["features"]}
+
+    assert await ids(unvisited="true") == {never["id"]}
+    assert await ids(year_from=2020) == {new["id"]}
+    assert await ids(year_to=2010) == {old["id"]}
+    assert await ids(type_id=museum["id"]) == {old["id"]}
+    assert await ids() == {old["id"], new["id"], unknown["id"], never["id"]}
+
+
+@pytest.mark.asyncio
+async def test_list_excludes_soft_deleted_locations(authenticated_client):
+    auth_client, _ = authenticated_client
+    keep = await _create(auth_client, name="Keep", years_visited=[2020])
+    gone = await _create(auth_client, name="Gone", years_visited=[2020])
+    await auth_client.delete(f"/api/locations/{gone['id']}")
+
+    response = await auth_client.get("/api/locations")
+
+    assert [f["id"] for f in response.json()["features"]] == [keep["id"]]
