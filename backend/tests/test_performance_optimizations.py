@@ -1,8 +1,13 @@
-"""Tests for the database-layer performance work.
+"""Tests for the backend performance work.
 
-- child-table indexes exist on new and on pre-existing databases, and the
-  queries that load visits/tags per location actually use them,
-- SQLite connections are tuned (WAL, synchronous=NORMAL, busy timeout).
+Covers the behaviour the optimizations must preserve or introduce:
+
+- child-table indexes exist on new and on pre-existing databases,
+- SQLite connections are tuned (WAL, synchronous=NORMAL, busy timeout),
+- large responses are gzip-compressed,
+- the row-based ``get_locations`` returns full features (type, years, tags)
+  and still honours all list filters,
+- statistics ignore soft-deleted locations.
 """
 
 import pytest
@@ -15,6 +20,21 @@ from app.database import (
     ensure_schema_compatibility,
 )
 from app.models import Base
+
+POINT = {"type": "Point", "coordinates": [4.9, 52.37]}
+
+
+async def _create(client, **properties) -> dict:
+    response = await client.post(
+        "/api/locations",
+        json={
+            "type": "Feature",
+            "geometry": POINT,
+            "properties": {"name": "Place", **properties},
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
 
 
 async def _index_names(conn, table: str) -> set[str]:
@@ -78,3 +98,24 @@ async def test_sqlite_connections_are_tuned(tmp_path):
     assert journal_mode == "wal"
     assert synchronous == 1  # NORMAL
     assert busy_timeout == 5000
+
+
+@pytest.mark.asyncio
+async def test_large_responses_are_gzip_compressed(authenticated_client):
+    client, _ = authenticated_client
+    for i in range(15):
+        await _create(client, name=f"Location {i}", comments="x" * 50)
+
+    response = await client.get("/api/locations", headers={"Accept-Encoding": "gzip"})
+
+    assert response.status_code == 200
+    assert response.headers["content-encoding"] == "gzip"
+    assert response.num_bytes_downloaded < len(response.content)
+    assert len(response.json()["features"]) == 15
+
+
+@pytest.mark.asyncio
+async def test_small_responses_are_not_compressed(authenticated_client):
+    client, _ = authenticated_client
+    response = await client.get("/api/health", headers={"Accept-Encoding": "gzip"})
+    assert "content-encoding" not in response.headers
