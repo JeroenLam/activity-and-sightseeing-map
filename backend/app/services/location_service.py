@@ -1,11 +1,14 @@
 import uuid
+from collections import defaultdict
 from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.location import Location, LocationTag, LocationVisit
+from app.models.location_type import LocationType
 from app.schemas.location import (
     BulkLocationUpdateProperties,
     LocationCreateFeature,
@@ -64,6 +67,42 @@ async def _get_location_query(db: AsyncSession, user_id: str):  # noqa: ANN202
     )
 
 
+def _filter_by_visits(
+    rows: list[Any],
+    years_by_location: dict[str, list[int]],
+    *,
+    year_from: int | None,
+    year_to: int | None,
+    unvisited: bool,
+) -> list[Any]:
+    """Apply the ``unvisited`` / ``year_from`` / ``year_to`` list filters.
+
+    ``unvisited`` keeps locations with no visit years and no "visited, year
+    unknown" flag. Otherwise, when a year bound is given, only locations with
+    at least one visit year satisfying each bound are kept.
+    """
+    if unvisited:
+        return [
+            row
+            for row in rows
+            if not years_by_location.get(row.id) and not row.visited_unknown_year
+        ]
+    if year_from is None and year_to is None:
+        return rows
+
+    filtered = []
+    for row in rows:
+        years = years_by_location.get(row.id)
+        if not years:
+            continue
+        if year_from and not any(y >= year_from for y in years):
+            continue
+        if year_to and not any(y <= year_to for y in years):
+            continue
+        filtered.append(row)
+    return filtered
+
+
 async def get_locations(
     db: AsyncSession,
     user_id: str,
@@ -72,33 +111,109 @@ async def get_locations(
     unvisited: bool = False,
     type_id: str | None = None,
 ) -> LocationFeatureCollection:
-    query = await _get_location_query(db, user_id)
+    """Return the user's (non-deleted) locations as a GeoJSON collection.
 
+    This is the hottest read path: it backs the map, the GeoJSON/KML/GPX
+    exports and the offline-sync bootstrap. It therefore reads plain rows
+    instead of ORM objects. Building thousands of ``Location``,
+    ``LocationVisit`` and ``LocationTag`` instances (with identity-map and
+    relationship bookkeeping) dominated the response time, while the three
+    flat queries below return the same data several times faster.
+
+    Visits and tags are fetched with a join on ``locations.user_id`` rather
+    than a huge ``IN (...)`` list, so each is a single indexed query.
+    """
+    location_filter = [Location.user_id == user_id, Location.deleted_at.is_(None)]
     if type_id:
-        query = query.where(Location.type_id == type_id)
+        location_filter.append(Location.type_id == type_id)
 
-    result = await db.execute(query)
-    locations = list(result.scalars().all())
+    location_rows = list(
+        (
+            await db.execute(
+                select(
+                    Location.id,
+                    Location.name,
+                    Location.city,
+                    Location.country,
+                    Location.address,
+                    Location.link,
+                    Location.latitude,
+                    Location.longitude,
+                    Location.rating,
+                    Location.comments,
+                    Location.visited_unknown_year,
+                    Location.sync_version,
+                    Location.created_at,
+                    Location.updated_at,
+                    LocationType.id.label("type_id"),
+                    LocationType.name.label("type_name"),
+                    LocationType.color.label("type_color"),
+                    LocationType.icon.label("type_icon"),
+                )
+                .outerjoin(LocationType, Location.type_id == LocationType.id)
+                .where(*location_filter)
+            )
+        ).all()
+    )
 
-    # Filter by visit years (post-query due to relationship)
-    if unvisited:
-        locations = [
-            loc for loc in locations if not loc.visits and not loc.visited_unknown_year
-        ]
-    elif year_from is not None or year_to is not None:
-        filtered = []
-        for loc in locations:
-            years = [v.year for v in loc.visits]
-            if not years:
-                continue
-            if year_from and not any(y >= year_from for y in years):
-                continue
-            if year_to and not any(y <= year_to for y in years):
-                continue
-            filtered.append(loc)
-        locations = filtered
+    years_by_location: dict[str, list[int]] = defaultdict(list)
+    visit_rows = await db.execute(
+        select(LocationVisit.location_id, LocationVisit.year)
+        .join(Location, LocationVisit.location_id == Location.id)
+        .where(*location_filter)
+    )
+    for location_id, year in visit_rows:
+        years_by_location[location_id].append(year)
 
-    features = [_location_to_feature(loc) for loc in locations]
+    tags_by_location: dict[str, list[str]] = defaultdict(list)
+    tag_rows = await db.execute(
+        select(LocationTag.location_id, LocationTag.tag)
+        .join(Location, LocationTag.location_id == Location.id)
+        .where(*location_filter)
+    )
+    for location_id, tag in tag_rows:
+        tags_by_location[location_id].append(tag)
+
+    location_rows = _filter_by_visits(
+        location_rows,
+        years_by_location,
+        year_from=year_from,
+        year_to=year_to,
+        unvisited=unvisited,
+    )
+
+    features = [
+        LocationFeature(
+            id=row.id,
+            geometry=PointGeometry(coordinates=[row.longitude, row.latitude]),
+            properties=LocationProperties(
+                name=row.name,
+                type=(
+                    LocationTypeInline(
+                        id=row.type_id,
+                        name=row.type_name,
+                        color=row.type_color,
+                        icon=row.type_icon,
+                    )
+                    if row.type_id is not None
+                    else None
+                ),
+                city=row.city,
+                country=row.country,
+                address=row.address,
+                link=row.link,
+                years_visited=sorted(years_by_location.get(row.id, ())),
+                visited_unknown_year=row.visited_unknown_year,
+                rating=row.rating,
+                comments=row.comments,
+                tags=tags_by_location.get(row.id, []),
+                sync_version=row.sync_version,
+                created_at=row.created_at,
+                updated_at=row.updated_at,
+            ),
+        )
+        for row in location_rows
+    ]
     return LocationFeatureCollection(features=features)
 
 

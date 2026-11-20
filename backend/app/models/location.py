@@ -57,16 +57,15 @@ class LocationVisit(Base):
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
+    # Indexed: every location load fetches its visits with
+    # ``WHERE location_id IN (...)`` (selectin loading). Without an index
+    # SQLite scans the whole table, including every other user's visits.
     location_id: Mapped[str] = mapped_column(
-        ForeignKey("locations.id", ondelete="CASCADE"), nullable=False
+        ForeignKey("locations.id", ondelete="CASCADE"), nullable=False, index=True
     )
     year: Mapped[int] = mapped_column(Integer, nullable=False)
 
     location: Mapped["Location"] = relationship(back_populates="visits")
-
-    __table_args__ = (
-        # unique on (location_id, year) enforced by index
-    )
 
 
 class LocationTag(Base):
@@ -75,16 +74,13 @@ class LocationTag(Base):
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
+    # Indexed for the same reason as ``LocationVisit.location_id``.
     location_id: Mapped[str] = mapped_column(
-        ForeignKey("locations.id", ondelete="CASCADE"), nullable=False
+        ForeignKey("locations.id", ondelete="CASCADE"), nullable=False, index=True
     )
     tag: Mapped[str] = mapped_column(String(100), nullable=False)
 
     location: Mapped["Location"] = relationship(back_populates="tags")
-
-    __table_args__ = (
-        # unique on (location_id, tag) enforced by index
-    )
 
 
 # Forward reference resolved via location_type module

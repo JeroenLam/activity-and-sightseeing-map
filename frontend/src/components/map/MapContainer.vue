@@ -6,8 +6,8 @@
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import * as mdiIcons from '@mdi/js';
 import type { LocationFeature } from '@/types';
+import { getIconPath, iconPathsVersion } from '@/composables/useIconPath';
 import { useI18n } from 'vue-i18n';
 import { useThemeStore } from '@/stores/theme';
 import { useSettingsStore } from '@/stores/settings';
@@ -53,10 +53,34 @@ function isVisited(f: LocationFeature): boolean {
   return (f.properties.years_visited ?? []).length > 0 || f.properties.visited_unknown_year;
 }
 
-function getIconPath(icon: string | undefined): string {
-  if (!icon) return '';
-  const camel = 'mdi' + icon.split('-').map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
-  return (mdiIcons as Record<string, string>)[camel] ?? '';
+/**
+ * Everything that affects a marker's appearance, as a string. Markers with
+ * the same key share one `L.DivIcon`, and a marker only gets a new icon when
+ * its key changes.
+ */
+function markerIconKey(f: LocationFeature): string {
+  const visited = isVisited(f);
+  return [
+    f.properties.type?.color || '#9E9E9E',
+    visited ? 'v' : 'u',
+    props.markerSize,
+    visited ? props.visitedOpacity : props.unvisitedOpacity,
+    f.properties.type?.icon ?? '',
+    // Include the resolved path so markers update once icons have loaded.
+    getIconPath(f.properties.type?.icon),
+  ].join('|');
+}
+
+/** Cache of marker icons by {@link markerIconKey}; typically one per type x visited state. */
+const iconCache = new Map<string, L.DivIcon>();
+
+function getMarkerIcon(f: LocationFeature, key: string): L.DivIcon {
+  let icon = iconCache.get(key);
+  if (!icon) {
+    icon = createMarkerIcon(f);
+    iconCache.set(key, icon);
+  }
+  return icon;
 }
 
 function createMarkerIcon(f: LocationFeature): L.DivIcon {
@@ -106,31 +130,88 @@ function buildPopup(f: LocationFeature): string {
   return html;
 }
 
+/** A marker on the map together with the feature it currently shows. */
+interface MarkerEntry {
+  marker: L.Marker;
+  feature: LocationFeature;
+  iconKey: string;
+}
+
+/** Markers currently on the map, keyed by feature id (see {@link featureKey}). */
+const markerEntries = new Map<string, MarkerEntry>();
+
+function featureKey(f: LocationFeature, index: number): string {
+  return f.id ?? `index:${index}`;
+}
+
+function createMarkerEntry(f: LocationFeature, lat: number, lng: number, iconKey: string): MarkerEntry {
+  const marker = L.marker([lat, lng], { icon: getMarkerIcon(f, iconKey) });
+  const entry: MarkerEntry = { marker, feature: f, iconKey };
+
+  // Popup HTML is built lazily when it opens (Leaflet calls the function),
+  // always from the entry's *current* feature, instead of eagerly for every
+  // marker on every render.
+  marker.bindPopup(() => buildPopup(entry.feature), { maxWidth: 280 });
+  marker.on('popupopen', () => {
+    const el = marker.getPopup()?.getElement();
+    if (!el) return;
+    el.querySelector('.popup-edit')?.addEventListener('click', () => {
+      emit('edit', entry.feature);
+      marker.closePopup();
+    });
+    el.querySelector('.popup-add-year')?.addEventListener('click', () => {
+      emit('add-year', entry.feature);
+      marker.closePopup();
+    });
+  });
+  return entry;
+}
+
+/**
+ * Bring the markers on the map in line with `props.features`.
+ *
+ * This reconciles instead of rebuilding: markers are reused by feature id,
+ * only features that appeared or disappeared add or remove a marker, and an
+ * existing marker only gets a new position or icon when those changed.
+ * Toggling a type filter on a map with thousands of locations therefore
+ * touches just the affected markers instead of recreating all of them.
+ */
 function renderMarkers() {
   if (!map || !markersLayer) return;
-  markersLayer.clearLayers();
 
-  for (const f of props.features) {
+  const seen = new Set<string>();
+  props.features.forEach((f, index) => {
     const [lng, lat] = f.geometry.coordinates;
-    if (lat === 0 && lng === 0) continue;
+    if (lat === 0 && lng === 0) return;
 
-    const marker = L.marker([lat, lng], { icon: createMarkerIcon(f) });
-    marker.bindPopup(buildPopup(f), { maxWidth: 280 });
-    marker.on('popupopen', () => {
-      const popup = marker.getPopup();
-      if (!popup) return;
-      const el = popup.getElement();
-      if (!el) return;
-      el.querySelector('.popup-edit')?.addEventListener('click', () => {
-        emit('edit', f);
-        marker.closePopup();
-      });
-      el.querySelector('.popup-add-year')?.addEventListener('click', () => {
-        emit('add-year', f);
-        marker.closePopup();
-      });
-    });
-    markersLayer.addLayer(marker);
+    const key = featureKey(f, index);
+    seen.add(key);
+    const iconKey = markerIconKey(f);
+    const entry = markerEntries.get(key);
+
+    if (!entry) {
+      const created = createMarkerEntry(f, lat, lng, iconKey);
+      markerEntries.set(key, created);
+      markersLayer!.addLayer(created.marker);
+      return;
+    }
+
+    if (entry.feature !== f) {
+      const position = entry.marker.getLatLng();
+      if (position.lat !== lat || position.lng !== lng) entry.marker.setLatLng([lat, lng]);
+      entry.feature = f;
+    }
+    if (entry.iconKey !== iconKey) {
+      entry.marker.setIcon(getMarkerIcon(f, iconKey));
+      entry.iconKey = iconKey;
+    }
+  });
+
+  for (const [key, entry] of markerEntries) {
+    if (!seen.has(key)) {
+      markersLayer.removeLayer(entry.marker);
+      markerEntries.delete(key);
+    }
   }
 
   emitVisibleLocations();
@@ -169,8 +250,9 @@ onMounted(() => {
   syncTileLayer();
   markersLayer = L.layerGroup().addTo(map);
 
+  // 'moveend' also fires after every zoom, so a separate 'zoomend' listener
+  // would only recompute the visible locations twice.
   map.on('moveend', emitVisibleLocations);
-  map.on('zoomend', emitVisibleLocations);
 
   renderMarkers();
 
@@ -187,6 +269,9 @@ onUnmounted(() => {
   resizeObserver = null;
   map?.remove();
   map = null;
+  markersLayer = null;
+  markerEntries.clear();
+  iconCache.clear();
 });
 
 let initialViewApplied = false;
@@ -202,11 +287,23 @@ watch(
   }
 );
 
+// Shallow on purpose: both callers replace the features array (a new
+// computed result or a reassigned ref) whenever any feature changes, so a
+// `deep` watcher only added a traversal of every feature's properties on
+// each change.
+watch(() => props.features, () => renderMarkers());
+
 watch(
-  () => [props.features, props.markerSize, props.visitedOpacity, props.unvisitedOpacity],
-  () => renderMarkers(),
-  { deep: true }
+  () => [props.markerSize, props.visitedOpacity, props.unvisitedOpacity],
+  () => {
+    // Every icon depends on these; drop cached icons so the cache stays small.
+    iconCache.clear();
+    renderMarkers();
+  },
 );
+
+// Icon paths load lazily (see useIconPath); refresh markers when they arrive.
+watch(iconPathsVersion, () => renderMarkers());
 
 watch(
   () => tileDefinition.value.id,

@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from app.config import settings
 from app.database import engine, ensure_schema_compatibility
@@ -40,6 +41,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Compress responses. The GeoJSON location list (also used by export and
+# sync bootstrap) is the largest payload and compresses roughly 10x, which
+# matters most on mobile connections. Small responses are left uncompressed
+# because the overhead outweighs the gain.
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 # Register routers
 app.include_router(auth.router)
