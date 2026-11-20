@@ -6,8 +6,8 @@
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import * as mdiIcons from '@mdi/js';
 import type { LocationFeature } from '@/types';
+import { getIconPath, iconPathsVersion } from '@/composables/useIconPath';
 import { useI18n } from 'vue-i18n';
 import { useThemeStore } from '@/stores/theme';
 import { useSettingsStore } from '@/stores/settings';
@@ -51,12 +51,6 @@ function invalidateMapSize() {
 
 function isVisited(f: LocationFeature): boolean {
   return (f.properties.years_visited ?? []).length > 0 || f.properties.visited_unknown_year;
-}
-
-function getIconPath(icon: string | undefined): string {
-  if (!icon) return '';
-  const camel = 'mdi' + icon.split('-').map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
-  return (mdiIcons as Record<string, string>)[camel] ?? '';
 }
 
 function createMarkerIcon(f: LocationFeature): L.DivIcon {
@@ -207,6 +201,9 @@ watch(
   () => renderMarkers(),
   { deep: true }
 );
+
+// Icon paths load lazily (see useIconPath); refresh markers when they arrive.
+watch(iconPathsVersion, () => renderMarkers());
 
 watch(
   () => tileDefinition.value.id,

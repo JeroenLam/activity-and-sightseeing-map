@@ -19,17 +19,17 @@
           <svg viewBox="0 0 24 24"><path :d="icon.path" fill="currentColor"/></svg>
         </button>
       </div>
-      <p v-if="!filteredIcons.length" class="picker-empty">{{ t('types.noIconsFound') }}</p>
+      <p v-if="loadingIcons" class="picker-empty">…</p>
+      <p v-else-if="!filteredIcons.length" class="picker-empty">{{ t('types.noIconsFound') }}</p>
       <button v-if="modelValue" type="button" class="btn btn-small picker-clear" @click="select('')">{{ t('types.clearIcon') }}</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, shallowRef, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import * as mdiIcons from '@mdi/js';
-import { getIconPath } from '@/composables/useIconPath';
+import { getIconPath, loadIconModule } from '@/composables/useIconPath';
 
 const { t } = useI18n();
 
@@ -43,20 +43,45 @@ const searchInput = ref<HTMLInputElement>();
 
 interface IconEntry { name: string; path: string; }
 
-const allIcons = computed<IconEntry[]>(() => {
-  const entries: IconEntry[] = [];
-  for (const [key, value] of Object.entries(mdiIcons)) {
-    if (!key.startsWith('mdi') || typeof value !== 'string') continue;
-    const name = key.slice(3).replace(/([A-Z])/g, '-$1').toLowerCase().slice(1);
-    entries.push({ name, path: value });
+/** Maximum number of icons shown in the grid at once. */
+const MAX_VISIBLE_ICONS = 50;
+
+/**
+ * The full icon list. The ~2.7 MB icon module is only loaded the first time
+ * the picker is opened (see `useIconPath`), not when the page loads.
+ */
+const allIcons = shallowRef<IconEntry[]>([]);
+const loadingIcons = ref(false);
+
+async function ensureIconsLoaded() {
+  if (allIcons.value.length || loadingIcons.value) return;
+  loadingIcons.value = true;
+  try {
+    const icons = await loadIconModule();
+    const entries: IconEntry[] = [];
+    for (const [key, value] of Object.entries(icons)) {
+      if (!key.startsWith('mdi') || typeof value !== 'string') continue;
+      const name = key.slice(3).replace(/([A-Z])/g, '-$1').toLowerCase().slice(1);
+      entries.push({ name, path: value });
+    }
+    allIcons.value = entries;
+  } finally {
+    loadingIcons.value = false;
   }
-  return entries;
-});
+}
 
 const filteredIcons = computed(() => {
   const q = search.value.toLowerCase();
-  const list = q ? allIcons.value.filter((i) => i.name.includes(q)) : allIcons.value;
-  return list.slice(0, 50);
+  if (!q) return allIcons.value.slice(0, MAX_VISIBLE_ICONS);
+  // Stop scanning the ~7,000 icons as soon as the grid is full.
+  const matches: IconEntry[] = [];
+  for (const icon of allIcons.value) {
+    if (icon.name.includes(q)) {
+      matches.push(icon);
+      if (matches.length === MAX_VISIBLE_ICONS) break;
+    }
+  }
+  return matches;
 });
 
 const currentPath = computed(() => getIconPath(props.modelValue));
@@ -78,7 +103,9 @@ function onClickOutside(e: MouseEvent) {
 }
 
 watch(open, (v) => {
-  if (v) setTimeout(() => searchInput.value?.focus(), 50);
+  if (!v) return;
+  void ensureIconsLoaded();
+  setTimeout(() => searchInput.value?.focus(), 50);
 });
 
 onMounted(() => document.addEventListener('click', onClickOutside));
