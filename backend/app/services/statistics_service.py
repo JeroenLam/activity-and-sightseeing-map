@@ -1,10 +1,11 @@
 from collections import Counter
+from dataclasses import dataclass, field
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
-from app.models.location import Location
+from app.models.location import Location, LocationVisit
+from app.models.location_type import LocationType
 from app.schemas.statistics import (
     CountryStat,
     CountryYearStat,
@@ -41,22 +42,87 @@ def estimate_continent(latitude: float, longitude: float) -> str:
     return "Unknown"
 
 
-async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
-    query = (
-        select(Location)
-        .options(
-            selectinload(Location.location_type),
-            selectinload(Location.visits),
+UNCATEGORIZED_TYPE_KEY: tuple[str | None, str, str] = (None, "Uncategorized", "#9E9E9E")
+
+
+@dataclass(slots=True)
+class _StatsLocation:
+    """The subset of a location's data that the statistics need."""
+
+    city: str
+    country: str
+    rating: int | None
+    comments: str | None
+    visited_unknown_year: bool
+    latitude: float
+    longitude: float
+    #: ``(type_id, type_name, color)``; :data:`UNCATEGORIZED_TYPE_KEY` if untyped.
+    type_key: tuple[str | None, str, str]
+    years: list[int] = field(default_factory=list)
+
+
+async def _load_stats_locations(db: AsyncSession, user_id: str) -> list[_StatsLocation]:
+    """Load the user's non-deleted locations with their visit years.
+
+    Uses two flat queries (locations joined with their type, and all visit
+    years) instead of loading ORM objects with their relationships, which
+    was several times slower for large collections and also loaded tags
+    that no statistic uses. Soft-deleted locations are excluded.
+    """
+    location_filter = (Location.user_id == user_id, Location.deleted_at.is_(None))
+    location_rows = await db.execute(
+        select(
+            Location.id,
+            Location.city,
+            Location.country,
+            Location.rating,
+            Location.comments,
+            Location.visited_unknown_year,
+            Location.latitude,
+            Location.longitude,
+            LocationType.id.label("type_id"),
+            LocationType.name.label("type_name"),
+            LocationType.color.label("type_color"),
         )
-        .where(Location.user_id == user_id)
+        .outerjoin(LocationType, Location.type_id == LocationType.id)
+        .where(*location_filter)
     )
-    result = await db.execute(query)
-    locations = list(result.scalars().all())
+    locations: dict[str, _StatsLocation] = {
+        row.id: _StatsLocation(
+            city=row.city,
+            country=row.country,
+            rating=row.rating,
+            comments=row.comments,
+            visited_unknown_year=row.visited_unknown_year,
+            latitude=row.latitude,
+            longitude=row.longitude,
+            type_key=(
+                (row.type_id, row.type_name, row.type_color)
+                if row.type_id is not None
+                else UNCATEGORIZED_TYPE_KEY
+            ),
+        )
+        for row in location_rows
+    }
+
+    visit_rows = await db.execute(
+        select(LocationVisit.location_id, LocationVisit.year)
+        .join(Location, LocationVisit.location_id == Location.id)
+        .where(*location_filter)
+    )
+    for location_id, year in visit_rows:
+        locations[location_id].years.append(year)
+
+    return list(locations.values())
+
+
+async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
+    locations = await _load_stats_locations(db, user_id)
 
     total_locations = len(locations)
 
     # Visited vs unvisited
-    visited = [loc for loc in locations if loc.visits or loc.visited_unknown_year]
+    visited = [loc for loc in locations if loc.years or loc.visited_unknown_year]
     total_visited = len(visited)
     total_unvisited = total_locations - total_visited
 
@@ -76,7 +142,7 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
         if loc.comments and loc.comments.strip():
             comments_provided += 1
 
-        if len({visit.year for visit in loc.visits}) >= 2:
+        if len(set(loc.years)) >= 2:
             locations_visited_multiple_years += 1
 
     total_cities = len(city_counter)
@@ -84,8 +150,8 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
     # Visits per year
     year_counter: Counter[int] = Counter()
     for loc in locations:
-        for visit in loc.visits:
-            year_counter[visit.year] += 1
+        for year in loc.years:
+            year_counter[year] += 1
 
     visits_per_year = sorted(
         [YearStat(year=year, count=count) for year, count in year_counter.items()],
@@ -98,8 +164,8 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
         country = loc.country.strip() if loc.country else ""
         if not country:
             continue
-        for visit in loc.visits:
-            country_year_counter[(visit.year, country)] += 1
+        for year in loc.years:
+            country_year_counter[(year, country)] += 1
 
     visited_locations_per_year_by_country = sorted(
         [
@@ -112,17 +178,8 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
     # Visited locations per year by type
     type_year_counter: Counter[tuple[int, str | None, str, str]] = Counter()
     for loc in locations:
-        if loc.location_type:
-            type_key = (
-                loc.location_type.id,
-                loc.location_type.name,
-                loc.location_type.color,
-            )
-        else:
-            type_key = (None, "Uncategorized", "#9E9E9E")  # type: ignore[assignment]
-
-        for visit in loc.visits:
-            type_year_counter[(visit.year, *type_key)] += 1
+        for year in loc.years:
+            type_year_counter[(year, *loc.type_key)] += 1
 
     visited_locations_per_year_by_type = sorted(
         [
@@ -141,16 +198,7 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
     # Locations per type
     type_counter: Counter[tuple[str | None, str, str]] = Counter()
     for loc in locations:
-        key: tuple[str | None, str, str]
-        if loc.location_type:
-            key = (
-                loc.location_type.id,
-                loc.location_type.name,
-                loc.location_type.color,
-            )
-        else:
-            key = (None, "Uncategorized", "#9E9E9E")
-        type_counter[key] += 1
+        type_counter[loc.type_key] += 1
 
     locations_per_type = sorted(
         [
@@ -163,15 +211,7 @@ async def get_statistics(db: AsyncSession, user_id: str) -> StatisticsResponse:
 
     visited_type_counter: Counter[tuple[str | None, str, str]] = Counter()
     for loc in visited:
-        if loc.location_type:
-            key = (
-                loc.location_type.id,
-                loc.location_type.name,
-                loc.location_type.color,
-            )
-        else:
-            key = (None, "Uncategorized", "#9E9E9E")  # type: ignore[assignment]
-        visited_type_counter[key] += 1
+        visited_type_counter[loc.type_key] += 1
 
     visited_locations_per_type = sorted(
         [

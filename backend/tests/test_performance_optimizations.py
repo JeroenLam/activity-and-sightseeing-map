@@ -193,3 +193,22 @@ async def test_list_excludes_soft_deleted_locations(authenticated_client):
     response = await auth_client.get("/api/locations")
 
     assert [f["id"] for f in response.json()["features"]] == [keep["id"]]
+
+
+@pytest.mark.asyncio
+async def test_statistics_ignore_soft_deleted_locations(authenticated_client):
+    client, _ = authenticated_client
+    await _create(client, name="Kept", country="NL", years_visited=[2020], rating=5)
+    deleted = await _create(
+        client, name="Deleted", country="BE", years_visited=[2021], rating=3
+    )
+    await client.delete(f"/api/locations/{deleted['id']}")
+
+    data = (await client.get("/api/statistics")).json()
+
+    assert data["total_locations"] == 1
+    assert data["total_visited"] == 1
+    assert data["total_countries"] == 1
+    assert data["total_ratings_provided"] == 1
+    assert data["visits_per_year"] == [{"year": 2020, "count": 1}]
+    assert data["locations_per_country"] == [{"country": "NL", "count": 1}]
