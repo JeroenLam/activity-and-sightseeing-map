@@ -137,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive, watch } from 'vue';
+import { ref, shallowRef, computed, onMounted, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useLocationsStore } from '@/stores/locations';
 import { useTypesStore } from '@/stores/types';
@@ -171,16 +171,23 @@ const markerSize = ref(saved?.markerSize ?? 20);
 const visitedOpacity = ref(saved?.visitedOpacity ?? 1);
 const unvisitedOpacity = ref(saved?.unvisitedOpacity ?? 1);
 const mapRef = ref<InstanceType<typeof MapContainer>>();
-const visibleLocations = ref<LocationFeature[]>([]);
+// Shallow: the features come from the (shallow, immutable) locations store;
+// a deep ref would wrap every one of them in a reactive Proxy again.
+const visibleLocations = shallowRef<LocationFeature[]>([]);
 const currentYear = new Date().getFullYear();
 const newYear = ref(currentYear);
 
+// One shared collator: `Intl.Collator#compare` is much faster than calling
+// `String#localeCompare` (which sets up locale data per call) when sorting
+// thousands of names, and gives the same ordering.
+const nameCollator = new Intl.Collator();
+
 const sortedTypes = computed(() =>
-  [...typesStore.types].sort((a, b) => a.name.localeCompare(b.name))
+  [...typesStore.types].sort((a, b) => nameCollator.compare(a.name, b.name))
 );
 
 const sortedVisibleLocations = computed(() =>
-  [...visibleLocations.value].sort((a, b) => a.properties.name.localeCompare(b.properties.name))
+  [...visibleLocations.value].sort((a, b) => nameCollator.compare(a.properties.name, b.properties.name))
 );
 
 // Edit state
@@ -227,8 +234,22 @@ const visitedPct = computed(() => {
   return Math.round((visited / total) * 100);
 });
 
+/**
+ * Number of locations per type id, computed in one pass over all features.
+ * The legend previously filtered the whole list once per type on every
+ * render (types x locations work, repeated on each filter toggle).
+ */
+const countsByType = computed(() => {
+  const counts = new Map<string, number>();
+  for (const f of features.value) {
+    const typeId = f.properties.type?.id;
+    if (typeId) counts.set(typeId, (counts.get(typeId) ?? 0) + 1);
+  }
+  return counts;
+});
+
 function typeCount(typeId: string): number {
-  return features.value.filter((f) => f.properties.type?.id === typeId).length;
+  return countsByType.value.get(typeId) ?? 0;
 }
 
 function toggleType(typeId: string) {

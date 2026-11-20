@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, shallowRef } from 'vue';
 import api, { isOfflineErrorLike } from '@/lib/api';
 import { loadCachedLocations, saveCachedLocations } from '@/lib/offlineStorage';
 import { applyLocationUpdate } from '@/lib/locationUpdate';
@@ -15,7 +15,19 @@ import type {
 } from '@/types';
 
 export const useLocationsStore = defineStore('locations', () => {
-    const collection = ref<LocationFeatureCollection>(
+    /**
+     * The user's locations.
+     *
+     * A `shallowRef` on purpose: with a deep `ref`, Vue wraps every feature
+     * and every nested property in a reactive Proxy, so each read in the map's
+     * filters, marker rendering and lists went through a tracking `get` trap
+     * (the single largest cost when toggling a map filter with thousands of
+     * locations). Features are treated as immutable instead: every change
+     * below assigns a new collection object with a new `features` array,
+     * which is what triggers dependents. Never mutate the array or a feature
+     * in place; use {@link replaceFeatures}.
+     */
+    const collection = shallowRef<LocationFeatureCollection>(
         loadCachedLocations() ?? { type: 'FeatureCollection', features: [] },
     );
     const loading = ref(false);
@@ -27,6 +39,18 @@ export const useLocationsStore = defineStore('locations', () => {
     function setCollection(nextCollection: LocationFeatureCollection) {
         collection.value = nextCollection;
         persistCollection();
+    }
+
+    /** Publish a new features array (triggering dependents) and persist it. */
+    function replaceFeatures(features: LocationFeature[]) {
+        setCollection({ ...collection.value, features });
+    }
+
+    /** Replace the feature at `idx` with `feature`, immutably. */
+    function replaceFeatureAt(idx: number, feature: LocationFeature) {
+        const features = collection.value.features.slice();
+        features[idx] = feature;
+        replaceFeatures(features);
     }
 
     function makeId() {
@@ -42,8 +66,7 @@ export const useLocationsStore = defineStore('locations', () => {
         loading.value = true;
         try {
             const { data } = await api.get<LocationFeatureCollection>('/api/locations', { params });
-            collection.value = data;
-            persistCollection();
+            setCollection(data);
         } catch (error) {
             if (!isOfflineErrorLike(error)) {
                 throw error;
@@ -57,8 +80,7 @@ export const useLocationsStore = defineStore('locations', () => {
         const offlineSync = useOfflineSyncStore();
         try {
             const { data } = await api.post<LocationFeature>('/api/locations', feature);
-            collection.value.features.push(data);
-            persistCollection();
+            replaceFeatures([...collection.value.features, data]);
             return data;
         } catch (error) {
             if (!isOfflineErrorLike(error)) {
@@ -86,8 +108,7 @@ export const useLocationsStore = defineStore('locations', () => {
                     updated_at: new Date().toISOString(),
                 },
             };
-            collection.value.features.push(localFeature);
-            persistCollection();
+            replaceFeatures([...collection.value.features, localFeature]);
 
             offlineSync.enqueue({
                 entity_type: 'location',
@@ -106,8 +127,7 @@ export const useLocationsStore = defineStore('locations', () => {
             const { data } = await api.put<LocationFeature>(`/api/locations/${id}`, feature);
             // The server response is the source of truth for the saved state
             // (it includes the refreshed visit years, type and sync_version).
-            if (idx !== -1) collection.value.features[idx] = data;
-            persistCollection();
+            if (idx !== -1) replaceFeatureAt(idx, data);
             return data;
         } catch (error) {
             if (!isOfflineErrorLike(error)) {
@@ -121,8 +141,7 @@ export const useLocationsStore = defineStore('locations', () => {
             // Offline: apply the edit locally so the map updates immediately;
             // the queued mutation is replayed against the server later.
             const optimistic = applyLocationUpdate(current, feature);
-            collection.value.features[idx] = optimistic;
-            persistCollection();
+            replaceFeatureAt(idx, optimistic);
 
             offlineSync.enqueue({
                 entity_type: 'location',
@@ -141,10 +160,12 @@ export const useLocationsStore = defineStore('locations', () => {
             properties,
         });
         const updatedById = new Map(data.map((feature) => [feature.id, feature]));
-        collection.value.features = collection.value.features.map((feature) => {
-            if (!feature.id) return feature;
-            return updatedById.get(feature.id) ?? feature;
-        });
+        replaceFeatures(
+            collection.value.features.map((feature) => {
+                if (!feature.id) return feature;
+                return updatedById.get(feature.id) ?? feature;
+            }),
+        );
         return data;
     }
 
@@ -165,14 +186,13 @@ export const useLocationsStore = defineStore('locations', () => {
                 payload: {},
             });
         }
-        collection.value.features = collection.value.features.filter((f) => f.id !== id);
-        persistCollection();
+        replaceFeatures(collection.value.features.filter((f) => f.id !== id));
     }
 
     async function geocodeLocation(id: string): Promise<LocationFeature> {
         const { data } = await api.post<LocationFeature>(`/api/locations/${id}/geocode`);
         const idx = collection.value.features.findIndex((f) => f.id === id);
-        if (idx !== -1) collection.value.features[idx] = data;
+        if (idx !== -1) replaceFeatureAt(idx, data);
         return data;
     }
 
@@ -201,8 +221,7 @@ export const useLocationsStore = defineStore('locations', () => {
         for (const id of ids) {
             await api.delete(`/api/locations/${id}`);
         }
-        collection.value.features = [];
-        persistCollection();
+        replaceFeatures([]);
     }
 
     return {
